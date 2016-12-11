@@ -1,9 +1,29 @@
 import os
 import codecs
-import hmac
 
 import webob
+import pylibmc
 from webob.exc import HTTPForbidden
+
+
+try:
+    from hmac import compare_digest
+except ImportError:
+    def compare_digest(a, b):
+        return a == b
+
+
+class MemcachedCSRFClient(object):
+    prefix = 'sec_csrf_'
+
+    def __init__(self, url):
+        self.cli = pylibmc.Client([url], binary=True, behaviors={"tcp_nodelay": True, "ketama": True})
+
+    def get(self, session):
+        return self.cli.get(self.prefix + session)
+
+    def set(self, session, token):
+        return self.cli.set(self.prefix + session, token)
 
 
 class Request(webob.Request):
@@ -14,7 +34,7 @@ class Request(webob.Request):
         return self.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE')
 
     def good_referer(self):
-        pass
+        return True
 
 
 class CSRFMiddleware(object):
@@ -22,34 +42,34 @@ class CSRFMiddleware(object):
 
     def __init__(self, app, config):
         self.app = app
-        # get a setting, ie memcached session
-        #self.csrf_secret = config.get('csrf_secret', 'Some Secret!!!')
+        self.cache = MemcachedCSRFClient(config['ckanext.security.memcached'])
 
     def __call__(self, environ, start_response):
         request = Request(environ)
-        session = environ['beaker.session']
+        self.session_id = environ['beaker.session'].id
 
         if self.is_valid(request):
             response = request.get_response(self.app)
-            return self.add_new_token(response)
+            return self.add_new_token(response)(environ, start_response)
         raise HTTPForbidden('CSRF authentication failed. Token missing or invalid.')
 
     def is_valid(self, request):
-        if request.is_safe():
-            return True  # Valid always
-        elif request.is_secure() and request.good_referer() and self.check_cookie(request):
-            return True
-        return False
+        print 'is_valid'
+        return request.is_safe() or self.unsafe_request_is_valid(request)
+
+    def unsafe_request_is_valid(self, request):
+        print 'is_unsafe'
+        return request.is_secure() and request.good_referer() and self.check_cookie(request)
 
     def check_cookie(self, request):
-        token = request.cookies.get(COOKIE_NAME, None)
+        token = request.cookies.get(self.COOKIE_NAME, None)
         if token is None:
             # Just in case this is set by an AJAX request
             token = request.cookies.get('X-CSRFToken', None)
-        return hmac.compare_digest(token, self.self.cache.get(self.session_id))
+        return compare_digest(token, self.cache.get(self.session_id))
 
     def add_new_token(self, response):
         token = codecs.encode(os.urandom(64), 'hex')
-        self.cache.add(self.session_id, token)
-        response.set_cookie(COOKIE_NAME, token, httponly=True, overwrite=True, secure=True)
+        self.cache.set(self.session_id, token)
+        response.set_cookie(self.COOKIE_NAME, token, httponly=True, overwrite=True, secure=True)
         return response
