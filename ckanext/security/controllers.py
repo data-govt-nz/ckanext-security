@@ -8,16 +8,11 @@ from ckan.lib.navl.dictization_functions import Invalid
 from ckan.logic import schema, NotAuthorized, check_access, get_action, NotFound
 
 from ckanext.security import mailer
-
-
-def old_username_validator(key, data, errors, context):
-    # Completely prevents changing of user names
-    old_user = authz._get_user(context.get('user'))
-    return old_user.name
+from ckanext.security.validators import old_username_validator
 
 
 class DIAUserController(UserController):
-    edit_user_form = 'security/edit_user_form.html'
+    edit_user_form = 'security  /edit_user_form.html'
 
     def _edit_form_to_db_schema(self):
         form_schema = schema.user_edit_form_schema()

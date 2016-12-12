@@ -47,28 +47,30 @@ class CSRFMiddleware(object):
 
     def __call__(self, environ, start_response):
         request = Request(environ)
-        self.session_id = environ['beaker.session'].id
+        self.session = environ['beaker.session']
+        self.session.save()
 
         if self.is_valid(request):
             response = request.get_response(self.app)
             return self.add_new_token(response)(environ, start_response)
-        raise HTTPForbidden('CSRF authentication failed. Token missing or invalid.')
+        return HTTPForbidden('CSRF authentication failed. Token missing or invalid.')(environ, start_response)
 
     def is_valid(self, request):
         return request.is_safe() or self.unsafe_request_is_valid(request)
 
     def unsafe_request_is_valid(self, request):
-        return request.is_secure() and request.good_referer(self.domain) and self.check_cookie(request)
+        return request.is_secure() and request.good_referer() and self.check_cookie(request)
 
     def check_cookie(self, request):
         token = request.cookies.get(self.COOKIE_NAME, None)
+
         if token is None:
             # Just in case this is set by an AJAX request
             token = request.cookies.get('X-CSRFToken', None)
-        return compare_digest(token, self.cache.get(self.session_id))
+        return compare_digest(token, self.cache.get(self.session.id))
 
     def add_new_token(self, response):
-        token = codecs.encode(os.urandom(64), 'hex')
-        self.cache.set(self.session_id, token)
+        token = codecs.encode(os.urandom(32), 'hex')
+        self.cache.set(self.session.id, token)
         response.set_cookie(self.COOKIE_NAME, token, httponly=True, overwrite=True, secure=True, domain=self.domain)
         return response

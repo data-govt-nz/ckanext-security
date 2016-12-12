@@ -40,7 +40,7 @@ plugins =
 [authenticators]
 plugins =
     ckan.lib.authenticator:UsernamePasswordAuthenticator
-    ckanext.security.plugin:BeakerAuthenticator
+    ckanext.security.plugin:CatalystSecurityPlugin
 ```
 
 ### Changes to CKAN config

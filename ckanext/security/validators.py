@@ -31,3 +31,9 @@ def user_password_validator(key, data, errors, context):
         ]
         if len(value) < MIN_PASSWORD_LENGTH or sum(rules) < 3:
             errors[('password',)].append(_(MIN_LEN_ERROR.format(MIN_PASSWORD_LENGTH)))
+
+
+def old_username_validator(key, data, errors, context):
+    # Completely prevents changing of user names
+    old_user = authz._get_user(context.get('user'))
+    return old_user.name
