@@ -5,7 +5,7 @@ import ckan.logic.schema
 from repoze.who.interfaces import IAuthenticator
 from zope.interface import implements
 
-from ckanext.security import ...
+from ckanext.security import schema
 
 
 class CatalystSecurityPlugin(plugins.SingletonPlugin):
@@ -24,7 +24,7 @@ class CatalystSecurityPlugin(plugins.SingletonPlugin):
         toolkit.add_template_directory(config, 'templates')
 
     def before_map(self, urlmap):
-        userController = 'ckanext.dia.controllers:DIAUserController'
+        userController = 'ckanext.security.controllers:DIAUserController'
         urlmap.redirect('/user/edit/', '/user/edit')
         urlmap.connect('/user/edit', controller=userController, action='edit')
         urlmap.connect('/user/edit/{id:.*}', controller=userController, action='edit', ckan_icon='cog')

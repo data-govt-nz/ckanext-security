@@ -7,7 +7,7 @@ from ckan.lib import helpers
 from ckan.lib.navl.dictization_functions import Invalid
 from ckan.logic import schema, NotAuthorized, check_access, get_action, NotFound
 
-from ckanext.dia import mailer
+from ckanext.security import mailer
 
 
 def old_username_validator(key, data, errors, context):
@@ -17,7 +17,7 @@ def old_username_validator(key, data, errors, context):
 
 
 class DIAUserController(UserController):
-    edit_user_form = 'dia/edit_user_form.html'
+    edit_user_form = 'security/edit_user_form.html'
 
     def _edit_form_to_db_schema(self):
         form_schema = schema.user_edit_form_schema()
