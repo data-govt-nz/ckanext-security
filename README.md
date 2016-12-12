@@ -56,4 +56,4 @@ Then modify your CKAN config to point the extension at your memcached instance:
 ckanext.security.memcached = 127.0.0.1:11211
 ```
 
-Finally, add `catsec` to `ckan.plugins` in your config file.
+Finally, add `security` to `ckan.plugins` in your config file.

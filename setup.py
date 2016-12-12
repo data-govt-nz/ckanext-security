@@ -27,6 +27,6 @@ setup(
     entry_points=\
     """
     [ckan.plugins]
-    catsec=ckanext.security.plugin:SecurityPlugin
+    security=ckanext.security.plugin:SecurityPlugin
     """,
 )
