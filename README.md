@@ -68,9 +68,9 @@ You can use `pip` to install this plugin into your virtual environment:
 ```
 pip install --process-dependency-links -e 'git+ssh@gitlab.wgtn.cat-it.co.nz/ckan/ckanext-security.git#egg=ckanext-security==0.0.1'
 ```
-*NOTE: The --process-dependency-links has officially been deprecated, but not
-removed pip because it is the currently the only setuptools-supported way for
-specifying private repo dependencies*
+*NOTE: The ``--process-dependency-links` flag has officially been deprecated, but
+has not been removed from pip, because it is the currently the only
+setuptools-supported way for specifying private repo dependencies*
 
 Then modify your CKAN config to point the extension at your memcached instance:
 ```
