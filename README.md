@@ -18,7 +18,9 @@ stack. This requires to patch `ckan.config.middleware.pylons_app`. The patch is
 currently available in the Catalyst CKAN repository on the `catalyst/dia` branch,
 or commit `74f78865` for cherry-pick.
 * A running memcached instance and `libmemcached-dev`.
-* Your `who.ini` file needs the following settings:
+
+### Changes to `who.ini`
+You will need at least the following setting ins your `who.ini`
 
 ```
 [plugin:use_beaker]
@@ -27,8 +29,8 @@ key_name = ckan_session
 delete_on_logout = True
 
 [plugin:friendlyform]
-rememberer_name = use_beaker
 <your other settings here>
+rememberer_name = use_beaker
 
 [identifiers]
 plugins =
@@ -39,6 +41,25 @@ plugins =
 plugins =
     ckan.lib.authenticator:UsernamePasswordAuthenticator
     ckanext.security.plugin:BeakerAuthenticator
+```
+
+### Changes to CKAN config
+Make these changes to your ckan config and replace the cookie_domain appropriately.
+
+```
+[app:main]
+<your other settings here>
+beaker.session.key = ckan_session
+beaker.session.cookie_expires = 0
+beaker.session.cookie_domain = <YOUR DOMAIN>
+beaker.session.data_serializer = json
+beaker.session.httponly = true
+beaker.session.secure = true
+beaker.session.timeout = 3600
+beaker.session.save_accessed_time = true
+beaker.session.type = ext:memcached
+beaker.session.url = 127.0.0.1:11211
+beaker.session.memcache_module = pylibmc
 ```
 
 ## How to install?
