@@ -1,4 +1,4 @@
-# CKANEXT-DIA
+# CKANEXT-SECURITY
 
 ## What am I?
 A CKAN extension to hold various security improvements for CKAN, including:
@@ -22,14 +22,14 @@ or commit `74f78865` for cherry-pick.
 ### Changes to `who.ini`
 You will need at least the following setting ins your `who.ini`
 
-```
+```ini
 [plugin:use_beaker]
 use = repoze.who.plugins.use_beaker:make_plugin
 key_name = ckan_session
 delete_on_logout = True
 
 [plugin:friendlyform]
-<your other settings here>
+# <your other settings here>
 rememberer_name = use_beaker
 
 [identifiers]
@@ -46,11 +46,11 @@ plugins =
 ### Changes to CKAN config
 Make these changes to your ckan config and replace the cookie_domain appropriately.
 
-```
+```ini
 [app:main]
-<your other settings here>
+# <your other settings here>
 beaker.session.key = ckan_session
-beaker.session.cookie_expires = 0
+beaker.session.cookie_expires = true
 beaker.session.cookie_domain = <YOUR DOMAIN>
 beaker.session.data_serializer = json
 beaker.session.httponly = true
@@ -65,7 +65,7 @@ beaker.session.memcache_module = pylibmc
 ## How to install?
 You can use `pip` to install this plugin into your virtual environment:
 
-```
+```shell
 pip install --process-dependency-links -e 'git+ssh@gitlab.wgtn.cat-it.co.nz/ckan/ckanext-security.git#egg=ckanext-security==0.0.1'
 ```
 *NOTE: The ``--process-dependency-links` flag has officially been deprecated, but
@@ -73,7 +73,7 @@ has not been removed from pip, because it is the currently the only
 setuptools-supported way for specifying private repo dependencies*
 
 Then modify your CKAN config to point the extension at your memcached instance:
-```
+```ini
 ckanext.security.memcached = 127.0.0.1:11211
 ```
 
