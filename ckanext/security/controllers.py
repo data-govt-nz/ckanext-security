@@ -11,8 +11,8 @@ from ckanext.security import mailer
 from ckanext.security.validators import old_username_validator
 
 
-class DIAUserController(UserController):
-    edit_user_form = 'security  /edit_user_form.html'
+class SecureUserController(UserController):
+    edit_user_form = 'security/edit_user_form.html'
 
     def _edit_form_to_db_schema(self):
         form_schema = schema.user_edit_form_schema()
@@ -23,6 +23,7 @@ class DIAUserController(UserController):
         # This is a one-to-one copy from ckan core, except for user errors
         # handling. There should be no feedback about whether or not a user
         # is found in the db.
+        # Original method is `ckan.controllers.user.UserController.request_reset`
         context = {'model': model, 'session': model.Session, 'user': c.user,
                    'auth_user_obj': c.userobj}
         data_dict = {'id': request.params.get('user')}

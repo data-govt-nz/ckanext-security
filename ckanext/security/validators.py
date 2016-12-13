@@ -18,7 +18,7 @@ def user_password_validator(key, data, errors, context):
     if isinstance(value, Missing):
         pass  # Already handeled in core
     elif not isinstance(value, basestring):
-        errors[('password',)].append(_('Passwords must be strings'))
+        errors[('password',)].append(_('Passwords must be strings.'))
     elif value == '':
         pass  # Already handeled in core
     else:

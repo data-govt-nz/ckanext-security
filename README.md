@@ -44,14 +44,15 @@ plugins =
 ```
 
 ### Changes to CKAN config
-Make these changes to your ckan config and replace the cookie_domain appropriately.
+Make these changes to your ckan config and replace the cookie_domain and secret
+appropriately.
 
 ```ini
 [app:main]
 # <your other settings here>
 beaker.session.key = ckan_session
-beaker.session.cookie_expires = true
-beaker.session.cookie_domain = <YOUR DOMAIN>
+# Your session secret should be a long, random and secret string!
+beaker.session.secret = beaker-secret
 beaker.session.data_serializer = json
 beaker.session.httponly = true
 beaker.session.secure = true
@@ -60,6 +61,8 @@ beaker.session.save_accessed_time = true
 beaker.session.type = ext:memcached
 beaker.session.url = 127.0.0.1:11211
 beaker.session.memcache_module = pylibmc
+beaker.session.cookie_expires = true
+beaker.session.cookie_domain = 192.168.232.65
 ```
 
 ## How to install?

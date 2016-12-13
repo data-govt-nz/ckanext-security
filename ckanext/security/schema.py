@@ -7,6 +7,12 @@ from ckan.logic import schema as ckan_schema
 from ckanext.security import validators
 
 
+# The main purpose of this file is to modify CKAN's user-related schemas, and
+# to replace the default password validators everywhere. We are also replacing
+# the username validators for endpoints where username changes user to be
+# allowed.
+
+
 def default_user_schema():
     schema = {
         'id': [ignore_missing, unicode],
