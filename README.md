@@ -9,6 +9,8 @@ A CKAN extension to hold various security improvements for CKAN, including:
 * Server-side session storage
 * Session invalidation on logout
 * Stronger password validators (NZISM compatible)
+* When users try to reset a password for an email address, CKAN will no longer
+disclose whether or not that email address exists in the DB.
 
 
 ## Requirements
@@ -44,8 +46,8 @@ plugins =
 ```
 
 ### Changes to CKAN config
-Make these changes to your ckan config and replace the cookie_domain and secret
-appropriately.
+For better security, make sure you harden your session configuration (in your
+  ckan config file). See for example the settings below.
 
 ```ini
 [app:main]
@@ -62,6 +64,7 @@ beaker.session.type = ext:memcached
 beaker.session.url = 127.0.0.1:11211
 beaker.session.memcache_module = pylibmc
 beaker.session.cookie_expires = true
+# Your domain should show here.
 beaker.session.cookie_domain = 192.168.232.65
 ```
 
