@@ -1,5 +1,6 @@
 import string
 
+from ckan import authz
 from ckan.common import _
 from ckan.lib.navl.dictization_functions import Missing
 
