@@ -13,6 +13,9 @@ except ImportError:
         return a == b
 
 
+CSRF_ERR = 'CSRF authentication failed. Token missing or invalid.'
+
+
 class MemcachedCSRFClient(object):
     prefix = 'sec_csrf_'
 
@@ -50,10 +53,8 @@ class CSRFMiddleware(object):
         self.session = environ['beaker.session']
         self.session.save()
 
-        if self.is_valid(request):
-            response = request.get_response(self.app)
-            return self.add_new_token(response)(environ, start_response)
-        return HTTPForbidden('CSRF authentication failed. Token missing or invalid.')(environ, start_response)
+        resp = request.get_response(self.app) if self.is_valid(request) else HTTPForbidden(CSRF_ERR)
+        return self.add_new_token(resp)(environ, start_response)
 
     def is_valid(self, request):
         return request.is_safe() or self.unsafe_request_is_valid(request)
