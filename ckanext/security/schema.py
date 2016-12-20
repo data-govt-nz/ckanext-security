@@ -1,7 +1,8 @@
 from ckan.lib.navl.validators import ignore_missing, not_empty, ignore, not_missing
 from ckan.logic.validators import name_validator, user_name_validator, \
     user_password_not_empty, user_passwords_match, ignore_not_sysadmin, \
-    ignore_not_group_admin, ignore_not_package_admin, user_about_validator
+    ignore_not_group_admin, ignore_not_package_admin, user_about_validator, \
+    user_both_passwords_entered
 from ckan.logic import schema as ckan_schema
 
 from ckanext.security import validators
