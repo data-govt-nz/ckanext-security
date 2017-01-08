@@ -2,9 +2,9 @@ import os
 import codecs
 
 import webob
-import pylibmc
 from webob.exc import HTTPForbidden
 
+from ckanext.security.memcached import MemcachedCSRFClient
 
 try:
     from hmac import compare_digest
@@ -14,19 +14,6 @@ except ImportError:
 
 
 CSRF_ERR = 'CSRF authentication failed. Token missing or invalid.'
-
-
-class MemcachedCSRFClient(object):
-    prefix = 'sec_csrf_'
-
-    def __init__(self, url):
-        self.cli = pylibmc.Client([url], binary=True, behaviors={"tcp_nodelay": True, "ketama": True})
-
-    def get(self, session):
-        return self.cli.get(self.prefix + session)
-
-    def set(self, session, token):
-        return self.cli.set(self.prefix + session, token)
 
 
 class Request(webob.Request):
@@ -45,7 +32,7 @@ class CSRFMiddleware(object):
 
     def __init__(self, app, config):
         self.app = app
-        self.cache = MemcachedCSRFClient(config['ckanext.security.memcached'])
+        self.cache = MemcachedCSRFClient()
         self.domain = config['ckanext.security.domain']
 
     def __call__(self, environ, start_response):

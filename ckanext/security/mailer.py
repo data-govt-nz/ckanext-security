@@ -28,3 +28,19 @@ def send_reset_link(user):
     subject = subject.split('\n')[0]
 
     mail_user(user, subject, body)
+
+
+def notify_lockout(user, locked_ip):
+    extra_vars = {
+        'site_title': config.get('ckan.site_title'),
+        'site_url': config.get('ckan.site_url'),
+        'ip_address': locked_ip,
+        'user_name': user.name,
+    }
+
+    subject = render_jinja2('security/emails/lockout_subject.txt', extra_vars)
+    subject = subject.split('\n')[0]  # Make sure we only use the first line
+
+    body = render_jinja2('security/emails/lockout_mail.txt', extra_vars)
+
+    mail_user(user, subject, body)

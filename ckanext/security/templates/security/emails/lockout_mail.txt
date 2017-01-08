@@ -1,0 +1,13 @@
+Dear {{ user_name }},
+
+We have detected an unusually large amount of login attempts for your account.
+
+As a security precaution, we have temporarily blocked the IP address {{ ip_address }}
+from logging in with your credentials.
+
+If you would like to reset your password, you can use the form provided on {{ site_url }}.
+
+Have a nice day.
+
+--
+Message sent by {{ site_title }} ({{ site_url }})

@@ -4,6 +4,7 @@
 A CKAN extension to hold various security improvements for CKAN, including:
 
 * Stronger password reset tokens
+* Brute force protection
 * Cookie-based CSRF protection for requests
 * Removed ability to change usernames after signup
 * Server-side session storage
@@ -11,6 +12,20 @@ A CKAN extension to hold various security improvements for CKAN, including:
 * Stronger password validators (NZISM compatible)
 * When users try to reset a password for an email address, CKAN will no longer
 disclose whether or not that email address exists in the DB.
+
+### Reset tokens
+Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
+`uuid.uuid4().hex[:10]`.
+
+### Brute force protection
+Users attempting to log in more than `ckanext.security.login_max_count` times
+within `ckanext.security.lock_timeout` seconds from a single IP address will be
+temporarily locked out.
+
+By default, this means that after 10 unsuccessful login attempts within 15 minutes
+the login will be disabled for another 15 minutes.
+
+A notification email will be sent to locked out users.
 
 
 ## Requirements
@@ -41,8 +56,8 @@ plugins =
 
 [authenticators]
 plugins =
-    ckan.lib.authenticator:UsernamePasswordAuthenticator
-    ckanext.security.plugin:CatalystSecurityPlugin
+    ckanext.security.authenticator:CKANLoginThrottle
+    ckanext.security.authenticator:BeakerMemcachedAuth
 ```
 
 ### Changes to CKAN config
@@ -66,6 +81,17 @@ beaker.session.memcache_module = pylibmc
 beaker.session.cookie_expires = true
 # Your domain should show here.
 beaker.session.cookie_domain = 192.168.232.65
+```
+
+### ckanext-security configuration options
+```ini
+## Security
+ckanext.security.memcached = 127.0.0.1:11211  # Memcached URL
+ckanext.security.domain = 192.168.232.65      # Cookie domain
+
+# 15 minute timeout with 10 attempts
+ckanext.security.lock_timeout = 900           # Login throttling lock period
+ckanext.security.login_max_count = 10         # Login throttling attempt limit
 ```
 
 ## How to install?

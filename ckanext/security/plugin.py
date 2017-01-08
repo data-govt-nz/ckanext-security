@@ -2,19 +2,15 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckan.logic.schema
 
-from repoze.who.interfaces import IAuthenticator
-from zope.interface import implements
-
 from ckanext.security import schema
 
 
 class CatalystSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes)
-    implements(IAuthenticator)
 
     def update_config(self, config):
-        # monkeypatching all user schemas in order to enforce a stronger password
+        # Monkeypatching all user schemas in order to enforce a stronger password
         # policy. I tried mokeypatching `ckan.logic.validators.user_password_validator`
         # instead without success.
         ckan.logic.schema.default_user_schema = schema.default_user_schema
@@ -34,8 +30,3 @@ class CatalystSecurityPlugin(plugins.SingletonPlugin):
 
     def after_map(self, urlmap):
         return urlmap
-
-    def authenticate(self, environ, identity):
-        # At this stage, the identity has already been validated from the cookie
-        # and memcache. We simply return the user id from the identity object.
-        return identity.get('repoze.who.userid', None)
