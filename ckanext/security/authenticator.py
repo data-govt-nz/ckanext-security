@@ -20,8 +20,13 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
     def authenticate(self, environ, identity):
         """A username/password authenticator that throttles login request by IP."""
         login = identity['login']
-        remote_addr = Request(environ).headers['X-Forwarded-For']
         environ['paste.registry'].register(pylons.translator, MockTranslator())
+
+        try:
+            remote_addr = Request(environ).headers['X-Forwarded-For']
+        except KeyError:
+            log.critical('X-Forwarded-For header missing from request.')
+            return None
 
         throttle = LoginThrottle(User.by_name(login), remote_addr)
         if not ('login' in identity and 'password' in identity):
