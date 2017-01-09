@@ -16,10 +16,15 @@ log = logging.getLogger(__name__)
 
 
 class CKANLoginThrottle(UsernamePasswordAuthenticator):
+    implements(IAuthenticator)
 
     def authenticate(self, environ, identity):
         """A username/password authenticator that throttles login request by IP."""
-        login = identity['login']
+        try:
+            login = identity['login']
+        except KeyError:
+            return None
+
         environ['paste.registry'].register(pylons.translator, MockTranslator())
 
         try:
@@ -48,6 +53,7 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         # return the user object.
         if auth_user is not None:
             throttle.reset()
+            log.error('throttle: %s %s' % (auth_user, type(auth_user)))
             return auth_user
 
         # Increment the throttle counter if the login failed.
