@@ -59,9 +59,13 @@ class LoginThrottle(object):
         self.count = int(count) if self._check_time(last_attempt) else 0
         if self._check_count():
             if self.user is not None and self.count == self.login_max_count:
-                msg = "%s locked out by brute force protection, email sent."
-                log.warning(msg % self.user.name)
-                notify_lockout(self.user, self.remote_addr)
+                log.info("%s locked out by brute force protection" % self.user.name)
+                try:
+                    notify_lockout(self.user, self.remote_addr)
+                    log.debug("Lockout notification for user %s sent" % self.user.name)
+                except Exception as exc:
+                    msg = "Sending lockout notification for %s failed"
+                    log.exception(msg % self.user.name, exc_info=exc)
             return False
 
     def check_attempts(self):

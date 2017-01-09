@@ -44,7 +44,7 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         # Check if there is a lock on the requested user, and return None if
         # we have a lock.
         if throttle.check_attempts() is False:
-            log.warning('User %r (%s) locked out by brute force protection.' % (login, remote_addr))
+            log.info('User %r (%s) locked out by brute force protection.' % (login, remote_addr))
             throttle.increment()  # Increment so we only send an email the first time around
             return None
 
@@ -53,7 +53,6 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         # return the user object.
         if auth_user is not None:
             throttle.reset()
-            log.error('throttle: %s %s' % (auth_user, type(auth_user)))
             return auth_user
 
         # Increment the throttle counter if the login failed.
