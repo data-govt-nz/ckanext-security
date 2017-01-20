@@ -19,7 +19,7 @@ def user_password_validator(key, data, errors, context):
     if isinstance(value, Missing):
         pass  # Already handeled in core
     elif not isinstance(value, basestring):
-        errors[('password',)].append(_('Passwords must be strings.'))
+        raise ValueError(_('Passwords must be strings.'))
     elif value == '':
         pass  # Already handeled in core
     else:
@@ -31,7 +31,7 @@ def user_password_validator(key, data, errors, context):
             any(x in string.punctuation for x in value)
         ]
         if len(value) < MIN_PASSWORD_LENGTH or sum(rules) < 3:
-            errors[('password',)].append(_(MIN_LEN_ERROR.format(MIN_PASSWORD_LENGTH)))
+            raise ValueError(_(MIN_LEN_ERROR.format(MIN_PASSWORD_LENGTH)))
 
 
 def old_username_validator(key, data, errors, context):
