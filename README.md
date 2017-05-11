@@ -98,7 +98,7 @@ ckanext.security.login_max_count = 10         # Login throttling attempt limit
 You can use `pip` to install this plugin into your virtual environment:
 
 ```shell
-pip install --process-dependency-links -e 'git+ssh@gitlab.wgtn.cat-it.co.nz/ckan/ckanext-security.git#egg=ckanext-security==0.0.1'
+pip install --process-dependency-links -e 'https://github.com/data-govt-nz/ckanext-security.git#egg=ckanext-security==0.0.1'
 ```
 *NOTE: The ``--process-dependency-links` flag has officially been deprecated, but
 has not been removed from pip, because it is the currently the only
