@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.0.1'
+version = '0.1.0'
 
 setup(
     name='ckanext-security',
@@ -9,9 +9,9 @@ setup(
     long_description='',
     classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     keywords='',
-    author='CKAN Team at Catalyst IT',
-    author_email='ckan-dev@catalyst.net.nz',
-    url='https://www.catalyst.net.nz',
+    author='Data.govt.nz',
+    author_email='info@data.govt.nz',
+    url='https://www.data.govt.nz',
     license='',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     namespace_packages=['ckanext', 'ckanext.security'],
