@@ -32,8 +32,8 @@ A notification email will be sent to locked out users.
 
 * Session- and CSRFMiddleware need to be placed at the bottom of the middleware
 stack. This requires to patch `ckan.config.middleware.pylons_app`. The patch is
-currently available in the Catalyst CKAN repository on the `catalyst/dia` branch,
-or commit `74f78865` for cherry-pick.
+currently available in the data.govt.nz [CKAN repository](https://github.com/data-govt-nz/ckan/) on the `dia` branch,
+or [commit `74f78865`](https://github.com/data-govt-nz/ckan/commit/74f78865b8825c91d1dfe6b189228f4b975610a3) for cherry-pick.
 * A running memcached instance and `libmemcached-dev`.
 
 ### Changes to `who.ini`
