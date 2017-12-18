@@ -110,3 +110,7 @@ ckanext.security.memcached = 127.0.0.1:11211
 ```
 
 Finally, add `security` to `ckan.plugins` in your config file.
+
+## Possible problems
+
+- If your service is responding with `Internal Server Error`, try using `paster request <config> /`. If you see a `ValueError: No Beaker session (beaker.session) in environment` then you have not installed the patch to CKAN correctly.
