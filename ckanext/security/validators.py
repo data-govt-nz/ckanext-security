@@ -1,13 +1,15 @@
 import string
+import unicodedata
 
 from ckan import authz
 from ckan.common import _
 from ckan.lib.navl.dictization_functions import Missing, Invalid
 
 
-MIN_PASSWORD_LENGTH = 10
+MIN_PASSWORD_LENGTH = 8
 MIN_LEN_ERROR = (
-    'Your password must be {} characters or longer, and consist of at least '
+    'Your password must be {} characters or longer, '
+    'contain no accented characters and consist of at least '
     'three of the following character sets: uppercase characters, lowercase '
     'characters, digits, punctuation & special characters.'
 )
@@ -30,7 +32,8 @@ def user_password_validator(key, data, errors, context):
             any(x.isdigit() for x in value),
             any(x in string.punctuation for x in value)
         ]
-        if len(value) < MIN_PASSWORD_LENGTH or sum(rules) < 3:
+        badchars = any(unicodedata.decomposition(x) for x in value)
+        if len(value) < MIN_PASSWORD_LENGTH or sum(rules) < 3 or badchars:
             raise Invalid(_(MIN_LEN_ERROR.format(MIN_PASSWORD_LENGTH)))
 
 
