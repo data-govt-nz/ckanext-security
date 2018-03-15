@@ -4,7 +4,7 @@ import codecs
 import webob
 from webob.exc import HTTPForbidden
 
-from ckanext.security.memcached import MemcachedCSRFClient
+from ckanext.security.cache.clients import MemcachedCSRFClient
 
 try:
     from hmac import compare_digest
