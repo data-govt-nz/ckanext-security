@@ -5,7 +5,7 @@ import ckan.logic.schema
 from ckanext.security import schema
 
 
-class CatalystSecurityPlugin(plugins.SingletonPlugin):
+class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes)
 
