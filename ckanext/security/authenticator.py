@@ -30,8 +30,11 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         try:
             remote_addr = Request(environ).headers['X-Forwarded-For']
         except KeyError:
-            log.critical('X-Forwarded-For header missing from request.')
-            return None
+            try:
+                remote_addr = environ['REMOTE_ADDR']
+            except KeyError:
+                log.critical('X-Forwarded-For header/REMOTE_ADDR missing from request.')
+                return None
 
         throttle = LoginThrottle(User.by_name(login), remote_addr)
         if not ('login' in identity and 'password' in identity):
