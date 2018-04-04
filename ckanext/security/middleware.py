@@ -41,7 +41,10 @@ class CSRFMiddleware(object):
         self.session.save()
 
         resp = request.get_response(self.app) if self.is_valid(request) else HTTPForbidden(CSRF_ERR)
-        return self.add_new_token(resp)(environ, start_response)
+        # Avoid updating the CSRF token with every static file served
+        if 'text/html' in resp.headers['Content-type']:
+            resp = self.add_new_token(resp)
+        return resp(environ, start_response)
 
     def is_valid(self, request):
         return request.is_safe() or self.unsafe_request_is_valid(request)
