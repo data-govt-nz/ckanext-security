@@ -5,7 +5,7 @@ import time
 from ckan.common import config
 
 from ckanext.security.mailer import notify_lockout
-from ckanext.security.cache.clients import MemcachedThrottleClient
+from ckanext.security.cache.clients import ThrottleClient
 
 
 log = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class LoginThrottle(object):
     def __init__(self, user, remote_addr):
         self.request_time = time.time()
         self.user = user
-        self.cli = MemcachedThrottleClient()
+        self.cli = ThrottleClient()
         self.remote_addr = remote_addr
 
         # Separately caching user name, because str(user) yields an unwieldy
