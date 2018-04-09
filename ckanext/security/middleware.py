@@ -4,7 +4,7 @@ import codecs
 import webob
 from webob.exc import HTTPForbidden
 
-from ckanext.security.cache.clients import MemcachedCSRFClient
+from ckanext.security.cache.clients import CSRFClient
 
 try:
     from hmac import compare_digest
@@ -32,7 +32,7 @@ class CSRFMiddleware(object):
 
     def __init__(self, app, config):
         self.app = app
-        self.cache = MemcachedCSRFClient()
+        self.cache = CSRFClient()
         self.domain = config['ckanext.security.domain']
 
     def __call__(self, environ, start_response):

@@ -19,7 +19,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'repoze.who-use-beaker',
-        'pylibmc'
+        'redis'
     ],
     dependency_links=[
         'git+https://github.com/kaukas/repoze.who-use_beaker.git@8ec4cea#egg=repoze.who-use-beaker-0.4'
