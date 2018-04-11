@@ -86,8 +86,11 @@ beaker.session.cookie_domain = 192.168.232.65
 ### ckanext-security configuration options
 ```ini
 ## Security
-ckanext.security.memcached = 127.0.0.1:11211  # Memcached URL
 ckanext.security.domain = 192.168.232.65      # Cookie domain
+
+ckanext.security.redis.host = 127.0.0.1
+ckanext.security.redis.port = 6379
+ckanext.security.redis.db = 1                 # ckan uses db 0
 
 # 15 minute timeout with 10 attempts
 ckanext.security.lock_timeout = 900           # Login throttling lock period
