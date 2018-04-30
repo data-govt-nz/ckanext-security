@@ -21,10 +21,20 @@ class Request(webob.Request):
         return self.scheme == 'https'
 
     def is_safe(self):
+        "Check if the request is 'safe', if the request is safe it will not be checked for csrf"
+        # api requests are exempt from csrf checks
+        if self.path.startswith("/api"):
+            return True
+        
+        # get/head/options/trace are exempt from csrf checks
         return self.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE')
 
     def good_referer(self):
-        return self.referer.startswith("https://{}/".format(self.host))
+        "Returns true if the referrer is https and matching the host"
+        if not self.referer:
+            return False 
+        else:
+            return self.referer.startswith("https://{}/".format(self.host))
 
 
 class CSRFMiddleware(object):
