@@ -34,6 +34,7 @@ A notification email will be sent to locked out users.
 stack. This requires to patch `ckan.config.middleware.pylons_app`. The patch is
 currently available in the data.govt.nz [CKAN repository](https://github.com/data-govt-nz/ckan/) on the `dia` branch,
 or [commit `74f78865`](https://github.com/data-govt-nz/ckan/commit/74f78865b8825c91d1dfe6b189228f4b975610a3) for cherry-pick.
+* A running Redis instance to store CSRF tokens configured with a maxmemory and maxmemory-policy=lru so it overwrites the least recently used item rather than running out of space. This instance should be a different instance from the one used for Harvest items to avoid data loss. [Redis LRU-Cache documentation](https://redis.io/topics/lru-cache). 
 
 ### Changes to `who.ini`
 You will need at least the following setting ins your `who.ini`
