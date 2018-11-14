@@ -1,29 +1,26 @@
+import redis
 from ckan.common import config
 
-import pylibmc
-
-
-class MemcachedClient(object):
+class RedisClient(object):
     prefix = ''
 
     def __init__(self):
-        url = config['ckanext.security.memcached']
-        conf = {"binary": True, "behaviors": {"tcp_nodelay": True, "ketama": True}}
-        self.cli = pylibmc.Client([url], **conf)
+        host = config['ckanext.security.redis.host']
+        port = config['ckanext.security.redis.port']
+        db = config['ckanext.security.redis.db']
+        self.client = redis.StrictRedis(host=host, port=port, db=db)
 
     def get(self, key):
-        return self.cli.get(self.prefix + key)
+        return self.client.get(self.prefix + key)
 
     def set(self, key, value):
-        return self.cli.set(self.prefix + key, value)
+        return self.client.set(self.prefix + key, value)
 
     def delete(self, key):
-        return self.cli.delete(self.prefix + key)
+        return self.client.delete(self.prefix + key)
 
+class CSRFClient(RedisClient):
+    prefix = 'security_csrf_'
 
-class MemcachedCSRFClient(MemcachedClient):
-    prefix = 'sec_csrf_'
-
-
-class MemcachedThrottleClient(MemcachedClient):
-    pefix = 'sec_throttle_'
+class ThrottleClient(RedisClient):
+    prefix = 'security_throttle_'

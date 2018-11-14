@@ -4,7 +4,10 @@ import codecs
 import webob
 from webob.exc import HTTPForbidden
 
-from ckanext.security.cache.clients import MemcachedCSRFClient
+from ckanext.security.cache.clients import CSRFClient
+
+import logging
+log = logging.getLogger(__name__)
 
 try:
     from hmac import compare_digest
@@ -18,6 +21,9 @@ CSRF_ERR = 'CSRF authentication failed. Token missing or invalid.'
 
 class Request(webob.Request):
     def is_secure(self):
+        # allow requests which have the x-forwarded-proto of https (inserted by nginx)
+        if self.headers.get('X-Forwarded-Proto') == 'https':
+            return True 
         return self.scheme == 'https'
 
     def is_safe(self):
@@ -34,7 +40,8 @@ class Request(webob.Request):
         if not self.referer:
             return False 
         else:
-            return self.referer.startswith("https://{}/".format(self.host))
+            match = "https://{}/".format(self.host)
+            return self.referer.startswith(match)
 
 
 class CSRFMiddleware(object):
@@ -42,7 +49,7 @@ class CSRFMiddleware(object):
 
     def __init__(self, app, config):
         self.app = app
-        self.cache = MemcachedCSRFClient()
+        self.cache = CSRFClient()
         self.domain = config['ckanext.security.domain']
 
     def __call__(self, environ, start_response):
@@ -50,8 +57,11 @@ class CSRFMiddleware(object):
         self.session = environ['beaker.session']
         self.session.save()
 
-        resp = request.get_response(self.app) if self.is_valid(request) else HTTPForbidden(CSRF_ERR)
-        # Avoid updating the CSRF token with every static file served
+        if self.is_valid(request):
+            resp = request.get_response(self.app)
+        else:
+            resp = HTTPForbidden(CSRF_ERR)
+
         if 'text/html' in resp.headers['Content-type']:
             resp = self.add_new_token(resp)
         return resp(environ, start_response)
@@ -68,7 +78,14 @@ class CSRFMiddleware(object):
         if token is None:
             # Just in case this is set by an AJAX request
             token = request.cookies.get('X-CSRFToken', None)
-        return compare_digest(token, self.cache.get(self.session.id))
+        
+        csrf_token = self.cache.get(self.session.id)
+
+        if csrf_token == None:
+            log.warning('Could not find a csrf token for session id: {}\n{}'.format(self.session.id, request))
+            return False
+
+        return compare_digest(str(token), str(csrf_token))
 
     def add_new_token(self, response):
         token = codecs.encode(os.urandom(32), 'hex')

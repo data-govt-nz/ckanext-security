@@ -34,7 +34,6 @@ A notification email will be sent to locked out users.
 stack. This requires to patch `ckan.config.middleware.pylons_app`. The patch is
 currently available in the data.govt.nz [CKAN repository](https://github.com/data-govt-nz/ckan/) on the `dia` branch,
 or [commit `74f78865`](https://github.com/data-govt-nz/ckan/commit/74f78865b8825c91d1dfe6b189228f4b975610a3) for cherry-pick.
-* A running memcached instance and `libmemcached-dev`.
 
 ### Changes to `who.ini`
 You will need at least the following setting ins your `who.ini`
@@ -57,7 +56,7 @@ plugins =
 [authenticators]
 plugins =
     ckanext.security.authenticator:CKANLoginThrottle
-    ckanext.security.authenticator:BeakerMemcachedAuth
+    ckanext.security.authenticator:BeakerRedisAuth
 ```
 
 ### Changes to CKAN config
@@ -75,9 +74,8 @@ beaker.session.httponly = true
 beaker.session.secure = true
 beaker.session.timeout = 3600
 beaker.session.save_accessed_time = true
-beaker.session.type = ext:memcached
-beaker.session.url = 127.0.0.1:11211
-beaker.session.memcache_module = pylibmc
+beaker.session.type = redis
+beaker.session.url = 127.0.0.1:6739
 beaker.session.cookie_expires = true
 # Your domain should show here.
 beaker.session.cookie_domain = 192.168.232.65
@@ -86,8 +84,11 @@ beaker.session.cookie_domain = 192.168.232.65
 ### ckanext-security configuration options
 ```ini
 ## Security
-ckanext.security.memcached = 127.0.0.1:11211  # Memcached URL
 ckanext.security.domain = 192.168.232.65      # Cookie domain
+
+ckanext.security.redis.host = 127.0.0.1
+ckanext.security.redis.port = 6379
+ckanext.security.redis.db = 1                 # ckan uses db 0
 
 # 15 minute timeout with 10 attempts
 ckanext.security.lock_timeout = 900           # Login throttling lock period
@@ -103,11 +104,6 @@ pip install --process-dependency-links -e 'https://github.com/data-govt-nz/ckane
 *NOTE: The ``--process-dependency-links` flag has officially been deprecated, but
 has not been removed from pip, because it is the currently the only
 setuptools-supported way for specifying private repo dependencies*
-
-Then modify your CKAN config to point the extension at your memcached instance:
-```ini
-ckanext.security.memcached = 127.0.0.1:11211
-```
 
 Finally, add `security` to `ckan.plugins` in your config file.
 

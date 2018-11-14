@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '1.0.1'
+version = '1.1.0'
 
 setup(
     name='ckanext-security',
@@ -19,7 +19,8 @@ setup(
     zip_safe=False,
     install_requires=[
         'repoze.who-use-beaker',
-        'pylibmc'
+        'redis',
+        'beakeredis'
     ],
     dependency_links=[
         'git+https://github.com/kaukas/repoze.who-use_beaker.git@8ec4cea#egg=repoze.who-use-beaker-0.4'
