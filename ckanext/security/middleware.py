@@ -62,8 +62,9 @@ class CSRFMiddleware(object):
         else:
             resp = HTTPForbidden(CSRF_ERR)
 
-        if 'text/html' in resp.headers['Content-type']:
+        if 'text/html' in resp.headers.get('Content-type', ''):
             resp = self.add_new_token(resp)
+
         return resp(environ, start_response)
 
     def is_valid(self, request):
