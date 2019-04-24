@@ -1,6 +1,7 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckan.logic.schema
+import anti_csrf
 
 from ckanext.security import schema
 
@@ -8,6 +9,9 @@ from ckanext.security import schema
 class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes)
+
+    def __init__(self, **kwargs):
+        anti_csrf.intercept_csrf()
 
     def update_config(self, config):
         # Monkeypatching all user schemas in order to enforce a stronger password
