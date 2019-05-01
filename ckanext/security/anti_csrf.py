@@ -27,8 +27,8 @@ TOKEN_FRESHNESS_COOKIE_NAME = 'token-fresh'
 
 # We need to edit confirm-action links, which get intercepted by JavaScript,
 #regardless of which order their 'data-module' and 'href' attributes appear.
-CONFIRM_LINK = re.compile(r'(<a [^>]*data-module=["\']confirm-action["\'][^>]*href=["\'][^"\'?]+)(["\'])', IGNORECASE | MULTILINE)
-CONFIRM_LINK_REVERSED = re.compile(r'(<a [^>]*href=["\'][^"\'?]+)(["\'][^>]*data-module=["\']confirm-action["\'])', IGNORECASE | MULTILINE)
+CONFIRM_LINK = re.compile(r'(<a [^>]*data-module=["\']confirm-action["\'][^>]*href=["\']([^"\']+))(["\'])', IGNORECASE | MULTILINE)
+CONFIRM_LINK_REVERSED = re.compile(r'(<a [^>]*href=["\']([^"\']+))(["\'][^>]*data-module=["\']confirm-action["\'])', IGNORECASE | MULTILINE)
 
 """
 This will match a POST form that has whitespace after the opening tag (which all existing forms do).
@@ -45,7 +45,7 @@ TOKEN_SEARCH_PATTERN = re.compile(TOKEN_PATTERN.format(token=r'([0-9a-f]+)'))
 API_URL = re.compile(r'^/api\b.*')
 
 def is_logged_in():
-    return True
+    return request.cookies.get("auth_tkt")
 
 """ Rewrite HTML to insert tokens if applicable.
 """
@@ -68,7 +68,11 @@ def apply_token(html):
         return form_match.group(1) + TOKEN_PATTERN.format(token=token) + form_match.group(2)
 
     def insert_link_token(link_match):
-        return link_match.group(1) + '?' + TOKEN_FIELD_NAME + '=' + token + link_match.group(2)
+        if '?' in link_match.group(2):
+            separator = '&'
+        else:
+            separator = '?'
+        return link_match.group(1) + separator + TOKEN_FIELD_NAME + '=' + token + link_match.group(3)
 
     return CONFIRM_LINK_REVERSED.sub(insert_link_token, CONFIRM_LINK.sub(insert_link_token, POST_FORM.sub(insert_form_token, html)))
 
@@ -139,14 +143,14 @@ def get_post_token():
     This is normally a single 'token' parameter in the POST body.
     However, for compatibility with 'confirm-action' links,
     it is also acceptable to provide the token as a query string parameter,
-    if it is the *only* parameter of either kind.
+    if there is no POST body.
     """
     if request.environ['webob.adhoc_attrs'].has_key(TOKEN_FIELD_NAME):
         return request.token
 
-    # handle query string token if there are no other parameters
+    # handle query string token if there are no POST parameters
     # this is needed for the 'confirm-action' JavaScript module
-    if not request.POST and len(request.GET) == 1 and len(request.GET.getall(TOKEN_FIELD_NAME)) == 1:
+    if not request.POST and len(request.GET.getall(TOKEN_FIELD_NAME)) == 1:
         request.token = request.GET.getone(TOKEN_FIELD_NAME)
         del request.GET[TOKEN_FIELD_NAME]
         return request.token
