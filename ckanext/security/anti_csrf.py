@@ -1,14 +1,14 @@
-"""Provides a self-contained filter to prevent Cross-Site Request Forgery,
+"""Provides a filter to prevent Cross-Site Request Forgery,
 based on the Double Submit Cookie pattern,
-www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Double_Submit_Cookie
+https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md#double-submit-cookie
 
-The filter can be enabled simply by invoking 'intercept_csrf()'.
+This is integrated in the CSRFMiddleware
 """
 import ckan.lib.base as base
 import re
-from re import DOTALL, IGNORECASE, MULTILINE
+from re import IGNORECASE, MULTILINE
 from logging import getLogger
-from ckan.common import request, response
+from ckan.common import request
 
 LOG = getLogger(__name__)
 
@@ -45,24 +45,19 @@ TOKEN_SEARCH_PATTERN = re.compile(TOKEN_PATTERN.format(token=r'([0-9a-f]+)'))
 API_URL = re.compile(r'^/api\b.*')
 
 def is_logged_in():
-    return request.cookies.get("auth_tkt")
+    # auth_tkt does not exist in context..
+    # return request.cookies.get("auth_tkt")
+    return True
 
-""" Rewrite HTML to insert tokens if applicable.
-"""
-
-def anti_csrf_render_jinja2(template_name, extra_vars=None):
-    html = apply_token(RAW_RENDER_JINJA(template_name, extra_vars))
-    return html
-
-def apply_token(html):
+def apply_token(html, token):
+    """ Rewrite HTML to insert tokens if applicable.
+    """
     if not is_logged_in() or not POST_FORM.search(html):
         return html
 
     token_match = TOKEN_SEARCH_PATTERN.search(html)
     if token_match:
         token = token_match.group(1)
-    else:
-        token = get_response_token()
 
     def insert_form_token(form_match):
         return form_match.group(1) + TOKEN_PATTERN.format(token=token) + form_match.group(2)
@@ -76,45 +71,40 @@ def apply_token(html):
 
     return CONFIRM_LINK_REVERSED.sub(insert_link_token, CONFIRM_LINK.sub(insert_link_token, POST_FORM.sub(insert_form_token, html)))
 
-def get_cookie_token():
+
+def get_cookie_token(request):
     """Retrieve the token expected by the server.
 
     This will be retrieved from the 'token' cookie, if it exists.
     If not, an error will occur.
     """
+    token = None
     if request.cookies.has_key(TOKEN_FIELD_NAME):
         LOG.debug("Obtaining token from cookie")
         token = request.cookies.get(TOKEN_FIELD_NAME)
     if token is None or token.strip() == "":
         csrf_fail("CSRF token is blank")
-
     return token
 
-def get_response_token():
+def get_response_token(request, response):
     """Retrieve the token to be injected into pages.
 
     This will be retrieved from the 'token' cookie, if it exists and is fresh.
     If not, a new token will be generated and a new cookie set.
     """
     # ensure that the same token is used when a page is assembled from pieces
-    if request.environ['webob.adhoc_attrs'].has_key('response_token'):
-        LOG.debug("Reusing response token from request attributes")
-        token = request.response_token
-    elif request.cookies.has_key(TOKEN_FIELD_NAME) and request.cookies.has_key(TOKEN_FRESHNESS_COOKIE_NAME):
+    if TOKEN_FIELD_NAME in request.cookies and TOKEN_FRESHNESS_COOKIE_NAME in request.cookies:
         LOG.debug("Obtaining token from cookie")
         token = request.cookies.get(TOKEN_FIELD_NAME)
         if not HEX_PATTERN.match(token):
             LOG.debug("Invalid cookie token; making new token cookie")
-            token = create_response_token()
-        request.response_token = token
+            token = create_response_token(response)
     else:
         LOG.debug("No fresh token found; making new token cookie")
-        token = create_response_token()
-        request.response_token = token
-
+        token = create_response_token(response)
     return token
 
-def create_response_token():
+def create_response_token(response):
     import binascii, os
     token = binascii.hexlify(os.urandom(32))
     response.set_cookie(TOKEN_FIELD_NAME, token, secure=True, httponly=True)
@@ -137,7 +127,7 @@ def csrf_fail(message):
     LOG.error(message)
     abort(403, "Your form submission could not be validated")
 
-def get_post_token():
+def get_post_token(request):
     """Retrieve the token provided by the client.
 
     This is normally a single 'token' parameter in the POST body.
@@ -168,6 +158,3 @@ def get_post_token():
 
     return request.token
 
-def intercept_csrf():
-    base.render_jinja2 = anti_csrf_render_jinja2
-    base.BaseController.__before__ = anti_csrf_before
