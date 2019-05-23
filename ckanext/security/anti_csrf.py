@@ -52,7 +52,7 @@ def is_logged_in():
 def apply_token(html, token):
     """ Rewrite HTML to insert tokens if applicable.
     """
-    if not is_logged_in() or not POST_FORM.search(html):
+    if not is_logged_in():
         return html
 
     token_match = TOKEN_SEARCH_PATTERN.search(html)

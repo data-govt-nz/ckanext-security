@@ -70,7 +70,6 @@ class Request(webob.Request):
         if not post_tokens or len(post_tokens) != 1:
             return None
         token = post_tokens[0]
-        log.error("GOT TOKEN {}".format(token))
         # drop token from request so it doesn't populate resource extras
         del self.POST[anti_csrf.TOKEN_FIELD_NAME]
         return token
@@ -87,7 +86,7 @@ class Request(webob.Request):
             return None
 
     def check_token(self):
-        log.error(" Token {}, cookie_token: {}".format(self.token, self.get_cookie_token()))
+        log.debug("Checking token matches Token {}, cookie_token: {}".format(self.token, self.get_cookie_token()))
         return self.token is not None and self.token == self.get_cookie_token()
 
 class CSRFMiddleware(object):
@@ -103,28 +102,21 @@ class CSRFMiddleware(object):
             resp = request.get_response(self.app)
         else:
             resp = HTTPForbidden(CSRF_ERR)
+            return resp(environ, start_response)
         if 'text/html' in resp.headers.get('Content-type', ''):
             token = anti_csrf.get_response_token(request, resp)
-            log.error("Generated a token for the response {}".format(token))
 
-            response_value = resp(environ, start_response)
-            return [anti_csrf.apply_token(response_value[0], token)]
+            new_response = anti_csrf.apply_token(resp.unicode_body, token)
+            resp.unicode_body = new_response
+            return resp(environ, start_response)
+
         else:
             response_value = resp(environ, start_response)
             return response_value
 
     def is_valid(self, request):
-        log.error("IS _SAFE ? {}".format(request.is_safe()))
-        if not request.is_safe():
-            log.error("Unsafe req is valid ? {}".format(self.unsafe_request_is_valid(request)))
-            log.error('===================================')
         return request.is_safe() or self.unsafe_request_is_valid(request)
 
     def unsafe_request_is_valid(self, request):
-        log.error("is_secure: {}".format(request.is_secure()))
-        log.error("good_referer: {}".format(request.good_referer(self.domain)))
-        log.error("good_origin: {}".format(request.good_origin(self.domain)))
-        log.error("check_token: {}".format(request.check_token()))
-        log.error('===================================')
         return request.is_secure() and request.good_referer(self.domain) and \
                request.good_origin(self.domain) and request.check_token()
