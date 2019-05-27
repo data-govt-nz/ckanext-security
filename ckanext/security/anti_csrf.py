@@ -44,16 +44,10 @@ TOKEN_PATTERN = r'<input type="hidden" name="' + TOKEN_FIELD_NAME + '" value="{t
 TOKEN_SEARCH_PATTERN = re.compile(TOKEN_PATTERN.format(token=r'([0-9a-f]+)'))
 API_URL = re.compile(r'^/api\b.*')
 
-def is_logged_in():
-    # auth_tkt does not exist in context..
-    # return request.cookies.get("auth_tkt")
-    return True
 
 def apply_token(html, token):
     """ Rewrite HTML to insert tokens if applicable.
     """
-    if not is_logged_in():
-        return html
 
     token_match = TOKEN_SEARCH_PATTERN.search(html)
     if token_match:
@@ -86,6 +80,7 @@ def get_cookie_token(request):
         csrf_fail("CSRF token is blank")
     return token
 
+
 def get_response_token(request, response):
     """Retrieve the token to be injected into pages.
 
@@ -104,6 +99,7 @@ def get_response_token(request, response):
         token = create_response_token(response)
     return token
 
+
 def create_response_token(response):
     import binascii, os
     token = binascii.hexlify(os.urandom(32))
@@ -111,21 +107,12 @@ def create_response_token(response):
     response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600, secure=True, httponly=True)
     return token
 
-# Check token on applicable requests
-
-def is_request_exempt():
-    return not is_logged_in() or API_URL.match(request.path) or request.method in {'GET', 'HEAD', 'OPTIONS'}
-
-def anti_csrf_before(obj, action, **params):
-    if not is_request_exempt() and get_cookie_token() != get_post_token():
-        csrf_fail("Could not match session token with form token")
-
-    RAW_BEFORE(obj, action)
 
 def csrf_fail(message):
     from flask import abort
     LOG.error(message)
     abort(403, "Your form submission could not be validated")
+
 
 def get_post_token(request):
     """Retrieve the token provided by the client.
