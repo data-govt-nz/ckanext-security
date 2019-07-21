@@ -19,8 +19,5 @@ class RedisClient(object):
     def delete(self, key):
         return self.client.delete(self.prefix + key)
 
-class CSRFClient(RedisClient):
-    prefix = 'security_csrf_'
-
 class ThrottleClient(RedisClient):
     prefix = 'security_throttle_'
