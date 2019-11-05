@@ -1,0 +1,666 @@
+
+<!DOCTYPE html>
+<!--[if IE 7]> <html lang="en-NZ" class="ie ie7"> <![endif]-->
+<!--[if IE 8]> <html lang="en-NZ" class="ie ie8"> <![endif]-->
+<!--[if IE 9]> <html lang="en-NZ" class="ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="secondary-three" lang="en-NZ"> <!--<![endif]-->
+  <head>
+    <!--[if lte ie 8]><script type="text/javascript" src="/fanstatic/vendor/:version:2019-04-17T05:53:55.38/html5.js"></script><![endif]-->
+<link rel="stylesheet" type="text/css" href="/fanstatic/vendor/:version:2019-04-17T05:53:55.38/select2/select2.css" />
+<link rel="stylesheet" type="text/css" href="/fanstatic/css/:version:2019-04-17T05:53:55.35/main.css" />
+<link rel="stylesheet" type="text/css" href="/fanstatic/vendor/:version:2019-04-17T05:53:55.38/font-awesome/css/font-awesome.css" />
+<link rel="stylesheet" type="text/css" href="/fanstatic/ckanext-geoview/:version:2018-10-22T08:07:16.39/css/geo-resource-styles.css" />
+<link rel="stylesheet" type="text/css" href="/fanstatic/ckanext-harvest/:version:2018-10-22T08:07:16.42/styles/harvest.css" />
+<link rel="stylesheet" type="text/css" href="/fanstatic/dia_theme/:version:2019-04-17T05:53:55.52/dia_custom.css" />
+<link rel="stylesheet" type="text/css" href="/fanstatic/dia_theme/:version:2019-04-17T05:53:55.52/rua/css/rua-font.css" />
+<link rel="stylesheet" type="text/css" href="/fanstatic/dia_theme/:version:2019-04-17T05:53:55.52/rua/css/rua.css" />
+
+    <meta charset="utf-8" />
+      <meta name="generator" content="ckan 2.7.5" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIS harvest - data.govt.nz</title>
+
+    
+    <link rel="shortcut icon" href="/images/icons/ckan.ico" />
+    
+    
+    
+  
+      
+    
+  
+
+    
+
+    
+    
+    
+    
+    
+
+
+    
+      
+      
+    
+    
+  </head>
+
+  
+  <body data-site-root="https://ckan-gateway:8081/" data-locale-root="https://ckan-gateway:8081/" >
+
+    
+  <a href="#content" class="visuallyhidden focusable skip-to-content">Skip to content</a>
+  
+
+  
+    
+
+    <header class="site-header" role="banner">
+        
+            
+                <div class="debug">Controller : ckanext.harvest.controllers.view:ViewController<br/>Action : admin</div>
+            
+        
+        
+            <div class="container site-header__nav-container">
+                
+                    
+                        <nav class="account authed" data-module="me" data-me="390a59da-4303-4a11-b6f6-e5592283b30a" role="navigation" aria-label="Add/request dataset">
+                            <ul class="unstyled bg-primary">
+                                
+    
+                                    
+                                        <li>
+                                            <a href="/ckan-admin" title="Sysadmin settings">
+                                                <i class="fa fa-gavel" aria-hidden="true"></i>
+                                                <span class="text">Admin</span>
+                                            </a>
+                                        </li>
+                                    
+                                    <li>
+                                        <a href="/user/admin" class="image" title="View profile">
+                                            <img src="//gravatar.com/avatar/9a0538455cb3ed7f1d1eb92c7a724fb5?s=22&amp;d=identicon"
+        class="gravatar" width="22" height="22" alt="" />
+                                            <span class="username">admin</span>
+                                        </a>
+                                    </li>
+                                    
+                                    <li class="notifications ">
+                                        
+                                        <a href="/dashboard" title="Dashboard (0 new items)">
+                                            <i class="fa fa-dashboard" aria-hidden="true"></i>
+                                            <span class="text">Dashboard</span>
+                                            <span class="badge">0</span>
+                                        </a>
+                                    </li>
+                                    
+                                        <li>
+                                            <a href="/user/edit/admin" title="Edit settings">
+                                                <i class="fa fa-cog" aria-hidden="true"></i>
+                                                <span class="text">Settings</span>
+                                            </a>
+                                        </li>
+                                    
+                                    
+                                        <li>
+                                            <a href="/user/_logout" title="Log out">
+                                                <i class="fa fa-sign-out" aria-hidden="true"></i>
+                                                <span class="text">Log out</span>
+                                            </a>
+                                        </li>
+                                    
+                                
+
+                            </ul>
+                        </nav>
+                    
+                
+            </div>
+        
+        <div class="container site-header__nav-container">
+            <div class="site-header__inner">
+                
+                    
+                        <a class="site-header__logo" href="https://www.data.govt.nz">
+                            <img src="/base/images/logo.png" alt="data.govt.nz" title="data.govt.nz" width="164" />
+                        </a>
+                    
+                
+
+
+                
+                    <nav aria-label="Main Menu" class="site-header__navigation">
+                        <ul class="menu">
+                            
+    <li><a href="/dataset/" class="site-header__menu-item menu-item current" title="Search for datasets">Get datasets</a></li>
+    <li><a href="https://www.data.govt.nz/manage-data/" class="site-header__menu-item menu-item" title="Go to the manage data page">Manage data</a></li>
+    <li><a href="https://www.data.govt.nz/use-data/" class="site-header__menu-item menu-item" title="Go to the use data page">Use data</a></li>
+    <li><a href="https://www.data.govt.nz/open-data/" class="site-header__menu-item menu-item" title="Go to the open data page">Open data</a></li>
+    <li><a href="https://www.data.govt.nz/events/" class="site-header__menu-item menu-item" title="Go to the events page">Events</a></li>
+    <li><a href="https://www.data.govt.nz/blog/" class="site-header__menu-item menu-item" title="Go to the blog page">Blog</a></li>
+    <li><a href="https://www.data.govt.nz/about/" class="site-header__menu-item menu-item" title="Go to the about page">About</a></li>
+
+                        </ul>
+                    </nav>
+                
+
+                <div class="navigation-toggle navicon" data-rua-toggle-state="false" data-rua-click="trigger: #site-navigation; class: in-active, is-active">
+                    <span class="navicon-box">
+                        <span class="navicon-inner"></span>
+                    </span>
+                </div>
+                <div id="site-search-wrap" class="search-toggle" data-rua-toggle-state="false" data-rua-click="trigger: #site-search; class: in-active, active">
+                    <div class="search-toggle__search">
+                        <span class="ri ri-search"></span>
+                    </div>
+                    <div class="button search-toggle__in-active">
+                        <span class="ri ri-chevron-down"></span>
+                        <span>
+                            Search
+                        </span>
+                    </div>
+                    <div class="button-icon search-toggle__active">
+                        <span class="ri ri-chevron-up"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+            <div class="site-search">
+                <div class="site-search__visibility hidden" id="site-search" data-rua-toggle="slide" style="display: none;" aria-expanded="false">
+                    <div class="container">
+                        <div class="site-search__inner">
+                            <form class="search-form" id="dataset-search" action="/dataset" method="get" data-module="select-switch">
+                                <label for="{$LabelPrefix}-field-sitewide-search">
+                                    Search for:
+                                </label>
+                                <div class="context-switch">
+                                    <div class="field field--inline-label">
+                                        <input id="{$LabelPrefix}-search-for-website-content" type="radio" class="search-form-context" name="header-search-context" value="content" />
+                                        <label for="{$LabelPrefix}-search-for-website-content">
+                                            Website content
+                                        </label>
+                                    </div>
+                                    <div class="field field--inline-label">
+                                        <input id="{$LabelPrefix}-search-for-datasets" type="radio" class="search-form-context" name="header-search-context" value="datasets" checked="checked" />
+                                        <label for="{$LabelPrefix}-search-for-datasets">
+                                            Datasets
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="field search-input">
+                                    <input class="ss-search-url" value="https://www.data.govt.nz/search/SearchForm" type="hidden">
+                                    <input class="ckan-search-url" value="/dataset" type="hidden">
+                                    <input id="{$LabelPrefix}-field-sitewide-search" name="q" placeholder="E.g. environment" type="text" aria-label="Search term">
+                                </div>
+                                <button id="{$LabelPrefix}-search" class="button">
+                                    <span class="ri ri-search"></span>
+                                    <span>Search</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+
+        
+            <div class="site-navigation">
+                <div class="site-search__visibility hidden" id="site-navigation" data-rua-toggle="slide" style="display: none;" aria-expanded="false">
+                    <div class="container">
+                        <div class="site-search__inner">
+                            <ul class="menu vertical">
+                                
+    <li><a href="/dataset/" class="site-header__menu-item menu-item current" title="Search for datasets">Get datasets</a></li>
+    <li><a href="https://www.data.govt.nz/manage-data/" class="site-header__menu-item menu-item" title="Go to the manage data page">Manage data</a></li>
+    <li><a href="https://www.data.govt.nz/use-data/" class="site-header__menu-item menu-item" title="Go to the use data page">Use data</a></li>
+    <li><a href="https://www.data.govt.nz/open-data/" class="site-header__menu-item menu-item" title="Go to the open data page">Open data</a></li>
+    <li><a href="https://www.data.govt.nz/events/" class="site-header__menu-item menu-item" title="Go to the events page">Events</a></li>
+    <li><a href="https://www.data.govt.nz/blog/" class="site-header__menu-item menu-item" title="Go to the blog page">Blog</a></li>
+    <li><a href="https://www.data.govt.nz/about/" class="site-header__menu-item menu-item" title="Go to the about page">About</a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+    </header>
+
+  
+    <div role="main">
+      <div id="content" class="container">
+        
+          
+            <div class="flash-messages">
+              
+                
+              
+            </div>
+          
+
+          
+            
+              
+                <nav aria-label="You are here:" role="navigation">
+                  <ul class="breadcrumbs site-banner__breadcrumbs">
+                    
+<!-- Snippet snippets/home_breadcrumb_item.html start -->
+
+<li><a class="ri ri-home" aria-label="Home" href="https://www.data.govt.nz"></a></li>
+<!-- Snippet snippets/home_breadcrumb_item.html end -->
+
+                    
+  
+  
+    
+    <li><a href="/organization">Organisations</a></li>
+    <li><a href="/organization/ministry-of-silly-walks">Ministry of silly walks</a></li>
+    <li><a href="/harvest">Harvest Sources</a></li>
+    <li><a href="/harvest/gis-harvest">GIS ...</a></li>
+  
+
+  <li class="active"><a href="">Admin</a></li>
+
+                  </ul>
+                </nav>
+              
+            
+          
+
+          <div class="row wrapper">
+
+            
+            
+            
+
+            
+              <div class="primary col-md-9">
+                
+                
+  <article class="module prose">
+    
+      <header class="module-content page-header">
+        
+        
+          
+  <div class="content_action btn-group">
+    
+  
+  
+    
+    
+      <a href="/harvest/refresh/3772bfe8-d6c4-4ce5-aa12-3321606574b3" class="btn" data-module="confirm-action" data-module-i18n="{&#34;content&#34;: &#34;This will re-run the harvesting for this source. Any updates at the source will overwrite the local datasets. Sources with a large number of datasets may take a significant amount of time to finish harvesting. Please confirm you would like us to start reharvesting.&#34;}"
+         title="Start a new harvesting job for this harvest source now">
+        <i class="fa fa-refresh icon-refresh"></i>
+        Reharvest
+      </a>
+    
+  
+  
+    
+    
+      <a href="/harvest/clear/3772bfe8-d6c4-4ce5-aa12-3321606574b3" class="btn" data-module="confirm-action" data-module-i18n="{&#34;content&#34;: &#34;Warning: This will remove all datasets for this source, as well as all previous job reports. Are you sure you want to continue?&#34;}"
+         title="Delete all harvest jobs and existing datasets from this source">
+        Clear
+      </a>
+    
+
+  <a class="btn" href="/harvest/gis-harvest"><i class="fa fa-eye-open"></i> View harvest source</a>
+
+  </div>
+
+        
+        <ul class="nav nav-tabs">
+          
+  <li class="active"><a href="/harvest/admin/gis-harvest"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+  <li><a href="/harvest/gis-harvest/job"><i class="fa fa-reorder"></i> Jobs</a></li>
+  <li><a href="/harvest/edit/gis-harvest"><i class="fa fa-edit"></i> Edit</a></li>
+
+        </ul>
+      </header>
+    
+    
+  <section class="module-content">
+    <h1>Last Harvest Job</h1>
+    
+      <p class="empty">No jobs yet for this source</p>
+    
+  </section>
+
+  </article>
+
+              </div>
+            
+
+            
+              <aside class="secondary col-md-3">
+                
+                
+  <div class="module context-info profile-info">
+    <section class="module-content">
+      <h1 class="heading">GIS harvest</h1>
+      
+        <p class="empty">There is no description for this harvest source</p>
+      
+      <div class="nums">
+        <dl>
+            <dt>Datasets</dt>
+            <dd>0</dd>
+        </dl>
+      </div>
+    </section>
+  </div>
+
+              </aside>
+            
+          </div>
+        
+      </div>
+    </div>
+  
+    <footer class="site-footer">
+	<div class="site-footer__style-1"></div>
+	<div class="site-footer__navigation">
+		<div class="site-footer__inner">
+			<div class="site-footer__col-1">
+				<h2>
+					What are you looking for?
+				</h2>
+				<hr class="margin-t-sm margin-b-sm">
+				<ul class="menu vertical md-2-column site-footer__menu">
+
+						<li>
+							<a href="https://www.data.govt.nz/" class="link">
+								Home
+							</a>
+						</li>
+
+						<li>
+							<a href="/dataset" class="link">
+								Get datasets
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/manage-data/" class="link">
+								Manage data
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/use-data/" class="link">
+								Use data
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/open-data/" class="link">
+								Open data
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/events/" class="link">
+								Events
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/blog/" class="current">
+								Blog
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/about/" class="link">
+								About
+							</a>
+						</li>
+
+				</ul>
+			</div>
+			<div class="site-footer__col-2">
+				<h2>
+					Using this website
+				</h2>
+				<hr class="margin-t-sm margin-b-sm">
+				<ul class="menu vertical site-footer__menu">
+
+						<li>
+							<a href="https://www.data.govt.nz/terms-of-use/" class="link">
+								Terms of use
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/privacy-policy/" class="link">
+								Privacy policy
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/copyright/" class="link">
+								Copyright
+							</a>
+						</li>
+
+						<li>
+							<a href="/user/login" class="link">
+								Publisher login
+							</a>
+						</li>
+
+				</ul>
+			</div>
+			<div class="site-footer__col-3">
+				<h2>
+					Get in touch
+				</h2>
+				<hr class="margin-t-sm margin-b-sm">
+				<ul class="menu vertical site-footer__menu">
+
+						<li>
+							<a href="https://www.data.govt.nz/contact-us/" class="link">
+								Contact us
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/feedback/" class="link">
+								Give us feedback
+							</a>
+						</li>
+
+						<li>
+							<a href="https://github.com/data-govt-nz" class="link">
+								Github
+							</a>
+						</li>
+
+						<li>
+							<a href="https://www.data.govt.nz/request-data/" class="link">
+								Request a dataset
+							</a>
+						</li>
+
+				</ul>
+				<ul class="social-menu">
+					<li>
+						<a href="https://twitter.com/data_govt_nz" aria-label="See data.govt.nz on Twitter" class="ri ri-twitter"></a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="site-footer__bottom">
+		<div class="site-footer__inner">
+			<div class="site-footer__col-copyright">
+				<div class="row">
+					<div class="col-md-3">
+						<img src="/dia/images/cc_icons.png" alt="CC BY 4.0" width="83">
+					</div>
+					<div class="col-md-9">
+						<small>Unless indicated otherwise, all content on data.govt.nz is licensed for re-use under a <a class="external" href="https://creativecommons.org/licenses/by/4.0/" rel="external license">Creative Commons 4.0 International Licence&nbsp;<span class="ri  ri-external-link" aria-label="(external site link)"></span></a></small><br>
+						<small>Crown copyright 2018</small>
+					</div>
+				</div>
+			</div>
+			<div class="site-footer__col-logo">
+				<a href="https://www.govt.nz" aria-label="New Zealand Government">
+					<img src="/dia/images/footer-logo-govt.png" alt="New Zealand Government" width="179">
+				</a>
+			</div>
+		</div>
+	</div>
+
+  
+    
+      <div class="container">
+  <a id="debug-toggle" href="#debug" style="opacity: 0.6">Debug 2</a>
+  <div id="debug" class="well" style="display:none;color:#333;margin-top:10px;white-space:pre;">
+<b>Debug info:</b>
+
+<b>Controller</b>: ckanext.harvest.controllers.view:ViewController
+<b>Action</b>: admin
+<b>Templates Rendered</b>: 2
+
+<b>Template name</b>: source/admin.html
+<b>Template path</b>: /ckan_repo_code/src/ckanext-harvest/ckanext/harvest/templates/source/admin.html
+<b>Template type</b>: jinja2
+<b>Renderer</b>: None
+<hr/>
+<b>Template name</b>: snippets/home_breadcrumb_item.html
+<b>Template path</b>: /ckan_repo_code/src/ckanext-dia_theme/ckanext/dia_theme/templates/snippets/home_breadcrumb_item.html
+<b>Template type</b>: jinja2
+<b>Renderer</b>: snippet
+<hr/>
+</div>
+  <script>
+    (function () {
+      function nextElementSibling(element) {
+        do {
+          element = element.nextSibling;
+        } while (element && element.nodeType !== 1 /* Node.ELEMENT_NODE */);
+
+        return element || null;
+      }
+
+      function toggleElement(element) {
+        if (element && element.style) {
+          element.style.display = element.style.display === 'block' ? 'none' : 'block';
+        }
+      }
+
+      function getElementsByClassName(className) {
+        if (document.getElementsByClassName) {
+          return document.getElementsByClassName(className);
+        } else {
+          var elements = document.getElementsByTagName('*');
+          var index = 0;
+          var length = elements.length;
+          var captures = [];
+          var regexp = new RegExp('\\b' + className + '\\b', 'i');
+
+          for (; index < length; index += 1) {
+            if (regexp.test(elements[index].className)) {
+              captures.push(elements[index]);
+            }
+          }
+          return captures;
+        }
+      }
+
+      (function toggleDebug() {
+        var debug  = document.getElementById('debug'),
+        toggle = document.getElementById('debug-toggle');
+
+        toggle.onclick = function () {
+          toggleElement(debug);
+          return false;
+        };
+      })();
+    })();
+  </script>
+</div>
+    
+  
+</footer>
+  
+    
+    
+    
+  
+  
+
+    
+
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-NPBN5NN"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-NPBN5NN');</script>
+<!-- End Google Tag Manager -->
+
+
+  <script type="text/javascript"> !function(a,b,c,d,e,f,g,h){a.RaygunObject=e,a[e]=a[e]||function(){(a[e].o=a[e].o||[]).push(arguments)},f=b.createElement(c),g=b.getElementsByTagName(c)[0],f.async=1,f.src=d,g.parentNode.insertBefore(f,g),h=a.onerror,a.onerror=function(b,c,d,f,g){h&&h(b,c,d,f,g),g||(g=new Error(b)),a[e].q=a[e].q||[],a[e].q.push({e:g})}}(window,document,"script","//cdn.raygun.io/raygun4js/raygun.min.js","rg4js");</script>
+  <script type="text/javascript">
+      rg4js('apiKey', "");
+      rg4js('enableCrashReporting', true);
+  </script>
+
+
+      
+  <script>document.getElementsByTagName('html')[0].className += ' js';</script>
+<script type="text/javascript" src="/fanstatic/vendor/:version:2019-04-17T05:53:55.38/jquery.js"></script>
+<script type="text/javascript" src="/fanstatic/vendor/:version:2019-04-17T05:53:55.38/bootstrap/js/bootstrap.js"></script>
+<script type="text/javascript" src="/fanstatic/vendor/:version:2019-04-17T05:53:55.38/jed.js"></script>
+<script type="text/javascript" src="/fanstatic/vendor/:version:2019-04-17T05:53:55.38/moment-with-locales.js"></script>
+<script type="text/javascript" src="/fanstatic/vendor/:version:2019-04-17T05:53:55.38/select2/select2.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.inherit.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.proxy-all.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.url-helpers.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.date-helpers.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.slug.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.slug-preview.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.truncator.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.masonry.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/plugins/jquery.form-warning.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/sandbox.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/module.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/pubsub.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/client.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/notify.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/i18n.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/main.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/select-switch.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/slug-preview.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/basic-form.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/confirm-action.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/api-info.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/autocomplete.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/custom-fields.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/data-viewer.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/table-selectable-rows.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/resource-form.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/resource-upload-field.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/resource-reorder.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/resource-view-reorder.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/follow.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/activity-stream.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/dashboard.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/resource-view-embed.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/view-filters.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/resource-view-filters-form.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/resource-view-filters.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/table-toggle-more.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/dataset-visibility.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/media-grid.js"></script>
+<script type="text/javascript" src="/fanstatic/base/:version:2019-04-17T05:53:55.36/modules/image-upload.js"></script>
+<script type="text/javascript" src="/fanstatic/dia_theme/:version:2019-04-17T05:53:55.52/dia_custom.js"></script>
+<script type="text/javascript" src="/fanstatic/dia_theme/:version:2019-04-17T05:53:55.52/rua/js/rua.js"></script></body>
+</html>

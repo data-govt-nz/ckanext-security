@@ -1,9 +1,11 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckan.logic.schema
+import logging
 
 from ckanext.security import schema
 
+log = logging.getLogger(__name__)
 
 class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)

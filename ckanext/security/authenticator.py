@@ -1,11 +1,15 @@
 import logging
+from urllib import urlencode
+from urlparse import urlparse, parse_qs, urlunparse
 
 from ckan.lib.authenticator import UsernamePasswordAuthenticator
 from ckan.lib.cli import MockTranslator
 from ckan.model import User
 
 import pylons
-from repoze.who.interfaces import IAuthenticator
+from paste.request import construct_url
+from repoze.who.interfaces import IAuthenticator, IChallenger
+from webob.exc import HTTPFound
 from webob.request import Request
 from zope.interface import implements
 
@@ -71,3 +75,91 @@ class BeakerRedisAuth(object):
         # from the identity object if it's there, or None if the user's
         # identity is not verified.
         return identity.get('repoze.who.userid', None)
+
+
+class CKANTOTPChallenge(object):
+    implements(IChallenger)
+    def __init__(self):
+        self.logout_handler_path = '/'
+        self.post_logout_url = '/'
+        self.login_form_url = '/'
+
+
+    # extended from repoze friendlyform implementation
+    def challenge(self, environ, status, app_headers, forget_headers):
+        """
+        Override the parent's challenge to avoid challenging the user on
+        logout, introduce a post-logout page and/or pass the login counter
+        to the login form.
+
+        """
+        url_parts = list(urlparse(self.login_form_url))
+        query = url_parts[4]
+        query_elements = parse_qs(query)
+        came_from = environ.get('came_from', construct_url(environ))
+        query_elements['came_from'] = came_from
+        url_parts[4] = urlencode(query_elements, doseq=True)
+        login_form_url = urlunparse(url_parts)
+        login_form_url = self._get_full_path(login_form_url, environ)
+        destination = login_form_url
+        # Configuring the headers to be set:
+        cookies = [(h, v) for (h, v) in app_headers if h.lower() == 'set-cookie']
+        headers = forget_headers + cookies
+
+        if environ['PATH_INFO'] == self.logout_handler_path:
+            # Let's log the user out without challenging.
+            came_from = environ.get('came_from')
+            if self.post_logout_url:
+                # Redirect to a predefined "post logout" URL.
+                destination = self._get_full_path(self.post_logout_url,
+                                                  environ)
+                if came_from:
+                    destination = self._insert_qs_variable(
+                        destination, 'came_from', came_from)
+            else:
+                # Redirect to the referrer URL.
+                script_name = environ.get('SCRIPT_NAME', '')
+                destination = came_from or script_name or '/'
+
+        elif 'repoze.who.logins' in environ:
+            # Login failed! Let's redirect to the login form and include
+            # the login counter in the query string
+            environ['repoze.who.logins'] += 1
+            # Re-building the URL:
+            destination = self._set_logins_in_url(destination,
+                                                  environ['repoze.who.logins'])
+
+        # If no challenge then redirect to the endpoint
+        return HTTPFound(location=destination, headers=headers)
+
+    # Also vendored from
+    def _get_full_path(self, path, environ):
+        """
+        Return the full path to ``path`` by prepending the SCRIPT_NAME.
+
+        If ``path`` is a URL, do nothing.
+
+        """
+        if path.startswith('/'):
+            path = environ.get('SCRIPT_NAME', '') + path
+        return path
+
+    def _set_logins_in_url(self, url, logins):
+        """
+        Insert the login counter variable with the ``logins`` value into
+        ``url`` and return the new URL.
+
+        """
+        return self._insert_qs_variable(url, self.login_counter_name, logins)
+
+    def _insert_qs_variable(self, url, var_name, var_value):
+        """
+        Insert the variable ``var_name`` with value ``var_value`` in the query
+        string of ``url`` and return the new URL.
+
+        """
+        url_parts = list(urlparse(url))
+        query_parts = parse_qs(url_parts[4])
+        query_parts[var_name] = var_value
+        url_parts[4] = urlencode(query_parts, doseq=True)
+        return urlunparse(url_parts)
