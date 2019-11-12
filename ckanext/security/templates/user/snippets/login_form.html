@@ -1,0 +1,27 @@
+{#
+Renders the login form.
+overrides rendering of the login form
+
+#}
+{% import 'macros/form.html' as form %}
+
+{% set username_error = true if error_summary %}
+{% set password_error = true if error_summary %}
+
+<form action="{{ action }}" method="post" class="form-horizontal">
+  {{ form.errors(errors=error_summary) }}
+
+  {{ form.input('login', label=_("Username"), id='field-login', value="", error=username_error, classes=["control-medium"]) }}
+
+  {{ form.input('password', label=_("Password"), id='field-password', type="password", value="", error=password_error, classes=["control-medium"]) }}
+
+{{ form.input('mfa', label=_("MFA Code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"]) }}
+
+  {{ form.checkbox('remember', label=_("Remember me"), id='field-remember', checked=true, value="63072000") }}
+
+  <div class="form-actions">
+    {% block login_button %}
+    <button class="btn btn-primary" type="submit">{{ _('Login') }}</button>
+    {% endblock %}
+  </div>
+</form>

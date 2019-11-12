@@ -1,20 +1,15 @@
 import logging
-from urllib import urlencode
-from urlparse import urlparse, parse_qs, urlunparse
 
 from ckan.lib.authenticator import UsernamePasswordAuthenticator
 from ckan.lib.cli import MockTranslator
 from ckan.model import User
-
 import pylons
-from paste.request import construct_url
-from repoze.who.interfaces import IAuthenticator, IChallenger
-from webob.exc import HTTPFound
+from flask import abort
+from repoze.who.interfaces import IAuthenticator
 from webob.request import Request
 from zope.interface import implements
-
 from ckanext.security.cache.login import LoginThrottle
-
+from ckanext.security.model import SecurityTOTP, ReplayAttackException
 
 log = logging.getLogger(__name__)
 
@@ -55,16 +50,42 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
             throttle.increment()  # Increment so we only send an email the first time around
             return None
 
-        # If the CKAN authenticator as successfully authenticated the request
-        # and the user wasn't locked out above, reset the throttle counter and
-        # return the user object.
+        # if the CKAN authenticator has successfully authenticated the request and the user wasn't locked out above,
+        # then check the TOTP parameter to see if it is valid
+
         if auth_user is not None:
-            throttle.reset()
-            return auth_user
+            totp_success = self.authenticate_totp(environ, auth_user)
+            if totp_success:  # if TOTP was successful -- reset the log in throttle
+                throttle.reset()
+                return totp_success
 
         # Increment the throttle counter if the login failed.
         throttle.increment()
 
+    def authenticate_totp(self, environ, auth_user):
+        # IF the user has MFA setup - do the MFA challenge
+        # else
+        totp_challenger = SecurityTOTP.get_for_user(auth_user)
+
+
+        # if there is no totp configured -- just let the user auth
+        if totp_challenger is None:
+            log.info("Logged in a user without configured MFA auth {}".format(auth_user))
+            return auth_user
+
+        request = Request(environ, charset='utf-8')
+        if not ('mfa' in request.POST):
+            log.info("Could not get MFA credentials from the request")
+            return None
+
+        try:
+            result = totp_challenger.check_code(request.POST['mfa'])
+        except ReplayAttackException as e:
+            log.warning("Detected a possible replay attack for user: {}, context: {}".format(auth_user, e))
+            return None
+
+        if result:
+            return auth_user
 
 class BeakerRedisAuth(object):
     implements(IAuthenticator)
@@ -76,90 +97,3 @@ class BeakerRedisAuth(object):
         # identity is not verified.
         return identity.get('repoze.who.userid', None)
 
-
-class CKANTOTPChallenge(object):
-    implements(IChallenger)
-    def __init__(self):
-        self.logout_handler_path = '/'
-        self.post_logout_url = '/'
-        self.login_form_url = '/'
-
-
-    # extended from repoze friendlyform implementation
-    def challenge(self, environ, status, app_headers, forget_headers):
-        """
-        Override the parent's challenge to avoid challenging the user on
-        logout, introduce a post-logout page and/or pass the login counter
-        to the login form.
-
-        """
-        url_parts = list(urlparse(self.login_form_url))
-        query = url_parts[4]
-        query_elements = parse_qs(query)
-        came_from = environ.get('came_from', construct_url(environ))
-        query_elements['came_from'] = came_from
-        url_parts[4] = urlencode(query_elements, doseq=True)
-        login_form_url = urlunparse(url_parts)
-        login_form_url = self._get_full_path(login_form_url, environ)
-        destination = login_form_url
-        # Configuring the headers to be set:
-        cookies = [(h, v) for (h, v) in app_headers if h.lower() == 'set-cookie']
-        headers = forget_headers + cookies
-
-        if environ['PATH_INFO'] == self.logout_handler_path:
-            # Let's log the user out without challenging.
-            came_from = environ.get('came_from')
-            if self.post_logout_url:
-                # Redirect to a predefined "post logout" URL.
-                destination = self._get_full_path(self.post_logout_url,
-                                                  environ)
-                if came_from:
-                    destination = self._insert_qs_variable(
-                        destination, 'came_from', came_from)
-            else:
-                # Redirect to the referrer URL.
-                script_name = environ.get('SCRIPT_NAME', '')
-                destination = came_from or script_name or '/'
-
-        elif 'repoze.who.logins' in environ:
-            # Login failed! Let's redirect to the login form and include
-            # the login counter in the query string
-            environ['repoze.who.logins'] += 1
-            # Re-building the URL:
-            destination = self._set_logins_in_url(destination,
-                                                  environ['repoze.who.logins'])
-
-        # If no challenge then redirect to the endpoint
-        return HTTPFound(location=destination, headers=headers)
-
-    # Also vendored from
-    def _get_full_path(self, path, environ):
-        """
-        Return the full path to ``path`` by prepending the SCRIPT_NAME.
-
-        If ``path`` is a URL, do nothing.
-
-        """
-        if path.startswith('/'):
-            path = environ.get('SCRIPT_NAME', '') + path
-        return path
-
-    def _set_logins_in_url(self, url, logins):
-        """
-        Insert the login counter variable with the ``logins`` value into
-        ``url`` and return the new URL.
-
-        """
-        return self._insert_qs_variable(url, self.login_counter_name, logins)
-
-    def _insert_qs_variable(self, url, var_name, var_value):
-        """
-        Insert the variable ``var_name`` with value ``var_value`` in the query
-        string of ``url`` and return the new URL.
-
-        """
-        url_parts = list(urlparse(url))
-        query_parts = parse_qs(url_parts[4])
-        query_parts[var_name] = var_value
-        url_parts[4] = urlencode(query_parts, doseq=True)
-        return urlunparse(url_parts)

@@ -1,3 +1,6 @@
+import logging
+
+import pyotp
 from ckan import authz, model
 
 from ckan.common import _, c, request
@@ -9,6 +12,49 @@ from ckan.logic import schema, NotAuthorized, check_access, get_action, NotFound
 
 from ckanext.security import mailer
 from ckanext.security.validators import old_username_validator
+from ckanext.security.model import SecurityTOTP
+from ckan.plugins import toolkit as tk
+
+log = logging.getLogger(__name__)
+
+
+class MFAUserController(tk.BaseController):
+    def __before__(self, action, **env):
+        tk.BaseController.__before__(self, action, **env)
+        context = {'model': model, 'user': c.user,
+                   'auth_user_obj': c.userobj}
+        check_access('site_read', context)
+        if not c.userobj:
+            abort(403, _('No user specified'))
+        check_access('user_update', context, {'id': c.userobj.id})
+
+    def _setup_template_variables(self, context, data_dict):
+        c.is_sysadmin = authz.is_sysadmin(c.user)
+        try:
+            user_dict = get_action('user_show')(context, data_dict)
+        except NotFound:
+            tk.flash_error(_('Not authorized to see this page'))
+            tk.redirect_to(controller='user', action='login')
+        except NotAuthorized:
+            abort(403, _('Not authorized to see this page'))
+
+        c.user_dict = user_dict
+        c.is_myself = user_dict['name'] == c.user
+    #     TODO fetch from the model..
+
+        totp_challenger = SecurityTOTP.get_for_user(user_dict['name'])
+        if totp_challenger is not None:
+            c.totp_challenger_uri = pyotp.TOTP(totp_challenger.secret).provisioning_uri(user_dict['name'], issuer_name='Ckan Security Extension')
+
+
+    def configure_mfa(self, id=None):
+        context = {
+                  'model': model, 'session': model.Session,
+                  'user': c.user, 'auth_user_obj': c.userobj
+                  }
+
+        self._setup_template_variables(context, {'id': id, 'user_obj': c.userobj})
+        return tk.render('security/configure_mfa.html')
 
 
 class SecureUserController(UserController):
@@ -18,6 +64,7 @@ class SecureUserController(UserController):
         form_schema = schema.user_edit_form_schema()
         form_schema['name'] += [old_username_validator]
         return form_schema
+
 
     def request_reset(self):
         # This is a one-to-one copy from ckan core, except for user errors

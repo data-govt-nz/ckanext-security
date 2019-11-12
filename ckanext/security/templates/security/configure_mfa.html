@@ -1,0 +1,53 @@
+{% extends 'page.html' %}
+
+{% block subtitle %}{{ _('Configure 2-step verification') }}{% endblock %}
+{% block breadcrumb_content %}
+  <li><a href="{{ h.url_for(controller='user', action='index') }}">{{ _('Users') }}</a></li>
+  <li><a href="{{ h.url_for(controller='user', action='read', id=c.user_dict.name) }}">{{ c.user_dict.display_name }}</a></li>
+  <li class="active"><a href="#">{{ _('Configure 2 step verification') }}</a></li>
+{% endblock %}
+
+{% block secondary_content %}
+  <section class="module module-narrow module-shallow">
+    <h2 class="module-heading"><i class="fa fa-medium fa-info-circle"></i> {{ _('Manage 2-step verification') }}</h2>
+    <div class="module-content">
+        {% if c.totp_challenger_uri %}
+            {% trans %}
+            Scan the image with the two factor authentication app on your phone. If you can't use a barcode, enter this text code instead.
+            {% endtrans %}
+        {% else %}
+        {% endif %}
+    </div>
+  </section>
+{% endblock %}
+
+ {% block primary_content %}
+
+    {% if c.totp_challenger_uri %}
+        {% resource 'security/qrious.js' %}
+        {% resource 'security/qrcode_renderer.js' %}
+        <fieldset>
+            <legend>{{_('Scan this barcode with your app')}}</legend>
+
+            <input id="totp-uri" type="hidden" disabled value="{{c.totp_challenger_uri}}"/>
+            <div>
+                <canvas class="radius-lg padding-sm margin-b-sm border-solid" id="qr-code-container"></canvas>
+            </div>
+        </fieldset>
+        <div class="form-actions">
+            <a class="btn btn-danger pull-left" href="#" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate New 2-step secret')}}</a>
+        </div>
+    {% else %}
+        <fieldset>
+            <legend>{{_('Add 2-step verification to your account')}}</legend>
+            <p>
+                {% trans %}
+                    2-step verification of your account will help protect your account from hackers. When logging in you will be required to provide a secret code generated from an authenticator app.
+                {% endtrans %}
+            </p>
+        </fieldset>
+        <div class="form-actions">
+             <a class="btn btn-primary pull-left" href="#" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Add 2-Step Verification')}}</a>
+        </div>
+    {% endif %}
+{% endblock %}
