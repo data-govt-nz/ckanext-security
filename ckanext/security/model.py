@@ -38,7 +38,7 @@ def define_security_tables():
                                Column('id', types.Integer, primary_key=True),
                                Column('user_id', types.UnicodeText, default=u''),
                                Column('secret', types.UnicodeText, default=u''),
-                               Column('last_successful_challenge', types.DateTime, default=u''))
+                               Column('last_successful_challenge', types.DateTime))
 
     mapper(
         SecurityTOTP,
@@ -52,12 +52,34 @@ class ReplayAttackException(Exception):
 
 
 class SecurityTOTP(DomainObject):
+    @classmethod
+    def create_for_user(cls, user_name):
+        """
+        Set up the
+        :param user_name:
+        :return:  SecurityTOTP model -- saved
+        """
+        if user_name is None:
+            raise ValueError("User name parameter must be supplied")
+        new_secret = pyotp.random_base32()
+        security_challenge = cls.get_for_user(user_name)
+        user = SecurityTOTP.Session.query(User).filter(User.name == user_name).first()
+
+        if security_challenge is None:
+            security_challenge = SecurityTOTP(user_id=user.id, secret=new_secret)
+            security_challenge.save()
+        else:
+            security_challenge.secret = new_secret
+            security_challenge.save()
+        return security_challenge
 
     @classmethod
-    def get_for_user(self, user_name):
-        '''Finds a securityTOTP object using the user name'''
+    def get_for_user(cls, user_name):
+        '''Finds a securityTOTP object using the user name
+        :raises ValueError if the user_name is not provided
+        '''
         if user_name is None:
-            raise ValueError("User name parameter must be suppllied")
+            raise ValueError("User name parameter must be supplied")
 
         challenger = SecurityTOTP.Session.query(SecurityTOTP)\
             .join(User, User.id == SecurityTOTP.user_id) \
@@ -84,7 +106,7 @@ class SecurityTOTP(DomainObject):
 
         return result
     def __repr__(self):
-        return '<SecurityTOTP user_id=%s last_successful_challenge=%s >'\
+        return '<SecurityTOTP user_id={} last_successful_challenge={} >'\
             .format(self.user_id, self.last_successful_challenge)
 
     def __str__(self):

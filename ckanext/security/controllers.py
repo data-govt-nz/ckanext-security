@@ -26,35 +26,72 @@ class MFAUserController(tk.BaseController):
         check_access('site_read', context)
         if not c.userobj:
             abort(403, _('No user specified'))
-        check_access('user_update', context, {'id': c.userobj.id})
 
-    def _setup_template_variables(self, context, data_dict):
-        c.is_sysadmin = authz.is_sysadmin(c.user)
+    def _fetch_user_or_fail(self, context, data_dict):
+        """
+        Get user dict or abort request
+        :param context:
+        :param data_dict: requires an id field
+        :return: user_dict: a dictionary of user information based on the supplied query
+        """
         try:
-            user_dict = get_action('user_show')(context, data_dict)
-        except NotFound:
-            tk.flash_error(_('Not authorized to see this page'))
+            # if the current user can update the target user, then they can manage the totp secret
+            log.error(" {}".format(data_dict))
+            check_access('user_update', context, {'id': data_dict['id']})
+            user_dict = get_action('user_show')(context, {'id': data_dict['id']})
+        except NotFound as e:
             tk.redirect_to(controller='user', action='login')
         except NotAuthorized:
             abort(403, _('Not authorized to see this page'))
+        return user_dict
+
+    def _setup_totp_template_variables(self, context, data_dict):
+        """Populates context with
+        is_sysadmin
+        totp_challenger_uri
+        totp_secret
+        """
+        c.is_sysadmin = authz.is_sysadmin(c.user)
+        c.totp_user_id = data_dict['id']
+
+        user_dict = self._fetch_user_or_fail(context, data_dict)
 
         c.user_dict = user_dict
         c.is_myself = user_dict['name'] == c.user
-    #     TODO fetch from the model..
 
         totp_challenger = SecurityTOTP.get_for_user(user_dict['name'])
         if totp_challenger is not None:
-            c.totp_challenger_uri = pyotp.TOTP(totp_challenger.secret).provisioning_uri(user_dict['name'], issuer_name='Ckan Security Extension')
+            c.totp_challenger_uri = pyotp.TOTP(totp_challenger.secret)\
+                .provisioning_uri(user_dict['name'], issuer_name='CKAN Security Extension')
 
 
     def configure_mfa(self, id=None):
+        """Display the config of the users MFA"""
         context = {
                   'model': model, 'session': model.Session,
                   'user': c.user, 'auth_user_obj': c.userobj
                   }
+        # pylons includes the rest of the url in the param, so we need to strip the /new suffix
+        user_id = id.replace('/new', '')
 
-        self._setup_template_variables(context, {'id': id, 'user_obj': c.userobj})
+        self._setup_totp_template_variables(context, {'id': user_id, 'user_obj': c.userobj})
         return tk.render('security/configure_mfa.html')
+
+    def new(self, id=None):
+        """Set up a users new security TOTP credentials"""
+        context = {
+            'model': model, 'session': model.Session,
+            'user': c.user, 'auth_user_obj': c.userobj
+        }
+        # pylons includes the rest of the url in the param, so we need to strip the /new suffix
+        user_id = id.replace('/new', '')
+
+        data_dict = {'id': user_id, 'user_obj': c.userobj}
+        user_dict = self._fetch_user_or_fail(context, data_dict)
+        SecurityTOTP.create_for_user(user_dict['name'])
+        self._setup_totp_template_variables(context, data_dict)
+        log.info("Rotated the MFA secret for user {}".format(user_id))
+        helpers.redirect_to('mfa_configure', id=user_id)
 
 
 class SecureUserController(UserController):

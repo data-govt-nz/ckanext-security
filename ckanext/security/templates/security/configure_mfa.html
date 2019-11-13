@@ -22,7 +22,7 @@
 {% endblock %}
 
  {% block primary_content %}
-
+    {% set new_mfa_challenge = h.url_for(controller='ckanext.security.controllers:MFAUserController', action='new', id=c.totp_user_id) %}
     {% if c.totp_challenger_uri %}
         {% resource 'security/qrious.js' %}
         {% resource 'security/qrcode_renderer.js' %}
@@ -35,7 +35,7 @@
             </div>
         </fieldset>
         <div class="form-actions">
-            <a class="btn btn-danger pull-left" href="#" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate New 2-step secret')}}</a>
+            <a class="btn btn-danger pull-left" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate New 2-step secret')}}</a>
         </div>
     {% else %}
         <fieldset>
@@ -47,7 +47,7 @@
             </p>
         </fieldset>
         <div class="form-actions">
-             <a class="btn btn-primary pull-left" href="#" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Add 2-Step Verification')}}</a>
+             <a class="btn btn-primary pull-left" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Add 2-Step Verification')}}</a>
         </div>
     {% endif %}
 {% endblock %}

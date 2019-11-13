@@ -37,8 +37,14 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
         urlmap.connect('/user/reset/{id:.*}', controller=userController, action='perform_reset')
         urlmap.connect('/user/reset', controller=userController, action='request_reset')
         return urlmap
-    #
+
     def after_map(self, urlmap):
         # Mapping urls for the MFA/TOTP feature
-        urlmap.connect('/configure_mfa/{id:.*}', controller='ckanext.security.controllers:MFAUserController', action='configure_mfa')
+        urlmap.connect('/configure_mfa/{id:.*}/new',
+                       controller='ckanext.security.controllers:MFAUserController',
+                       action='new')
+        urlmap.connect('mfa_configure', '/configure_mfa/{id:.*}',
+                       controller='ckanext.security.controllers:MFAUserController',
+                       action='configure_mfa')
+
         return urlmap
