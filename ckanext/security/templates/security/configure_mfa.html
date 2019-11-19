@@ -27,12 +27,15 @@
         {% resource 'security/qrious.js' %}
         {% resource 'security/qrcode_renderer.js' %}
         <fieldset>
-            <legend>{{_('Scan this barcode with your app')}}</legend>
+            <legend>{{_('Scan this QR code with your app')}}</legend>
 
             <input id="totp-uri" type="hidden" disabled value="{{c.totp_challenger_uri}}"/>
             <div>
                 <canvas class="radius-lg padding-sm margin-b-sm border-solid" id="qr-code-container"></canvas>
             </div>
+            <p>
+                {% trans %}If you are not able to scan the QR code with your app, you can manually enter this secret code {% endtrans %}<code id="totp-secret">{{c.totp_secret}}</code>.
+            </p>
         </fieldset>
         <div class="form-actions">
             <a class="btn btn-danger pull-left" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate New 2-step secret')}}</a>
@@ -47,7 +50,7 @@
             </p>
         </fieldset>
         <div class="form-actions">
-             <a class="btn btn-primary pull-left" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Add 2-Step Verification')}}</a>
+             <a class="btn btn-primary pull-left" href="{{new_mfa_challenge}}" >{{_('Add 2-step Verification')}}</a>
         </div>
     {% endif %}
 {% endblock %}

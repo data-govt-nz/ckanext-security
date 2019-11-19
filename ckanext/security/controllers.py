@@ -61,6 +61,7 @@ class MFAUserController(tk.BaseController):
 
         totp_challenger = SecurityTOTP.get_for_user(user_dict['name'])
         if totp_challenger is not None:
+            c.totp_secret = totp_challenger.secret
             c.totp_challenger_uri = pyotp.TOTP(totp_challenger.secret)\
                 .provisioning_uri(user_dict['name'], issuer_name='CKAN Security Extension')
 
@@ -101,7 +102,6 @@ class SecureUserController(UserController):
         form_schema = schema.user_edit_form_schema()
         form_schema['name'] += [old_username_validator]
         return form_schema
-
 
     def request_reset(self):
         # This is a one-to-one copy from ckan core, except for user errors
