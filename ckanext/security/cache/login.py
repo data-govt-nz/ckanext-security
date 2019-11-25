@@ -33,7 +33,7 @@ class LoginThrottle(object):
         return self.request_time - float(last_attempt) < self.login_lock_timeout
 
     def get(self):
-        value = self.cli.get(self.remote_addr)
+        value = self.cli.get(self.user_name)
         if value is not None:
             return json.loads(value)
         return {}
@@ -42,7 +42,7 @@ class LoginThrottle(object):
         value = self.get()
         if self.user_name in value:
             del value[self.user_name]
-        self.cli.set(self.remote_addr, json.dumps(value))
+        self.cli.set(self.user_name, json.dumps(value))
 
     def increment(self):
         value = self.get()
@@ -52,7 +52,7 @@ class LoginThrottle(object):
         # whenever he/she tries to login again.
         if self.count < self.login_max_count + 1:
             value.update({self.user_name: "%s:%s" % (self.count + 1, self.request_time)})
-            self.cli.set(self.remote_addr, json.dumps(value))
+            self.cli.set(self.user_name, json.dumps(value))
 
     def needs_lockout(self, cache_value):
         count, last_attempt = cache_value.split(':')
