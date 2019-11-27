@@ -39,12 +39,16 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
         return urlmap
 
     def after_map(self, urlmap):
+        controller = 'ckanext.security.controllers:MFAUserController';
         # Mapping urls for the MFA/TOTP feature
         urlmap.connect('/configure_mfa/{id:.*}/new',
-                       controller='ckanext.security.controllers:MFAUserController',
+                       controller=controller,
                        action='new')
         urlmap.connect('mfa_configure', '/configure_mfa/{id:.*}',
-                       controller='ckanext.security.controllers:MFAUserController',
+                       controller=controller,
                        action='configure_mfa')
+        urlmap.connect('/mfa_login',
+                       controller=controller,
+                       action='login')
 
         return urlmap

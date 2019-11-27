@@ -14,6 +14,7 @@ from ckanext.security import mailer
 from ckanext.security.validators import old_username_validator
 from ckanext.security.model import SecurityTOTP
 from ckan.plugins import toolkit as tk
+import json
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +22,9 @@ log = logging.getLogger(__name__)
 class MFAUserController(tk.BaseController):
     def __before__(self, action, **env):
         tk.BaseController.__before__(self, action, **env)
+        if action == 'login':
+            return
+
         context = {'model': model, 'user': c.user,
                    'auth_user_obj': c.userobj}
         check_access('site_read', context)
@@ -65,6 +69,45 @@ class MFAUserController(tk.BaseController):
             c.totp_challenger_uri = pyotp.TOTP(totp_challenger.secret)\
                 .provisioning_uri(user_dict['name'], issuer_name='CKAN Security Extension')
 
+    def login(self):
+        """
+        Ajax call to test username/password/mfa code
+        """
+        tk.response.headers.update({'Content-Type': 'application/json'})
+        if request.method != 'POST':
+            tk.response.status_int = 405
+            return
+
+        identity = request.params
+        if not ('login' in identity and 'password' in identity):
+            tk.response.status_int = 422
+            return
+
+        login = identity['login']
+        user = model.User.by_name(login)
+
+        if user is None or not user.is_active() or not user.validate_password(identity['password']):
+            log.info('user failed to provide correct credentials')
+            tk.response.status_int = 403
+            return
+
+        # find or create 2 factor auth record
+        totp_challenger = SecurityTOTP.get_for_user(user.name)
+        if totp_challenger is None:
+            totp_challenger = SecurityTOTP.create_for_user(user.name)
+
+        mfaConfigured = totp_challenger.last_successful_challenge is not None
+        res = {}
+        if not mfaConfigured:
+            res['totpSecret'] = totp_challenger.secret
+            res['totpChallengerURI'] = totp_challenger.provisioning_uri
+
+        res['mfaConfigured'] = mfaConfigured
+
+        if identity['mfa']:
+            res['mfaCodeValid'] = totp_challenger.check_code(identity['mfa'], verify_only=True)
+
+        return json.dumps(res)
 
     def configure_mfa(self, id=None):
         """Display the config of the users MFA"""

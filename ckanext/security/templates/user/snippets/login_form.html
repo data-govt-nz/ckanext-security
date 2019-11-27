@@ -8,20 +8,54 @@ overrides rendering of the login form
 {% set username_error = true if error_summary %}
 {% set password_error = true if error_summary %}
 
-<form action="{{ action }}" method="post" class="form-horizontal">
-  {{ form.errors(errors=error_summary) }}
+{% resource 'security/login_ajax.js' %}
 
-  {{ form.input('login', label=_("Username"), id='field-login', value="", error=username_error, classes=["control-medium"]) }}
-
-  {{ form.input('password', label=_("Password"), id='field-password', type="password", value="", error=password_error, classes=["control-medium"]) }}
-
-{{ form.input('mfa', label=_("MFA Code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"]) }}
-
-  {{ form.checkbox('remember', label=_("Remember me"), id='field-remember', checked=true, value="63072000") }}
-
-  <div class="form-actions">
-    {% block login_button %}
-    <button class="btn btn-primary" type="submit">{{ _('Login') }}</button>
-    {% endblock %}
+<form id="mfa-login-form" action="{{ action }}" method="post" class="form-horizontal">
+  <div class="error-explanation alert alert-error" style="display: none;">
+    <p>{{ _('The form contains invalid entries:') }}</p>
+    <ul>
+      <li id="login-error" data-field-label>{{ _('Login failed. Bad username or password.') }}</li>
+      <li id="mfa-error" data-field-label>{{ _('Invalid code, please try again') }}</li>
+    </ul>
   </div>
+
+  <div id="login-form">
+
+    <div id="login-fields">
+      {{ form.input('login', label=_("Username"), id='field-login', value="", error=username_error, classes=["control-medium"]) }}
+
+      {{ form.input('password', label=_("Password"), id='field-password', type="password", value="", error=password_error, classes=["control-medium"]) }}
+    </div>
+
+    {{ form.checkbox('remember', label=_("Remember me"), id='field-remember', checked=true, value="63072000") }}
+
+    <div class="form-actions">
+      {% block login_button %}
+      <button class="btn btn-primary" type="submit">{{ _('Next') }}</button>
+      {% endblock %}
+    </div>
+  </div>
+
+  <div id="mfa-form" style="display: none;">
+    <fieldset id="mfa-setup" style="display: none;">
+      {% resource 'security/qrious.js' %}
+
+      <legend>{{_('Scan this QR code with your app')}}</legend>
+
+      <div>
+        <canvas class="radius-lg padding-sm margin-b-sm border-solid" id="qr-code-container"></canvas>
+      </div>
+      <p>
+        {% trans %}If you are not able to scan the QR code with your app, you can manually enter this secret
+        code {% endtrans %}<code id="totp-secret"></code>.
+      </p>
+    </fieldset>
+
+    {{ form.input('mfa', label=_("2-step verification code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"]) }}
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">{{ _('Submit') }}</button>
+    </div>
+  </div>
+
 </form>

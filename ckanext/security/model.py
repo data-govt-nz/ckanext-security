@@ -3,6 +3,7 @@ import datetime
 from ckan import model
 from ckan.model import DomainObject, User
 from ckan.model.meta import metadata,  mapper, Session
+import ckan.plugins.toolkit as toolkit
 from sqlalchemy import Table, Column, ForeignKey, Index, types, text
 from sqlalchemy.orm import relation
 import logging
@@ -87,14 +88,14 @@ class SecurityTOTP(DomainObject):
         return challenger
 
 
-    def check_code(self, code):
+    def check_code(self, code, verify_only=False):
         """ Checks that a one time password is correct against the model
         :raises ReplayAttackException if the code has already been used before, and it is attempted to be used again
         :return boolean true if the code is valid
         """
         totp = pyotp.TOTP(self.secret)
         result = totp.verify(code)
-        if result:
+        if result and not verify_only:
             # check for replay attack...
             if self.last_successful_challenge and totp.at(self.last_successful_challenge) == code:
                 raise ReplayAttackException("the replay code has already been used")
@@ -103,8 +104,21 @@ class SecurityTOTP(DomainObject):
             self.save()
         else:
             log.debug("Failed to verify the totp code")
-
         return result
+
+    @property
+    def provisioning_uri(self):
+        """Returns the uri for setting up a QR code
+        """
+        user = self.Session.query(User)\
+            .filter(User.id == self.user_id).first()
+        if user is None:
+            raise ValueError('No user found for SecurityTOTP instance with user_id {}'.format(self.user_id))
+
+        issuer = toolkit.config['ckan.site_url']
+        return pyotp.TOTP(self.secret)\
+            .provisioning_uri(user.name, issuer_name=issuer)
+
     def __repr__(self):
         return '<SecurityTOTP user_id={} last_successful_challenge={} >'\
             .format(self.user_id, self.last_successful_challenge)
