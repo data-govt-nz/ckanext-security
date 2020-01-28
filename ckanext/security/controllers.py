@@ -67,7 +67,7 @@ class MFAUserController(tk.BaseController):
         if totp_challenger is not None:
             c.totp_secret = totp_challenger.secret
             c.totp_challenger_uri = pyotp.TOTP(totp_challenger.secret)\
-                .provisioning_uri(user_dict['name'], issuer_name='CKAN Security Extension')
+                .provisioning_uri(user_dict['name'])
 
     def login(self):
         """
@@ -112,13 +112,14 @@ class MFAUserController(tk.BaseController):
     def configure_mfa(self, id=None):
         """Display the config of the users MFA"""
         context = {
-                  'model': model, 'session': model.Session,
-                  'user': c.user, 'auth_user_obj': c.userobj
-                  }
+            'model': model, 'session': model.Session,
+            'user': c.user, 'auth_user_obj': c.userobj
+        }
         # pylons includes the rest of the url in the param, so we need to strip the /new suffix
         user_id = id.replace('/new', '')
 
-        self._setup_totp_template_variables(context, {'id': user_id, 'user_obj': c.userobj})
+        data_dict = {'id': user_id, 'user_obj': c.userobj}
+        self._setup_totp_template_variables(context, data_dict)
         return tk.render('security/configure_mfa.html')
 
     def new(self, id=None):
