@@ -1,20 +1,23 @@
 {% extends 'page.html' %}
+{% import 'macros/form.html' as form %}
 
-{% block subtitle %}{{ _('Configure 2-step verification') }}{% endblock %}
+{% block subtitle %}{{ _('Configure two factor authentication') }}{% endblock %}
 {% block breadcrumb_content %}
   <li><a href="{{ h.url_for(controller='user', action='index') }}">{{ _('Users') }}</a></li>
   <li><a href="{{ h.url_for(controller='user', action='read', id=c.user_dict.name) }}">{{ c.user_dict.display_name }}</a></li>
-  <li class="active"><a href="#">{{ _('Configure 2 step verification') }}</a></li>
+  <li class="active"><a href="#">{{ _('Configure two factor authentication') }}</a></li>
 {% endblock %}
 
 {% block secondary_content %}
   <section class="module module-narrow module-shallow">
-    <h2 class="module-heading"><i class="fa fa-medium fa-info-circle"></i> {{ _('Manage 2-step verification') }}</h2>
+    <h2 class="module-heading"><i class="fa fa-medium fa-info-circle"></i> {{ _('Manage two factor authentication') }}</h2>
     <div class="module-content">
         {% if c.totp_challenger_uri %}
+        <p>
             {% trans %}
-            Scan the image with the two factor authentication app on your phone. If you can't use a barcode, enter this text code instead.
+            Scan the image with the two factor authentication app on your phone.
             {% endtrans %}
+        </p>
         {% else %}
         {% endif %}
     </div>
@@ -26,31 +29,36 @@
     {% if c.totp_challenger_uri %}
         {% resource 'security/qrious.js' %}
         {% resource 'security/qrcode_renderer.js' %}
-        <fieldset>
-            <legend>{{_('Scan this QR code with your app')}}</legend>
+        <form>
+            <fieldset>
+                <legend>{{_('Scan this QR code with your two factor authentication app')}}</legend>
 
-            <input id="totp-uri" type="hidden" disabled value="{{c.totp_challenger_uri}}"/>
-            <div>
-                <canvas class="radius-lg padding-sm margin-b-sm border-solid" id="qr-code-container"></canvas>
-            </div>
-            <p>
-                {% trans %}If you are not able to scan the QR code with your app, you can manually enter this secret code {% endtrans %}<code id="totp-secret">{{c.totp_secret}}</code>.
-            </p>
-        </fieldset>
-        <div class="form-actions">
-            <a class="btn btn-danger pull-left" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate New 2-step secret')}}</a>
-        </div>
+                <input id="totp-uri" type="hidden" disabled value="{{c.totp_challenger_uri}}"/>
+                <div>
+                    <canvas class="radius-lg padding-sm margin-b-sm border-solid" id="qr-code-container"></canvas>
+                </div>
+                <p>
+                    {% trans %}If you are not able to scan the QR code, you can manually enter this secret into your authenticator app:{% endtrans %} <code id="totp-secret">{{c.totp_secret}}</code>
+                </p>
+
+                <!-- {{ form.input('mfa', label=_("Enter two factor authentication code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"]) }}
+                <button class="btn btn-primary" type="submit">{{_('Test')}}</button> -->
+            </fieldset>
+        </form>
+
+        <a class="btn btn-danger" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate new two factor secret')}}</a>
+        <p>{{_('This should only be necessary if you have deleted the authenticator app or are replacing your phone.')}}</p>
     {% else %}
         <fieldset>
-            <legend>{{_('Add 2-step verification to your account')}}</legend>
+            <legend>{{_('Add two factor authentication to your account')}}</legend>
             <p>
                 {% trans %}
-                    2-step verification of your account will help protect your account from hackers. When logging in you will be required to provide a secret code generated from an authenticator app.
+                    Two factor authentication of your account will help protect your account from hackers. When logging in you will be required to provide a secret code generated from an authenticator app.
                 {% endtrans %}
             </p>
         </fieldset>
         <div class="form-actions">
-             <a class="btn btn-primary pull-left" href="{{new_mfa_challenge}}" >{{_('Add 2-step Verification')}}</a>
+             <a class="btn btn-primary pull-left" href="{{new_mfa_challenge}}" >{{_('Add two factor authentication')}}</a>
         </div>
     {% endif %}
 {% endblock %}

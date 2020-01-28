@@ -48,10 +48,8 @@
   </fieldset>
 
   <fieldset>
-    <legend>{{_('Configure 2-step verification')}}</legend>
-<!-- @TODO conditionally show if 2 step verificaiton is setup for the user already...?? -->
-      {% link_for _('Manage 2-step verification'), controller='ckanext.security.controllers:MFAUserController', action='configure_mfa', id=data.id, class_='btn pull-left', icon='cog' %}
-
+    <legend>{{_('Two factor authentication')}}</legend>
+    {% link_for _('Manage two factor authentication'), controller='ckanext.security.controllers:MFAUserController', action='configure_mfa', id=data.id, class_='btn pull-left', icon='cog' %}
   </fieldset>
 
   <div class="form-actions">
