@@ -68,10 +68,11 @@ class SecurityTOTP(DomainObject):
 
         if security_challenge is None:
             security_challenge = SecurityTOTP(user_id=user.id, secret=new_secret)
-            security_challenge.save()
         else:
             security_challenge.secret = new_secret
-            security_challenge.save()
+
+        security_challenge.last_successful_challenge = None
+        security_challenge.save()
         return security_challenge
 
     @classmethod

@@ -136,6 +136,7 @@ class MFAUserController(tk.BaseController):
         SecurityTOTP.create_for_user(user_dict['name'])
         self._setup_totp_template_variables(context, data_dict)
         log.info("Rotated the MFA secret for user {}".format(user_id))
+        helpers.flash_success(_('Successfully updated two factor authentication secret. Make sure you add the new secret to your authenticator app.'))
         helpers.redirect_to('mfa_configure', id=user_id)
 
 
