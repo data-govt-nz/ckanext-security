@@ -10,6 +10,7 @@ class Security(CkanCommand):
             command:
             help  - prints this help
             migrate - create the database table to support time based one time (TOTP) login
+            reset_totp <username> - generate a new totp secret for a given user
         '''
     summary = __doc__.split('\n')[0]
     usage = __doc__
@@ -20,6 +21,7 @@ class Security(CkanCommand):
         options = {
             'migrate': self.migrate,
             'help': self.help,
+            'reset_totp': self.reset_totp,
         }
 
         try:
@@ -37,3 +39,9 @@ class Security(CkanCommand):
         from ckanext.security.model import db_setup
         db_setup()
         print("finished tables setup for security")
+
+    def reset_totp(self, username):
+        print('Resetting totp secret for user', username)
+        from ckanext.security.model import SecurityTOTP
+        SecurityTOTP.create_for_user(username)
+        print('Success!')

@@ -88,7 +88,6 @@ class SecurityTOTP(DomainObject):
             .filter(User.name == user_name).first()
         return challenger
 
-
     def check_code(self, code, verify_only=False):
         """ Checks that a one time password is correct against the model
         :raises ReplayAttackException if the code has already been used before, and it is attempted to be used again
