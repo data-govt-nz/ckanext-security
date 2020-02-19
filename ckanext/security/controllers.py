@@ -54,6 +54,7 @@ class MFAUserController(tk.BaseController):
         is_sysadmin
         totp_challenger_uri
         totp_secret
+        mfa_test_valid
         """
         c.is_sysadmin = authz.is_sysadmin(c.user)
         c.totp_user_id = data_dict['id']
@@ -68,6 +69,12 @@ class MFAUserController(tk.BaseController):
             c.totp_secret = totp_challenger.secret
             c.totp_challenger_uri = pyotp.TOTP(totp_challenger.secret)\
                 .provisioning_uri(user_dict['name'])
+
+            mfa_test_code = request.params.get('mfa')
+            if request.method == 'POST' and mfa_test_code is not None:
+                c.mfa_test_valid = totp_challenger.check_code(mfa_test_code, verify_only=True)
+                c.mfa_test_invalid = not c.mfa_test_valid
+
 
     def login(self):
         """
@@ -135,7 +142,7 @@ class MFAUserController(tk.BaseController):
         user_dict = self._fetch_user_or_fail(context, data_dict)
         SecurityTOTP.create_for_user(user_dict['name'])
         self._setup_totp_template_variables(context, data_dict)
-        log.info("Rotated the MFA secret for user {}".format(user_id))
+        log.info("Rotated the 2fa secret for user {}".format(user_id))
         helpers.flash_success(_('Successfully updated two factor authentication secret. Make sure you add the new secret to your authenticator app.'))
         helpers.redirect_to('mfa_configure', id=user_id)
 

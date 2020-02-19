@@ -29,7 +29,7 @@
     {% if c.totp_challenger_uri %}
         {% resource 'security/qrious.js' %}
         {% resource 'security/qrcode_renderer.js' %}
-        <form>
+        <form id="mfa-form" method="POST">
             <fieldset>
                 <legend>{{_('Scan this QR code with your two factor authentication app')}}</legend>
 
@@ -41,11 +41,19 @@
                     {% trans %}If you are not able to scan the QR code, you can manually enter this secret into your authenticator app:{% endtrans %} <code id="totp-secret">{{c.totp_secret}}</code>
                 </p>
 
-                <!-- {{ form.input('mfa', label=_("Enter two factor authentication code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"]) }}
-                <button class="btn btn-primary" type="submit">{{_('Test')}}</button> -->
+                {{ form.input('mfa', label=_("Enter the two factor authentication code from your app to test correct configuration"), id='field-mfa', type="text", value="", error=c.mfa_test_invalid, classes=["control-medium"]) }}
+                <button class="btn btn-primary" type="submit">{{_('Test')}}</button>
+                {% if c.mfa_test_valid %}
+                    <p>{{_('That\'s the correct code! Your authenticator app is correctly configured for future use.')}}</p>
+                {% endif %}
+                {% if c.mfa_test_invalid %}
+                    <p>{{_('That\'s an incorrect code. Try scanning the QR code again with your authenticator app.')}}</p>
+                {% endif %}
             </fieldset>
+
         </form>
 
+        {% set locale = h.dump_json({'content': _('Are you sure you want to generate a new two factor secret?')}) %}
         <a class="btn btn-danger" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate new two factor secret')}}</a>
         <p>{{_('This should only be necessary if you have deleted the authenticator app or are replacing your phone.')}}</p>
     {% else %}
