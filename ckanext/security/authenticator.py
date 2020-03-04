@@ -63,15 +63,13 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         throttle.increment()
 
     def authenticate_totp(self, environ, auth_user):
-        # IF the user has MFA setup - do the MFA challenge
-        # else
         totp_challenger = SecurityTOTP.get_for_user(auth_user)
 
-
-        # if there is no totp configured -- just let the user auth
+        # if there is no totp configured, don't allow auth
+        # shouldn't happen, login flow should create a totp_challenger
         if totp_challenger is None:
-            log.info("Logged in a user without configured MFA auth {}".format(auth_user))
-            return auth_user
+            log.info("Login attempted without MFA configured for: {}".format(auth_user))
+            return None
 
         request = Request(environ, charset='utf-8')
         if not ('mfa' in request.POST):

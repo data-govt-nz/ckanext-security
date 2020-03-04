@@ -40,7 +40,6 @@ class MFAUserController(tk.BaseController):
         """
         try:
             # if the current user can update the target user, then they can manage the totp secret
-            log.error(" {}".format(data_dict))
             check_access('user_update', context, {'id': data_dict['id']})
             user_dict = get_action('user_show')(context, {'id': data_dict['id']})
         except NotFound as e:
