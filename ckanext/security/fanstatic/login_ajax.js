@@ -49,7 +49,10 @@
       error: function (xhr) {
         if (xhr.status === 403) {
           showError('login')
+          return
         }
+
+        showError()
       },
       complete: function () {
         buttons.prop('disabled', false)
@@ -68,23 +71,21 @@
   }
 
   var showError = function (type) {
-    if (type === 'login') {
-      $('#login-fields .control-group').addClass('error')
-      $('#login-fields input').val('')
-      $('#login-error').show()
-      $('#mfa-error').hide()
+    hideError() // always reset state before displaying errors
+
+    var errorElId = '#' + (type || 'unknown') + '-error'
+    $(errorElId).show()
+    if (!type) {
+      $('#invalid-entries').hide()
     }
-    if (type === 'mfa') {
-      $('#mfa-form .control-group').addClass('error')
-      $('#field-mfa').val('')
-      $('#mfa-error').show()
-      $('#login-error').hide()
-    }
+    $('.control-group').addClass('error')
     $('.error-explanation').show()
   }
 
   var hideError = function () {
     $('.error-explanation').hide()
+    $('.error-explanation li').hide()
+    $('#invalid-entries').show()
     $('.control-group').removeClass('error')
   }
 

@@ -12,10 +12,11 @@ overrides rendering of the login form
 
 <form id="mfa-login-form" action="{{ action }}" method="post" class="form-horizontal">
   <div class="error-explanation alert alert-error" style="display: none;">
-    <p>{{ _('The form contains invalid entries:') }}</p>
+    <p id="invalid-entries">{{ _('The form contains invalid entries:') }}</p>
     <ul>
       <li id="login-error" data-field-label>{{ _('Login failed. Incorrect username or password.') }}</li>
-      <li id="mfa-error" data-field-label>{{ _('Invalid code, please try again') }}</li>
+      <li id="mfa-error" data-field-label>{{ _('Invalid code, please try again.') }}</li>
+      <li id="unknown-error" data-field-label>{{ _('An unknown error occurred.') }}</li>
     </ul>
   </div>
 

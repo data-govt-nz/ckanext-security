@@ -81,40 +81,47 @@ class MFAUserController(tk.BaseController):
         Ajax call to test username/password/mfa code
         """
         tk.response.headers.update({'Content-Type': 'application/json'})
-        if request.method != 'POST':
-            tk.response.status_int = 405
-            return
 
-        identity = request.params
-        if not ('login' in identity and 'password' in identity):
-            tk.response.status_int = 422
-            return
+        try:
+            if request.method != 'POST':
+                tk.response.status_int = 405
+                return
 
-        login = identity['login']
-        user = model.User.by_name(login)
+            identity = request.params
+            if not ('login' in identity and 'password' in identity):
+                tk.response.status_int = 422
+                return
 
-        if user is None or not user.is_active() or not user.validate_password(identity['password']):
-            log.info('user failed to provide correct credentials')
-            tk.response.status_int = 403
-            return
+            login = identity['login']
+            user = model.User.by_name(login)
 
-        # find or create 2 factor auth record
-        totp_challenger = SecurityTOTP.get_for_user(user.name)
-        if totp_challenger is None:
-            totp_challenger = SecurityTOTP.create_for_user(user.name)
+            if user is None or not user.is_active() or not user.validate_password(identity['password']):
+                log.info('user failed to provide correct credentials')
+                tk.response.status_int = 403
+                return
 
-        mfaConfigured = totp_challenger.last_successful_challenge is not None
-        res = {}
-        if not mfaConfigured:
-            res['totpSecret'] = totp_challenger.secret
-            res['totpChallengerURI'] = totp_challenger.provisioning_uri
+            # find or create 2 factor auth record
+            totp_challenger = SecurityTOTP.get_for_user(user.name)
+            if totp_challenger is None:
+                totp_challenger = SecurityTOTP.create_for_user(user.name)
 
-        res['mfaConfigured'] = mfaConfigured
+            mfaConfigured = totp_challenger.last_successful_challenge is not None
+            res = {}
+            if not mfaConfigured:
+                res['totpSecret'] = totp_challenger.secret
+                res['totpChallengerURI'] = totp_challenger.provisioning_uri
 
-        if identity['mfa']:
-            res['mfaCodeValid'] = totp_challenger.check_code(identity['mfa'], verify_only=True)
+            res['mfaConfigured'] = mfaConfigured
 
-        return json.dumps(res)
+            if identity['mfa']:
+                res['mfaCodeValid'] = totp_challenger.check_code(identity['mfa'], verify_only=True)
+
+            return json.dumps(res)
+
+        except Exception as err:
+            log.error('Unhandled error during login: {}'.format(err))
+            tk.response.status_int = 500
+            return json.dumps({})
 
     def configure_mfa(self, id=None):
         """Display the config of the users MFA"""
