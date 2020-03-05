@@ -82,14 +82,15 @@ class MFAUserController(tk.BaseController):
         tk.response.headers.update({'Content-Type': 'application/json'})
 
         try:
+            res = {}
             if request.method != 'POST':
                 tk.response.status_int = 405
-                return
+                return json.dumps(res)
 
             identity = request.params
             if not ('login' in identity and 'password' in identity):
                 tk.response.status_int = 422
-                return
+                return json.dumps(res)
 
             login = identity['login']
             user = model.User.by_name(login)
@@ -97,7 +98,7 @@ class MFAUserController(tk.BaseController):
             if user is None or not user.is_active() or not user.validate_password(identity['password']):
                 log.info('user failed to provide correct credentials')
                 tk.response.status_int = 403
-                return
+                return json.dumps(res)
 
             # find or create 2 factor auth record
             totp_challenger = SecurityTOTP.get_for_user(user.name)
@@ -105,7 +106,6 @@ class MFAUserController(tk.BaseController):
                 totp_challenger = SecurityTOTP.create_for_user(user.name)
 
             mfaConfigured = totp_challenger.last_successful_challenge is not None
-            res = {}
             if not mfaConfigured:
                 res['totpSecret'] = totp_challenger.secret
                 res['totpChallengerURI'] = totp_challenger.provisioning_uri
