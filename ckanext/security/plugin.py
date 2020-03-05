@@ -2,14 +2,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckan.logic.schema
 from ckanext.security.model import define_security_tables
-import logging
-
 from ckanext.security import schema
-
-
-
-log = logging.getLogger(__name__)
-userController = 'ckanext.security.controllers:SecureUserController'
 
 class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
@@ -31,6 +24,7 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
         toolkit.add_resource('fanstatic', 'security')
 
     def before_map(self, urlmap):
+        userController = 'ckanext.security.controllers:SecureUserController'
         urlmap.redirect('/user/edit/', '/user/edit')
         urlmap.connect('/user/edit', controller=userController, action='edit')
         urlmap.connect('/user/edit/{id:.*}', controller=userController, action='edit', ckan_icon='cog')
@@ -39,7 +33,7 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
         return urlmap
 
     def after_map(self, urlmap):
-        controller = 'ckanext.security.controllers:MFAUserController';
+        controller = 'ckanext.security.controllers:MFAUserController'
         # Mapping urls for the MFA/TOTP feature
         urlmap.connect('/configure_mfa/{id:.*}/new',
                        controller=controller,
