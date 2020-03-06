@@ -12,6 +12,7 @@ A CKAN extension to hold various security improvements for CKAN, including:
 * Stronger password validators (NZISM compatible)
 * When users try to reset a password for an email address, CKAN will no longer
 disclose whether or not that email address exists in the DB.
+* Two Factor Authentication is enforced for all users
 
 ### Reset tokens
 Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
@@ -27,6 +28,14 @@ the login will be disabled for another 15 minutes.
 
 A notification email will be sent to locked out users.
 
+### Two Factor Authentication enforcement
+Users are required to use Two Factor Authentication (2fa). This feature adds a two step login flow, where the user adds their username and password first, then their 2fa code after. They are presented with a QR code to configure an authentication app on first login, then just an input for the one-time code on subsequent logins.
+
+A configuration interface is provided so that the user may reset their 2fa secret if needed, and sysadmins may use this facility to reset a locked out user.
+A paster command is also provided for resetting a users 2fa secret from the commandline on the server:
+```shell
+paster --plugin=ckanext-security security reset_totp <username>
+```
 
 ## Requirements
 * The CSRFMiddleware needs to be placed at the bottom of the middleware
@@ -104,6 +113,11 @@ pip install --process-dependency-links -e 'https://github.com/data-govt-nz/ckane
 *NOTE: The ``--process-dependency-links` flag has officially been deprecated, but
 has not been removed from pip, because it is the currently the only
 setuptools-supported way for specifying private repo dependencies*
+
+You need to migrate the database in order to enable the Two Factor Auth. This command is idempotent, it will not modify the database if run again once the table exists.
+```shell
+paster --plugin=ckanext-security security migrate
+```
 
 Finally, add `security` to `ckan.plugins` in your config file.
 
