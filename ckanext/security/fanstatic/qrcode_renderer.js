@@ -2,16 +2,16 @@
 
 (function($) {
     $(document).ready(function() {
-        var qrRenderTarget = $('#qr-code-container')
-        var totpUri = $('#totp-uri');
+        var qrRenderTarget = $('#qr-code-container')[0]
+        var totpInput = $('#totp-uri')[0]
 
-        if (qrRenderTarget.length === 0 || totpUri.length === 0) {
+        if (!qrRenderTarget || !totpInput) {
             throw new Error('Can\'t find the required elements to render a qr code')
         }
         new QRious({
             size: 250,
             element: qrRenderTarget,
-            value: totpUri.val()
+            value: $(totpInput).val()
         })
     })
 })($)
