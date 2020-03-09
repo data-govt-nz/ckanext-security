@@ -66,8 +66,7 @@ class MFAUserController(tk.BaseController):
         totp_challenger = SecurityTOTP.get_for_user(user_dict['name'])
         if totp_challenger is not None:
             c.totp_secret = totp_challenger.secret
-            c.totp_challenger_uri = pyotp.TOTP(totp_challenger.secret)\
-                .provisioning_uri(user_dict['name'])
+            c.totp_challenger_uri = totp_challenger.provisioning_uri
 
             mfa_test_code = request.params.get('mfa')
             if request.method == 'POST' and mfa_test_code is not None:
