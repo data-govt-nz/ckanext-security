@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '1.1.0'
+version = '2.0.0'
 
 setup(
     name='ckanext-security',
@@ -30,7 +30,7 @@ setup(
     """
     [ckan.plugins]
     security=ckanext.security.plugin:CkanSecurityPlugin
-    
+
     [paste.paster_command]
     security=ckanext.security.command.security:Security
     """,
