@@ -5,6 +5,7 @@
 
   Modifications against upstream commit ad63650:
     line 17: hidden form field
+    line 50 +: adds the config section for MFA security
 #}
 
 <form id="user-edit-form" class="dataset-form form-horizontal" method="post" action="{{ action }}" autocomplete="off">
@@ -44,6 +45,11 @@
     {{ form.input('password1', type='password', label=_('Password'), id='field-password', value=data.password1, error=errors.password1, classes=['control-medium'], attrs={'autocomplete': 'off'} ) }}
 
     {{ form.input('password2', type='password', label=_('Confirm Password'), id='field-password-confirm', value=data.password2, error=errors.password2, classes=['control-medium'], attrs={'autocomplete': 'off'}) }}
+  </fieldset>
+
+  <fieldset>
+    <legend>{{_('Two factor authentication')}}</legend>
+    {% link_for _('Manage two factor authentication'), controller='ckanext.security.controllers:MFAUserController', action='configure_mfa', id=data.id, class_='btn pull-left', icon='cog' %}
   </fieldset>
 
   <div class="form-actions">

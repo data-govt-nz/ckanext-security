@@ -3,14 +3,13 @@ import logging
 from ckan.lib.authenticator import UsernamePasswordAuthenticator
 from ckan.lib.cli import MockTranslator
 from ckan.model import User
-
 import pylons
+from flask import abort
 from repoze.who.interfaces import IAuthenticator
 from webob.request import Request
 from zope.interface import implements
-
 from ckanext.security.cache.login import LoginThrottle
-
+from ckanext.security.model import SecurityTOTP, ReplayAttackException
 
 log = logging.getLogger(__name__)
 
@@ -51,16 +50,40 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
             throttle.increment()  # Increment so we only send an email the first time around
             return None
 
-        # If the CKAN authenticator as successfully authenticated the request
-        # and the user wasn't locked out above, reset the throttle counter and
-        # return the user object.
+        # if the CKAN authenticator has successfully authenticated the request and the user wasn't locked out above,
+        # then check the TOTP parameter to see if it is valid
+
         if auth_user is not None:
-            throttle.reset()
-            return auth_user
+            totp_success = self.authenticate_totp(environ, auth_user)
+            if totp_success:  # if TOTP was successful -- reset the log in throttle
+                throttle.reset()
+                return totp_success
 
         # Increment the throttle counter if the login failed.
         throttle.increment()
 
+    def authenticate_totp(self, environ, auth_user):
+        totp_challenger = SecurityTOTP.get_for_user(auth_user)
+
+        # if there is no totp configured, don't allow auth
+        # shouldn't happen, login flow should create a totp_challenger
+        if totp_challenger is None:
+            log.info("Login attempted without MFA configured for: {}".format(auth_user))
+            return None
+
+        request = Request(environ, charset='utf-8')
+        if not ('mfa' in request.POST):
+            log.info("Could not get MFA credentials from the request")
+            return None
+
+        try:
+            result = totp_challenger.check_code(request.POST['mfa'])
+        except ReplayAttackException as e:
+            log.warning("Detected a possible replay attack for user: {}, context: {}".format(auth_user, e))
+            return None
+
+        if result:
+            return auth_user
 
 class BeakerRedisAuth(object):
     implements(IAuthenticator)
@@ -71,3 +94,4 @@ class BeakerRedisAuth(object):
         # from the identity object if it's there, or None if the user's
         # identity is not verified.
         return identity.get('repoze.who.userid', None)
+

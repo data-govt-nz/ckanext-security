@@ -1,0 +1,55 @@
+{% extends 'page.html' %}
+{% import 'macros/form.html' as form %}
+
+{% block subtitle %}{{ _('Configure two factor authentication') }}{% endblock %}
+{% block breadcrumb_content %}
+  <li><a href="{{ h.url_for(controller='user', action='index') }}">{{ _('Users') }}</a></li>
+  <li><a href="{{ h.url_for(controller='user', action='read', id=c.user_dict.name) }}">{{ c.user_dict.display_name }}</a></li>
+  <li class="active"><a href="#">{{ _('Configure two factor authentication') }}</a></li>
+{% endblock %}
+
+{% block secondary_content %}
+  <section class="module module-narrow module-shallow">
+    <h2 class="module-heading"><i class="fa fa-medium fa-info-circle"></i> {{ _('Manage two factor authentication') }}</h2>
+    <div class="module-content">
+        <p>
+            {% trans %}
+            Scan the image with the two factor authentication app on your phone.
+            {% endtrans %}
+        </p>
+    </div>
+  </section>
+{% endblock %}
+
+{% block primary_content %}
+    {% resource 'security/qrious.js' %}
+    {% resource 'security/qrcode_renderer.js' %}
+    <form id="mfa-form" method="POST">
+        <fieldset>
+            <legend>{{_('Scan this QR code with your two factor authentication app')}}</legend>
+
+            <input id="totp-uri" type="hidden" disabled value="{{c.totp_challenger_uri}}"/>
+            <div>
+                <canvas class="radius-lg padding-sm margin-b-sm border-solid" id="qr-code-container"></canvas>
+            </div>
+            <p>
+                {% trans %}If you are not able to scan the QR code, you can manually enter this secret into your authenticator app:{% endtrans %} <code id="totp-secret">{{c.totp_secret}}</code>
+            </p>
+
+            {{ form.input('mfa', label=_("Enter the two factor authentication code from your app to test correct configuration"), id='field-mfa', type="text", value="", error=c.mfa_test_invalid, classes=["control-medium"]) }}
+            <button class="btn btn-primary" type="submit">{{_('Test')}}</button>
+            {% if c.mfa_test_valid %}
+                <p>{{_('That\'s a valid code. Your authenticator app is correctly configured for future use.')}}</p>
+            {% endif %}
+            {% if c.mfa_test_invalid %}
+                <p>{{_('That\'s an incorrect code. Try scanning the QR code again with your authenticator app.')}}</p>
+            {% endif %}
+        </fieldset>
+
+    </form>
+
+    {% set locale = h.dump_json({'content': _('Are you sure you want to generate a new two factor secret?')}) %}
+    {% set new_mfa_challenge = h.url_for(controller='ckanext.security.controllers:MFAUserController', action='new', id=c.totp_user_id) %}
+    <a class="btn btn-danger" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate new two factor secret')}}</a>
+    <p>{{_('This should only be necessary if you have deleted the authenticator app or are replacing your phone.')}}</p>
+{% endblock %}
