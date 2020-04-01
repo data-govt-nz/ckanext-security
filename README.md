@@ -20,7 +20,7 @@ Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
 
 ### Brute force protection
 Users attempting to log in more than `ckanext.security.login_max_count` times
-within `ckanext.security.lock_timeout` seconds from a single IP address will be
+within `ckanext.security.lock_timeout` seconds will be
 temporarily locked out.
 
 By default, this means that after 10 unsuccessful login attempts within 15 minutes
