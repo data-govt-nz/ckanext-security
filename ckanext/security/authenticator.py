@@ -18,49 +18,40 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
     implements(IAuthenticator)
 
     def authenticate(self, environ, identity):
-        """A username/password authenticator that throttles login request by IP."""
+        """A username/password authenticator that throttles login request by user name."""
         try:
-            login = identity['login']
+            user_name = identity['login']
         except KeyError:
             return None
 
         environ['paste.registry'].register(pylons.translator, MockTranslator())
 
-        try:
-            remote_addr = Request(environ).headers['X-Forwarded-For']
-        except KeyError:
-            try:
-                remote_addr = environ['REMOTE_ADDR']
-            except KeyError:
-                log.critical('X-Forwarded-For header/REMOTE_ADDR missing from request.')
-                return None
-
-        throttle = LoginThrottle(User.by_name(login), remote_addr)
         if not ('login' in identity and 'password' in identity):
             return None
 
         # Run through the CKAN auth sequence first, so we can hit the DB
         # in every case and make timing attacks a little more difficult.
-        auth_user = super(CKANLoginThrottle, self).authenticate(environ, identity)
+        auth_user_name = super(CKANLoginThrottle, self).authenticate(environ, identity)
 
+        throttle = LoginThrottle(User.by_name(user_name), user_name)
         # Check if there is a lock on the requested user, and return None if
         # we have a lock.
-        if throttle.check_attempts() is False:
-            log.info('User %r (%s) locked out by brute force protection.' % (login, remote_addr))
-            throttle.increment()  # Increment so we only send an email the first time around
+        if throttle.is_locked():
             return None
+
+        if auth_user_name is None:
+            # Increment the throttle counter if the login failed.
+            throttle.increment()
 
         # if the CKAN authenticator has successfully authenticated the request and the user wasn't locked out above,
         # then check the TOTP parameter to see if it is valid
-
-        if auth_user is not None:
-            totp_success = self.authenticate_totp(environ, auth_user)
+        if auth_user_name is not None:
+            totp_success = self.authenticate_totp(environ, auth_user_name)
             if totp_success:  # if TOTP was successful -- reset the log in throttle
                 throttle.reset()
                 return totp_success
 
-        # Increment the throttle counter if the login failed.
-        throttle.increment()
+
 
     def authenticate_totp(self, environ, auth_user):
         totp_challenger = SecurityTOTP.get_for_user(auth_user)
