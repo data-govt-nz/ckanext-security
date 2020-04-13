@@ -3,6 +3,7 @@ import logging
 from ckan.lib.authenticator import UsernamePasswordAuthenticator
 from ckan.lib.cli import MockTranslator
 from ckan.model import User
+from ckan.common import config
 import pylons
 from flask import abort
 from repoze.who.interfaces import IAuthenticator
@@ -13,6 +14,20 @@ from ckanext.security.model import SecurityTOTP, ReplayAttackException
 
 log = logging.getLogger(__name__)
 
+def get_request_ip_address(request):
+    """Retrieves the IP address from the request if possible"""
+    remote_addr = request.headers.get('X-Forwarded-For') or request.environ.get('REMOTE_ADDR')
+    if remote_addr == None:
+        log.critical('X-Forwarded-For header/REMOTE_ADDR missing from request.')
+
+    return remote_addr
+
+def get_login_throttle_key(request, user_name):
+    login_throttle_key = get_request_ip_address(request)
+    if config.get('ckanext.security.brute_force_key') == 'user_name':
+        login_throttle_key = user_name
+
+    return login_throttle_key
 
 class CKANLoginThrottle(UsernamePasswordAuthenticator):
     implements(IAuthenticator)
@@ -33,7 +48,11 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         # in every case and make timing attacks a little more difficult.
         auth_user_name = super(CKANLoginThrottle, self).authenticate(environ, identity)
 
-        throttle = LoginThrottle(User.by_name(user_name), user_name)
+        login_throttle_key = get_login_throttle_key(Request(environ), user_name)
+        if login_throttle_key is None:
+            return None
+
+        throttle = LoginThrottle(User.by_name(user_name), login_throttle_key)
         # Check if there is a lock on the requested user, and return None if
         # we have a lock.
         if throttle.is_locked():

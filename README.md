@@ -20,11 +20,13 @@ Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
 
 ### Brute force protection
 Users attempting to log in more than `ckanext.security.login_max_count` times
-within `ckanext.security.lock_timeout` seconds will be
-temporarily locked out.
+within `ckanext.security.lock_timeout` seconds will be temporarily locked out.
 
-By default, this means that after 10 unsuccessful login attempts within 15 minutes
+By default, this means that after 10 unsuccessful login attempts from the same IP address within 15 minutes
 the login will be disabled for another 15 minutes.
+
+Setting `ckanext.security.brute_force_key` to `user_name` will ignore the IP address so that unsuccessful login attempts will be detected
+based on user_name only. This provides greater security against attackers that can vary their IP address at the cost of the legitimate user getting locked out as well.
 
 A notification email will be sent to locked out users.
 
@@ -102,6 +104,7 @@ ckanext.security.redis.db = 1                 # ckan uses db 0
 # 15 minute timeout with 10 attempts
 ckanext.security.lock_timeout = 900           # Login throttling lock period
 ckanext.security.login_max_count = 10         # Login throttling attempt limit
+ckanext.security.brute_force_key = user_name  # Detect brute force attempts by username rather than IP address
 ```
 
 ## How to install?
