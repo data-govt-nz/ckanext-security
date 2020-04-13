@@ -30,11 +30,10 @@ def send_reset_link(user):
     mail_user(user, subject, body)
 
 
-def notify_lockout(user, locked_ip):
+def notify_lockout(user):
     extra_vars = {
         'site_title': config.get('ckan.site_title'),
         'site_url': config.get('ckan.site_url'),
-        'ip_address': locked_ip,
         'user_name': user.name,
     }
 

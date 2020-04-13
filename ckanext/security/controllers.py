@@ -10,9 +10,11 @@ from ckan.lib import helpers
 from ckan.lib.navl.dictization_functions import Invalid
 from ckan.logic import schema, NotAuthorized, check_access, get_action, NotFound
 
+from ckanext.security.authenticator import get_login_throttle_key
 from ckanext.security import mailer
 from ckanext.security.validators import old_username_validator
 from ckanext.security.model import SecurityTOTP
+from ckanext.security.cache.login import LoginThrottle
 from ckan.plugins import toolkit as tk
 import json
 
@@ -91,11 +93,26 @@ class MFAUserController(tk.BaseController):
                 tk.response.status_int = 422
                 return json.dumps(res)
 
-            login = identity['login']
-            user = model.User.by_name(login)
+            user_name = identity['login']
+            user = model.User.by_name(user_name)
 
-            if user is None or not user.is_active() or not user.validate_password(identity['password']):
-                log.info('user failed to provide correct credentials')
+            login_throttle_key = get_login_throttle_key(request, user_name)
+            if login_throttle_key is None:
+                tk.response.status_int = 403
+                return json.dumps(res)
+
+            throttle = LoginThrottle(user, login_throttle_key)
+            locked_out = throttle.is_locked()
+            if locked_out:
+                log.info('User {} attempted login while brute force lockout in place'.format(user_name))
+
+            invalid_login = user is None or not user.is_active() or not user.validate_password(identity['password'])
+            if invalid_login:
+                # Increment the throttle counter if the login failed.
+                throttle.increment()
+
+            if locked_out or invalid_login:
+                log.info('login failed')
                 tk.response.status_int = 403
                 return json.dumps(res)
 
