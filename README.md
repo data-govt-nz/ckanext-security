@@ -11,8 +11,9 @@ A CKAN extension to hold various security improvements for CKAN, including:
 * Session invalidation on logout
 * Stronger password validators (NZISM compatible)
 * When users try to reset a password for an email address, CKAN will no longer
-disclose whether or not that email address exists in the DB.
+disclose whether or not that email address exists in the DB
 * Two Factor Authentication is enforced for all users
+* Preventing upload/linking of certain file types for resources
 
 ### Reset tokens
 Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
@@ -38,6 +39,41 @@ A paster command is also provided for resetting a users 2fa secret from the comm
 ```shell
 paster --plugin=ckanext-security security reset_totp <username>
 ```
+
+### Resource upload/linking file type blacklist
+This feature prevents uploads for a configurable set of file types.
+Users are shown an error message when creating or updating resources if they upload a file that is detected as matching one of the blacklisted types.
+
+**NOTE**: `.exe` files or those with the detected mime type `application/x-dosexec` are blocked by default as part of this feature.
+
+**File type detection**:
+
+This is performed using the `mimetypes` and `python-magic` libraries.
+* `mimetypes` makes a guess at the mime type based on the extension in the filename
+* `python-magic` makes a guess the mime type based on parsing the file contents
+
+**Example configuration**:
+* `ckanext.security.upload_blacklist: ['.png', 'image/jpg']` blocks any files with the given extensions or mime types.
+* `ckanext.security.extended_upload_mimetypes: { 'image/jpeg': '.jpg' }` adds mimetypes to extension mappings to the `mimetypes` python library. This improves file type checking in instances where the filename has no extension or the extension is not correct for the file type.
+
+**Debugging**:
+
+If you are trying to configure a file type and it doesn't seem to be getting blocked (mostly this could happen if the file had the extension removed or changed),
+you can try viewing the ckan logs for a line like this:
+
+`INFO  [ckanext.security.resource_upload_validator] Detected extensions/mimetypes: ['application/some_mime_type']`
+
+If you were expecting the file to match `'.ext'` in your blacklist, you can add a mapping from the detected mime type to the extension using the `extended_upload_mimetypes` config:
+
+`ckanext.security.extended_upload_mimetypes: { 'application/some_mime_type': '.ext' }`
+
+You can also achieve this by adding the detected mime type to your blacklist directly:
+
+`ckanext.security.upload_blacklist: ['application/some_mime_type']`
+
+**Limitations**:
+
+Links are only checked based on the extension in the url, we do not request the file at the linked url to infer the mime type.
 
 ## Requirements
 * The CSRFMiddleware needs to be placed at the bottom of the middleware
