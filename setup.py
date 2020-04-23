@@ -21,7 +21,8 @@ setup(
         'repoze.who-use-beaker',
         'redis',
         'beakeredis',
-        'pyotp'
+        'pyotp',
+        'python-magic'
     ],
     dependency_links=[
         'git+https://github.com/kaukas/repoze.who-use_beaker.git@8ec4cea#egg=repoze.who-use-beaker-0.4'

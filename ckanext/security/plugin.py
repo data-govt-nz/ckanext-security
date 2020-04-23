@@ -1,13 +1,20 @@
+import logging
+
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckan.logic.schema
+
 from ckanext.security.model import define_security_tables
 from ckanext.security import schema
+from ckanext.security.resource_upload_validator import validate_upload_type, validate_upload_presence
+
+log = logging.getLogger(__name__)
 
 class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes)
     plugins.implements(plugins.IBlueprint)
+    plugins.implements(plugins.IResourceController, inherit=True)
 
     def update_config(self, config):
         define_security_tables()  # map security models to db schema
@@ -46,3 +53,15 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
                        action='login')
 
         return urlmap
+
+    # BEGIN Hooks for IResourceController
+    def before_create(self, context, resource):
+        validate_upload_presence(resource)
+        validate_upload_type(resource)
+        pass
+
+    def before_update(self, context, current, resource):
+        validate_upload_presence(resource)
+        validate_upload_type(resource)
+        pass
+    # END Hooks for IResourceController
