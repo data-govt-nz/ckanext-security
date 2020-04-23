@@ -2,6 +2,7 @@ import mimetypes
 import magic
 import logging
 import os
+from cgi import FieldStorage
 
 from ckan.logic import ValidationError
 from ckan.common import config
@@ -60,12 +61,8 @@ def _build_mimetypes_and_extensions(filename, file_content):
 
     return unique_list
 
-def _get_uploaded_file(resource):
-    try:
-        uploaded_file = resource.get('upload').file
-    except AttributeError:
-        uploaded_file = None
-    return uploaded_file
+def _has_upload(resource):
+    return isinstance(resource.get('upload'), FieldStorage)
 
 def validate_upload_type(resource):
     """
@@ -75,10 +72,15 @@ def validate_upload_type(resource):
 
     NOTE: When linking files rather than uploading, we only test the extension at present.
     """
-    uploaded_file = _get_uploaded_file(resource)
+    uploaded_file = None
+    filename = resource.get('url')
+    if _has_upload(resource):
+        field_storage = resource.get('upload')
+        uploaded_file = field_storage.file
+        filename = field_storage.filename
 
     _add_mimetypes()
-    extensions_and_mimetypes = _build_mimetypes_and_extensions(resource.get('url'), uploaded_file)
+    extensions_and_mimetypes = _build_mimetypes_and_extensions(filename, uploaded_file)
 
     config_blacklist = eval(config.get('ckanext.security.upload_blacklist', '[]'))
     blacklist = list(DEFAULT_UPLOAD_BLACKLIST)
@@ -95,7 +97,7 @@ def validate_upload_type(resource):
         )
 
 def validate_upload_presence(resource):
-    linked_or_uploaded = bool(resource.get('url')) or _get_uploaded_file(resource) is not None
+    linked_or_uploaded = bool(resource.get('url')) or _has_upload(resource)
     if not linked_or_uploaded:
         raise ValidationError(
             {'File': ['Please upload a file or link to an external resource']}
