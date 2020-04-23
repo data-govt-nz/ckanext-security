@@ -60,6 +60,13 @@ def _build_mimetypes_and_extensions(filename, file_content):
 
     return unique_list
 
+def _get_uploaded_file(resource):
+    try:
+        uploaded_file = resource.get('upload').file
+    except AttributeError:
+        uploaded_file = None
+    return uploaded_file
+
 def validate_upload_type(resource):
     """
     Uses the mimetypes builtin library to make inferences about the filename
@@ -68,10 +75,7 @@ def validate_upload_type(resource):
 
     NOTE: When linking files rather than uploading, we only test the extension at present.
     """
-    try:
-        uploaded_file = resource.get('upload').file
-    except AttributeError:
-        uploaded_file = None
+    uploaded_file = _get_uploaded_file(resource)
 
     _add_mimetypes()
     extensions_and_mimetypes = _build_mimetypes_and_extensions(resource.get('url'), uploaded_file)
@@ -91,7 +95,8 @@ def validate_upload_type(resource):
         )
 
 def validate_upload_presence(resource):
-    if not resource.get('url'):
+    linked_or_uploaded = bool(resource.get('url')) or _get_uploaded_file(resource) is not None
+    if not linked_or_uploaded:
         raise ValidationError(
             {'File': ['Please upload a file or link to an external resource']}
         )
