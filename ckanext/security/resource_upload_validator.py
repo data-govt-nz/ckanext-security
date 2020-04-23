@@ -63,7 +63,6 @@ def _build_mimetypes_and_extensions(filename, file_content):
 def validate_upload_type(resource):
     """
     Uses the mimetypes builtin library to make inferences about the filename
-def _get_linked_file(url):
     and test the possible mimetypes and extensions against the blacklist.
     Also uses python-magic to attempt detection of the mimetype by file contents.
 
