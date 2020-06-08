@@ -83,7 +83,7 @@ or [commit `74f78865`](https://github.com/data-govt-nz/ckan/commit/74f78865b8825
 * A running Redis instance to store brute force protection tokens configured with a maxmemory and maxmemory-policy=lru so it overwrites the least recently used item rather than running out of space. This instance should be a different instance from the one used for Harvest items to avoid data loss. [Redis LRU-Cache documentation](https://redis.io/topics/lru-cache).
 
 ### Changes to `who.ini`
-You will need at least the following setting ins your `who.ini`
+You will need at least the following setting in your `who.ini`
 
 ```ini
 [plugin:use_beaker]
@@ -141,6 +141,11 @@ ckanext.security.redis.db = 1                 # ckan uses db 0
 ckanext.security.lock_timeout = 900           # Login throttling lock period
 ckanext.security.login_max_count = 10         # Login throttling attempt limit
 ckanext.security.brute_force_key = user_name  # Detect brute force attempts by username rather than IP address
+
+# If using 2.7.7 or recent patches of 2.8, the password reset behaviour has been fixed in CKAN core
+# (no longer discloses info about non-existent accounts)
+# You can disable the fix in this plugin by:
+ckanext.security.disable_password_reset_override = true
 ```
 
 ## How to install?
