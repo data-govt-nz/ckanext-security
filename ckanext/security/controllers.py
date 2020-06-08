@@ -1,22 +1,22 @@
 import logging
-
 import pyotp
-from ckan import authz, model
+import json
 
-from ckan.common import _, c, request
+from ckan import authz, model
+from ckan.common import _, c, request, config
 from ckan.controllers.user import UserController
 from ckan.lib.base import abort, render
 from ckan.lib import helpers
 from ckan.lib.navl.dictization_functions import Invalid
 from ckan.logic import schema, NotAuthorized, check_access, get_action, NotFound
+from ckan.plugins import toolkit as tk
+from paste.deploy.converters import asbool
 
 from ckanext.security.authenticator import get_login_throttle_key
 from ckanext.security import mailer
 from ckanext.security.validators import old_username_validator
 from ckanext.security.model import SecurityTOTP
 from ckanext.security.cache.login import LoginThrottle
-from ckan.plugins import toolkit as tk
-import json
 
 log = logging.getLogger(__name__)
 
@@ -169,6 +169,7 @@ class MFAUserController(tk.BaseController):
         helpers.redirect_to('mfa_configure', id=user_id)
 
 
+original_password_reset = UserController.request_reset
 class SecureUserController(UserController):
     edit_user_form = 'security/edit_user_form.html'
 
@@ -178,6 +179,11 @@ class SecureUserController(UserController):
         return form_schema
 
     def request_reset(self):
+        # Later versions of CKAN core have fixed this behaviour, we default to overriding
+        # with our own implementation but allow client to disable if needed
+        if asbool(config.get('ckanext.security.disable_password_reset_override')):
+            return original_password_reset(self)
+
         # This is a one-to-one copy from ckan core, except for user errors
         # handling. There should be no feedback about whether or not a user
         # is found in the db.
