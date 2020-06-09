@@ -200,7 +200,8 @@ class SecureUserController(UserController):
             id = request.params.get('user')
 
             context = {'model': model,
-                       'user': c.user}
+                       'user': c.user,
+                       u'ignore_auth': True}
 
             data_dict = {'id': id}
             user_obj = None
