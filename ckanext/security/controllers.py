@@ -6,14 +6,14 @@ from ckan import authz, model
 from ckan.common import _, c, request, config
 from ckan.controllers.user import UserController
 from ckan.lib.base import abort, render
-from ckan.lib import helpers
+from ckan.lib import helpers, mailer
 from ckan.lib.navl.dictization_functions import Invalid
 from ckan.logic import schema, NotAuthorized, check_access, get_action, NotFound
 from ckan.plugins import toolkit as tk
 from paste.deploy.converters import asbool
 
 from ckanext.security.authenticator import get_login_throttle_key
-from ckanext.security import mailer
+import ckanext.security.mailer as secure_mailer
 from ckanext.security.validators import old_username_validator
 from ckanext.security.model import SecurityTOTP
 from ckanext.security.cache.login import LoginThrottle
@@ -168,7 +168,7 @@ class MFAUserController(tk.BaseController):
         helpers.flash_success(_('Successfully updated two factor authentication secret. Make sure you add the new secret to your authenticator app.'))
         helpers.redirect_to('mfa_configure', id=user_id)
 
-
+mailer.send_reset_link = secure_mailer.send_reset_link
 original_password_reset = UserController.request_reset
 class SecureUserController(UserController):
     edit_user_form = 'security/edit_user_form.html'
