@@ -15,6 +15,8 @@ disclose whether or not that email address exists in the DB
 * Two Factor Authentication is enforced for all users
 * Preventing upload/linking of certain file types for resources
 
+**Please note**: This extension has been used and tested against CKAN version 2.7.x. Using it in the context of CKAN 2.8 or higher versions may not work fully. If you are wanting to use this extension in other CKAN versions and you do strike issues, the maintainers would be happy to accept contributions to fix anything you find. Please raise an issue or open a pull request.
+
 ### Reset tokens
 Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
 `uuid.uuid4().hex[:10]`.
@@ -143,7 +145,8 @@ ckanext.security.login_max_count = 10         # Login throttling attempt limit
 ckanext.security.brute_force_key = user_name  # Detect brute force attempts by username rather than IP address
 
 # If using 2.7.7 or recent patches of 2.8, the password reset behaviour has been fixed in CKAN core
-# (no longer discloses info about non-existent accounts)
+# (no longer discloses info about non-existent accounts) and the way this plugin overrides the password
+# reset may be broken due to permission restrictions on user lookups,
 # You can disable the fix in this plugin by:
 ckanext.security.disable_password_reset_override = true
 ```
