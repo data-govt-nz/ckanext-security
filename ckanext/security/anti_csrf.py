@@ -109,8 +109,7 @@ def validate_token(token):
     It must have the expected format (hash!timestamp/nonce/username),
     the hash must match the other values,
     the username must match the current account,
-    and it must not be older than our limit (currently 30 minutes).
-    TODO Make max age configurable.
+    and it must not be older than our limit (default 30 minutes).
     """
     token_values = read_token_values(token)
     if 'hash' not in token_values:
@@ -123,8 +122,9 @@ def validate_token(token):
 
     now = int(time.time())
     timestamp = token_values['timestamp']
-    # allow tokens up to 30 minutes old
-    if now < timestamp or now - timestamp > 60 * 30:
+    # allow tokens up to 30 minutes old by default
+    max_age_seconds = config.get('ckanext.security.csrf.token_max_age', 60 * 30)
+    if now < timestamp or now - timestamp > max_age_seconds:
         return False
 
     return token_values['username'] == _get_safe_username()
@@ -174,8 +174,7 @@ def is_soft_expired(token):
     """Check whether the token is old enough to need rotation.
     It may still be valid, but it's time to generate a new one.
 
-    The current rotation age is 10 minutes.
-    TODO Make soft-rotation age configurable.
+    The default rotation age is 10 minutes.
     """
     if not validate_token(token):
         return False
@@ -183,7 +182,8 @@ def is_soft_expired(token):
     now = int(time.time())
     token_values = read_token_values(token)
 
-    return now - token_values['timestamp'] > 60 * 10
+    rotation_age_seconds = config.get('ckanext.security.csrf.token_rotation_age', 60 * 10)
+    return now - token_values['timestamp'] > rotation_age_seconds
 
 
 def _get_secret_key():

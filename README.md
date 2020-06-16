@@ -93,6 +93,10 @@ ckanext.security.redis.db = 1                 # ckan uses db 0
 # 15 minute timeout with 10 attempts
 ckanext.security.lock_timeout = 900           # Login throttling lock period
 ckanext.security.login_max_count = 10         # Login throttling attempt limit
+
+# CSRF token age
+ckanext.security.token_max_age = 3600
+ckanext.security.token_rotation_age = 600
 ```
 
 ## How to install?
