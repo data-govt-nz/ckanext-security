@@ -53,7 +53,7 @@ overrides rendering of the login form
     </fieldset>
 
     <p>{{_('Please enter your authenticator app generated 6-digit verification code.')}}</p>
-    {{ form.input('mfa', label=_("Verification code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"]) }}
+    {{ form.input('mfa', label=_("Verification code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"], attrs={"autocomplete": "off"}) }}
 
     <div class="form-actions">
       <button class="btn btn-primary" type="submit">{{ _('Submit') }}</button>
