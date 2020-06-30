@@ -36,14 +36,16 @@
                 {% trans %}If you are not able to scan the QR code, you can manually enter this secret into your authenticator app:{% endtrans %} <code id="totp-secret">{{c.totp_secret}}</code>
             </p>
 
-            {{ form.input('mfa', label=_("Enter the two factor authentication code from your app to test correct configuration"), id='field-mfa', type="text", value="", error=c.mfa_test_invalid, classes=["control-medium"]) }}
+            {{ form.input('mfa',
+                label=_("Enter the two factor authentication code from your app to test correct configuration"),
+                id='field-mfa',
+                type="text",
+                value="",
+                error=c.mfa_test_invalid,
+                classes=["control-medium"],
+                attrs={"autocomplete": "off"})
+            }}
             <button class="btn btn-primary" type="submit">{{_('Test')}}</button>
-            {% if c.mfa_test_valid %}
-                <p>{{_('That\'s a valid code. Your authenticator app is correctly configured for future use.')}}</p>
-            {% endif %}
-            {% if c.mfa_test_invalid %}
-                <p>{{_('That\'s an incorrect code. Try scanning the QR code again with your authenticator app.')}}</p>
-            {% endif %}
         </fieldset>
 
     </form>

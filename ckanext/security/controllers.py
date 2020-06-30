@@ -149,6 +149,11 @@ class MFAUserController(tk.BaseController):
 
         data_dict = {'id': user_id, 'user_obj': c.userobj}
         self._setup_totp_template_variables(context, data_dict)
+
+        if c.mfa_test_valid:
+            helpers.flash_success(_('That\'s a valid code. Your authenticator app is correctly configured for future use.'))
+        if c.mfa_test_invalid:
+            helpers.flash_error(_('That\'s an incorrect code. Try scanning the QR code again with your authenticator app.'))
         return tk.render('security/configure_mfa.html')
 
     def new(self, id=None):
