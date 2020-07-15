@@ -34,7 +34,7 @@ def send_reset_link(user):
 
 
 def _build_footer_content(extra_vars):
-    custom_path = config.get('ckanext.security.footer_template_path')
+    custom_path = config.get('ckanext.security.brute_force_footer_path')
     if (custom_path and os.path.exists(custom_path)):
         log.warning('Overriding brute force lockout email footer with {}'.format(custom_path))
         with open(custom_path, 'r') as footer_file:
