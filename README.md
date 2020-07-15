@@ -32,6 +32,8 @@ Setting `ckanext.security.brute_force_key` to `user_name` will ignore the IP add
 based on user_name only. This provides greater security against attackers that can vary their IP address at the cost of the legitimate user getting locked out as well.
 
 A notification email will be sent to locked out users.
+The email footer content can be overridden by providing a path to a file that will replace the content in `templates/security/emails/lockout_footer.txt` in this module.
+The path can be provided via the `ckanext.security.brute_force_footer_path` config option.
 
 ### Two Factor Authentication enforcement
 Users are required to use Two Factor Authentication (2fa). This feature adds a two step login flow, where the user adds their username and password first, then their 2fa code after. They are presented with a QR code to configure an authentication app on first login, then just an input for the one-time code on subsequent logins.
