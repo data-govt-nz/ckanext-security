@@ -1,10 +1,13 @@
 import os
 import codecs
+import logging
 
 from ckan.common import config
 from ckan.lib.base import render_jinja2
 from ckan.lib.mailer import *
 from ckan import model
+
+log = logging.getLogger(__name__)
 
 
 def make_key():
@@ -30,16 +33,32 @@ def send_reset_link(user):
     mail_user(user, subject, body)
 
 
-def notify_lockout(user):
+def _build_footer_content(extra_vars):
+    custom_path = config.get('ckanext.security.footer_template_path')
+    if (custom_path and os.path.exists(custom_path)):
+        log.warning('Overriding brute force lockout email footer with {}'.format(custom_path))
+        with open(custom_path, 'r') as footer_file:
+            footer_content = footer_file.read()
+        env = config['pylons.app_globals'].jinja_env
+        template = env.from_string(footer_content)
+        return '\n\n' + template.render(**extra_vars)
+    else:
+        footer_path = 'security/emails/lockout_footer.txt'
+        return '\n\n' + render_jinja2(footer_path, extra_vars)
+
+
+def notify_lockout(user, lockout_timeout):
     extra_vars = {
         'site_title': config.get('ckan.site_title'),
         'site_url': config.get('ckan.site_url'),
         'user_name': user.name,
+        'password_reset_url': config.get('ckan.site_url').rstrip('/') + '/user/login',
+        'lockout_mins': lockout_timeout // 60,
     }
 
     subject = render_jinja2('security/emails/lockout_subject.txt', extra_vars)
     subject = subject.split('\n')[0]  # Make sure we only use the first line
 
-    body = render_jinja2('security/emails/lockout_mail.txt', extra_vars)
+    body = render_jinja2('security/emails/lockout_mail.txt', extra_vars) + _build_footer_content(extra_vars)
 
     mail_user(user, subject, body)

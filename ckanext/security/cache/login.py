@@ -10,10 +10,21 @@ from ckanext.security.cache.clients import ThrottleClient
 
 log = logging.getLogger(__name__)
 
+default_lockout_timeout = 60 * 15
+default_max_login_attempts = 10
+
+
+def lockout_timeout():
+    return int(config.get('ckanext.security.lock_timeout', default_lockout_timeout))
+
+
+def max_login_attempts():
+    return int(config.get('ckanext.security.login_max_count', default_max_login_attempts))
+
 
 class LoginThrottle(object):
-    login_lock_timeout = int(config.get('ckanext.security.lock_timeout', 60 * 15))
-    login_max_count = int(config.get('ckanext.security.login_max_count', 10))
+    login_lock_timeout = lockout_timeout()
+    login_max_count = max_login_attempts()
     count = 0
     last_failed_attempt = 0
 
@@ -57,7 +68,7 @@ class LoginThrottle(object):
         if self.user is not None and self.count == self.login_max_count:
             log.info("%s locked out by brute force protection" % self.user.name)
             try:
-                notify_lockout(self.user)
+                notify_lockout(self.user, self.login_lock_timeout)
                 log.debug("Lockout notification for user %s sent" % self.user.name)
             except Exception as exc:
                 msg = "Sending lockout notification for %s failed"
