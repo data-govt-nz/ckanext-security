@@ -82,13 +82,13 @@ def validate_upload_type(resource):
     _add_mimetypes()
     extensions_and_mimetypes = _build_mimetypes_and_extensions(filename, uploaded_file)
 
-    config_blacklist = eval(config.get('ckanext.security.upload_blacklist', '[]'))
+    config_blacklist = eval(config.get('ckanext.security.upload_blacklist', '[]').lower())
     blacklist = list(DEFAULT_UPLOAD_BLACKLIST)
     blacklist.extend(config_blacklist)
 
     log.info('Detected extensions/mimetypes: {}'.format(extensions_and_mimetypes))
     # test all extensions and mimetypes against blacklist, fail fast
-    if any(map(lambda ext: ext in blacklist, extensions_and_mimetypes)):
+    if any(map(lambda ext: ext.lower() in blacklist, extensions_and_mimetypes)):
         log.warning('Prevented upload of {}, detected mimetypes/extensions: {}, blacklist: {}'.format(resource.get('url'), extensions_and_mimetypes, blacklist))
         resource['url'] = ''
         action = 'upload' if uploaded_file else 'link'
