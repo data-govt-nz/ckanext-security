@@ -111,8 +111,8 @@ class MFAUserController(tk.BaseController):
                 # Increment the throttle counter if the login failed.
                 throttle.increment()
 
-            if locked_out or invalid_login:
-                log.info('login failed')
+            if invalid_login or (invalid_login and locked_out):
+                log.info('login failed for {}'.format(user_name))
                 tk.response.status_int = 403
                 return json.dumps(res)
 
@@ -129,7 +129,13 @@ class MFAUserController(tk.BaseController):
             res['mfaConfigured'] = mfaConfigured
 
             if identity['mfa']:
-                res['mfaCodeValid'] = totp_challenger.check_code(identity['mfa'], verify_only=True)
+                code_valid = totp_challenger.check_code(identity['mfa'], verify_only=True)
+                res['mfaCodeValid'] = code_valid and not locked_out
+                if code_valid:
+                    log.info('Login succeeded for {}'.format(user_name))
+                else:
+                    log.info('User {} supplied invalid 2fa code'.format(user_name))
+                    throttle.increment()
 
             return json.dumps(res)
 
