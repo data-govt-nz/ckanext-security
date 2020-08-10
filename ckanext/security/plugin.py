@@ -48,7 +48,7 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
         urlmap.connect('mfa_configure', '/configure_mfa/{id:.*}',
                        controller=controller,
                        action='configure_mfa')
-        urlmap.connect('/mfa_login',
+        urlmap.connect('/api/mfa_login',
                        controller=controller,
                        action='login')
 

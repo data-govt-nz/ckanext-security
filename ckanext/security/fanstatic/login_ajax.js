@@ -27,13 +27,14 @@
 
   var validateLoginCredentials = function (e) {
     e.preventDefault()
+    hideError()
 
     var form = $(this)
     var buttons = $('[type=submit]')
     buttons.prop('disabled', true)
 
     $.ajax({
-      url: '/mfa_login',
+      url: '/api/mfa_login',
       method: 'POST',
       data: form.serialize(),
       success: function (loginState) {

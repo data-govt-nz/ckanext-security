@@ -80,17 +80,20 @@ class MFAUserController(tk.BaseController):
         """
         Ajax call to test username/password/mfa code
         """
-        tk.response.headers.update({'Content-Type': 'application/json'})
+
+        def set_response(status):
+            tk.response.status_int = status
+            tk.response.headers.update({'Content-Type': 'application/json'})
 
         try:
             res = {}
             if request.method != 'POST':
-                tk.response.status_int = 405
+                set_response(405)
                 return json.dumps(res)
 
             identity = request.params
             if not ('login' in identity and 'password' in identity):
-                tk.response.status_int = 422
+                set_response(422)
                 return json.dumps(res)
 
             on_mfa_form = identity.get('mfa-form-active') == 'true'
@@ -100,7 +103,7 @@ class MFAUserController(tk.BaseController):
 
             login_throttle_key = get_login_throttle_key(request, user_name)
             if login_throttle_key is None:
-                tk.response.status_int = 403
+                set_response(403)
                 return json.dumps(res)
 
             throttle = LoginThrottle(user, login_throttle_key)
@@ -115,7 +118,7 @@ class MFAUserController(tk.BaseController):
 
             if invalid_login or (locked_out and not on_mfa_form):
                 log.info('login failed for %s', user_name)
-                tk.response.status_int = 403
+                set_response(403)
                 return json.dumps(res)
 
             # find or create 2 factor auth record
@@ -129,6 +132,7 @@ class MFAUserController(tk.BaseController):
                 res['totpChallengerURI'] = totp_challenger.provisioning_uri
 
             res['mfaConfigured'] = mfaConfigured
+            set_response(200)
 
             if identity['mfa']:
                 code_valid = totp_challenger.check_code(identity['mfa'], verify_only=True)
@@ -137,13 +141,14 @@ class MFAUserController(tk.BaseController):
                     log.info('Login succeeded for %s', user_name)
                 else:
                     log.info('User %s supplied invalid 2fa code', user_name)
+                    set_response(403)
                     throttle.increment()
 
             return json.dumps(res)
 
         except Exception as err:
             log.error('Unhandled error during login: %s', err)
-            tk.response.status_int = 500
+            set_response(500)
             return json.dumps({})
 
     def configure_mfa(self, id=None):
