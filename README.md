@@ -28,6 +28,8 @@ within `ckanext.security.lock_timeout` seconds will be temporarily locked out.
 By default, this means that after 10 unsuccessful login attempts from the same IP address within 15 minutes
 the login will be disabled for another 15 minutes.
 
+Failed two factor authentication code attempts are included in the count of unsuccessful login attempts. For example, five failed username and password attempts and then five failed 2fa codes will trigger the brute force lockout.
+
 Setting `ckanext.security.brute_force_key` to `user_name` will ignore the IP address so that unsuccessful login attempts will be detected
 based on user_name only. This provides greater security against attackers that can vary their IP address at the cost of the legitimate user getting locked out as well.
 
@@ -39,6 +41,7 @@ The path can be provided via the `ckanext.security.brute_force_footer_path` conf
 Users are required to use Two Factor Authentication (2fa). This feature adds a two step login flow, where the user adds their username and password first, then their 2fa code after. They are presented with a QR code to configure an authentication app on first login, then just an input for the one-time code on subsequent logins.
 
 A configuration interface is provided so that the user may reset their 2fa secret if needed, and sysadmins may use this facility to reset a locked out user.
+
 A paster command is also provided for resetting a users 2fa secret from the commandline on the server:
 ```shell
 paster --plugin=ckanext-security security reset_totp <username>
