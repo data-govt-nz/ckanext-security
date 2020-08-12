@@ -64,6 +64,7 @@
     $('#login-form').hide()
     $('#mfa-form').show()
     $('#field-mfa').focus()
+    $('#mfa-form-active').val('true')
 
     if (!loginState.mfaConfigured) {
       showQRCode(loginState)

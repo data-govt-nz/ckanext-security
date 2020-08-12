@@ -93,6 +93,8 @@ class MFAUserController(tk.BaseController):
                 tk.response.status_int = 422
                 return json.dumps(res)
 
+            on_mfa_form = identity.get('mfa-form-active') == 'true'
+
             user_name = identity['login']
             user = model.User.by_name(user_name)
 
@@ -111,8 +113,8 @@ class MFAUserController(tk.BaseController):
                 # Increment the throttle counter if the login failed.
                 throttle.increment()
 
-            if invalid_login or (invalid_login and locked_out):
-                log.info('login failed for {}'.format(user_name))
+            if invalid_login or (locked_out and not on_mfa_form):
+                log.info('login failed for %s', user_name)
                 tk.response.status_int = 403
                 return json.dumps(res)
 
