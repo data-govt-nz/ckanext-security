@@ -42,7 +42,7 @@ Users are required to use Two Factor Authentication (2fa). This feature adds a t
 
 A configuration interface is provided so that the user may reset their 2fa secret if needed, and sysadmins may use this facility to reset a locked out user.
 
-A paster command is also provided for resetting a users 2fa secret from the commandline on the server:
+A paster command is also provided for resetting a user's 2fa secret from the commandline on the server:
 ```shell
 paster --plugin=ckanext-security security reset_totp <username>
 ```
