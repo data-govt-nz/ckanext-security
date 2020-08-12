@@ -106,7 +106,7 @@ class MFAUserController(tk.BaseController):
             throttle = LoginThrottle(user, login_throttle_key)
             locked_out = throttle.is_locked()
             if locked_out:
-                log.info('User {} attempted login while brute force lockout in place'.format(user_name))
+                log.info('User %s attempted login while brute force lockout in place', user_name)
 
             invalid_login = user is None or not user.is_active() or not user.validate_password(identity['password'])
             if invalid_login:
@@ -134,15 +134,15 @@ class MFAUserController(tk.BaseController):
                 code_valid = totp_challenger.check_code(identity['mfa'], verify_only=True)
                 res['mfaCodeValid'] = code_valid and not locked_out
                 if code_valid:
-                    log.info('Login succeeded for {}'.format(user_name))
+                    log.info('Login succeeded for %s', user_name)
                 else:
-                    log.info('User {} supplied invalid 2fa code'.format(user_name))
+                    log.info('User %s supplied invalid 2fa code', user_name)
                     throttle.increment()
 
             return json.dumps(res)
 
         except Exception as err:
-            log.error('Unhandled error during login: {}'.format(err))
+            log.error('Unhandled error during login: %s', err)
             tk.response.status_int = 500
             return json.dumps({})
 
