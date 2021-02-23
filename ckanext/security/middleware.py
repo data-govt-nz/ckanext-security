@@ -89,6 +89,7 @@ class Request(webob.Request):
         log.debug("Checking token matches Token {}, cookie_token: {}".format(self.token, self.get_cookie_token()))
         return self.token is not None and self.token == self.get_cookie_token()
 
+
 class CSRFMiddleware(object):
     def __init__(self, app, config):
         self.app = app
@@ -103,7 +104,9 @@ class CSRFMiddleware(object):
         else:
             resp = HTTPForbidden(CSRF_ERR)
             return resp(environ, start_response)
-        if 'text/html' in resp.headers.get('Content-type', ''):
+
+        if 'text/html' in resp.headers.get('Content-type', '') \
+                and resp.status_int == 200:
             token = anti_csrf.get_response_token(request, resp)
 
             new_response = anti_csrf.apply_token(resp.unicode_body, token)

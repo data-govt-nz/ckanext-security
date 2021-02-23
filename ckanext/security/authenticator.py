@@ -11,6 +11,7 @@ from webob.request import Request
 from zope.interface import implements
 from ckanext.security.cache.login import LoginThrottle
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
+from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 
@@ -62,14 +63,19 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
             # Increment the throttle counter if the login failed.
             throttle.increment()
 
-        # if the CKAN authenticator has successfully authenticated the request and the user wasn't locked out above,
-        # then check the TOTP parameter to see if it is valid
-        if auth_user_name is not None:
-            totp_success = self.authenticate_totp(environ, auth_user_name)
-            if totp_success:  # if TOTP was successful -- reset the log in throttle
-                throttle.reset()
-                return totp_success
-
+        # totp authentication is required for all users but adding an option to
+        # disable totp authentication, if needed
+        # this can be done by setting ckanext.security.disable_totp flag to true in config file
+        if asbool(config.get('ckanext.security.disable_totp')):
+            return auth_user_name
+        else:
+            # if the CKAN authenticator has successfully authenticated the request and the user wasn't locked out above,
+            # then check the TOTP parameter to see if it is valid
+            if auth_user_name is not None:
+                totp_success = self.authenticate_totp(environ, auth_user_name)
+                if totp_success:  # if TOTP was successful -- reset the log in throttle
+                    throttle.reset()
+                    return totp_success
 
 
     def authenticate_totp(self, environ, auth_user):
