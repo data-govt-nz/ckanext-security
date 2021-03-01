@@ -8,8 +8,8 @@ class RedisClient(object):
         host = config['ckanext.security.redis.host']
         port = config['ckanext.security.redis.port']
         db = config['ckanext.security.redis.db']
-        pwd = config['ckanext.secuity.redis.password'] \
-            if 'ckanext.secuity.redis.password' in config \
+        pwd = config['ckanext.security.redis.password'] \
+            if 'ckanext.security.redis.password' in config \
             else None
         self.client = redis.StrictRedis(host=host, port=port, db=db, password=pwd)
 
