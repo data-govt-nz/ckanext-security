@@ -87,7 +87,8 @@ class Request(webob.Request):
 
     def check_token(self):
         # bypass token validation for AJAX requests from origin
-        if self.headers['X-Requested-With'] == 'XMLHttpRequest' and \
+        if 'X-Requested-With' in self.headers and \
+                self.headers['X-Requested-With'] == 'XMLHttpRequest' and \
                 self.headers['Origin'] == config.get('ckan.site_url'):
             return True
 
