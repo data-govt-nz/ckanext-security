@@ -1,7 +1,7 @@
 import anti_csrf
 import webob
 from webob.exc import HTTPForbidden
-
+from ckan.common import config
 import logging
 
 log = logging.getLogger(__name__)
@@ -86,6 +86,11 @@ class Request(webob.Request):
             return None
 
     def check_token(self):
+        # bypass token validation for AJAX requests from origin
+        if self.headers['X-Requested-With'] == 'XMLHttpRequest' and \
+                self.headers['Origin'] == config.get('ckan.site_url'):
+            return True
+
         log.debug("Checking token matches Token {}, cookie_token: {}".format(self.token, self.get_cookie_token()))
         return self.token is not None and self.token == self.get_cookie_token()
 
