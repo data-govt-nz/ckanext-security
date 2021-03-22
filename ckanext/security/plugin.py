@@ -10,6 +10,7 @@ from ckanext.security.resource_upload_validator import validate_upload_type, val
 
 log = logging.getLogger(__name__)
 
+
 class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes)

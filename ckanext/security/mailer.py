@@ -1,10 +1,12 @@
+# encoding: utf-8
 import os
 import codecs
 import logging
+import six
 
 from ckan.common import config
 from ckan.lib.base import render_jinja2
-from ckan.lib.mailer import *
+from ckan.lib.mailer import get_reset_link_body, mail_user
 from ckan import model
 
 log = logging.getLogger(__name__)
@@ -15,7 +17,7 @@ def make_key():
 
 
 def create_reset_key(user):
-    user.reset_key = unicode(make_key())
+    user.reset_key = six.text_type(make_key())
     model.repo.commit_and_remove()
 
 
