@@ -10,7 +10,8 @@ from ckan.common import config
 log = logging.getLogger(__name__)
 
 DEFAULT_UPLOAD_BLACKLIST = ['.exe']
-DEFAULT_EXTENDED_UPLOAD_MIMETYPES = { 'application/x-dosexec': '.exe' }
+DEFAULT_EXTENDED_UPLOAD_MIMETYPES = {'application/x-dosexec': '.exe'}
+
 
 def _add_mimetypes():
     if not mimetypes.inited:
@@ -19,10 +20,11 @@ def _add_mimetypes():
     # Add mimetypes from config
     config_mimetypes = eval(config.get('ckanext.security.extended_upload_mimetypes', '{}'))
     extended_mimetypes = DEFAULT_EXTENDED_UPLOAD_MIMETYPES.copy()
-    extended_mimetypes.update(config_mimetypes) # merges defaults and config
+    extended_mimetypes.update(config_mimetypes)  # merges defaults and config
 
     for mime in extended_mimetypes:
         mimetypes.add_type(mime, extended_mimetypes[mime], strict=False)
+
 
 def _build_mimetypes_and_extensions(filename, file_content):
     mimes_instance = mimetypes.MimeTypes()
@@ -61,8 +63,10 @@ def _build_mimetypes_and_extensions(filename, file_content):
 
     return unique_list
 
+
 def _has_upload(resource):
     return isinstance(resource.get('upload'), FieldStorage)
+
 
 def validate_upload_type(resource):
     """
@@ -95,6 +99,7 @@ def validate_upload_type(resource):
         raise ValidationError(
             {'File': ['Cannot {} files of this type'.format(action)]}
         )
+
 
 def validate_upload_presence(resource):
     linked_or_uploaded = bool(resource.get('url')) or _has_upload(resource)

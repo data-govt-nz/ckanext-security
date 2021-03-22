@@ -4,11 +4,13 @@ https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Cross-Site_Req
 
 This is integrated in the CSRFMiddleware
 """
-import ckan.lib.base as base
+import binascii
+import os
 import re
 from re import IGNORECASE, MULTILINE
 from logging import getLogger
-from ckan.common import request
+
+from ckan.lib import base
 
 LOG = getLogger(__name__)
 
@@ -26,7 +28,7 @@ but we'll set a new one for next time.
 TOKEN_FRESHNESS_COOKIE_NAME = 'token-fresh'
 
 # We need to edit confirm-action links, which get intercepted by JavaScript,
-#regardless of which order their 'data-module' and 'href' attributes appear.
+# regardless of which order their 'data-module' and 'href' attributes appear.
 CONFIRM_LINK = re.compile(r'(<a [^>]*data-module=["\']confirm-action["\'][^>]*href=["\']([^"\']+))(["\'])', IGNORECASE | MULTILINE)
 CONFIRM_LINK_REVERSED = re.compile(r'(<a [^>]*href=["\']([^"\']+))(["\'][^>]*data-module=["\']confirm-action["\'])', IGNORECASE | MULTILINE)
 
@@ -39,7 +41,7 @@ POST_FORM = re.compile(r'(<form [^>]*method=["\']post["\'][^>]*>)([^<]*\s<)', IG
 
 """The format of the token HTML field.
 """
-HEX_PATTERN=re.compile(r'^[0-9a-z]+$')
+HEX_PATTERN = re.compile(r'^[0-9a-z]+$')
 TOKEN_PATTERN = r'<input type="hidden" name="' + TOKEN_FIELD_NAME + '" value="{token}"/>'
 TOKEN_SEARCH_PATTERN = re.compile(TOKEN_PATTERN.format(token=r'([0-9a-f]+)'))
 API_URL = re.compile(r'^/api\b.*')
@@ -73,7 +75,7 @@ def get_cookie_token(request):
     If not, an error will occur.
     """
     token = None
-    if request.cookies.has_key(TOKEN_FIELD_NAME):
+    if TOKEN_FIELD_NAME in request.cookies:
         LOG.debug("Obtaining token from cookie")
         token = request.cookies.get(TOKEN_FIELD_NAME)
     if token is None or token.strip() == "":
@@ -101,7 +103,6 @@ def get_response_token(request, response):
 
 
 def create_response_token(response):
-    import binascii, os
     token = binascii.hexlify(os.urandom(32))
     response.set_cookie(TOKEN_FIELD_NAME, token, secure=True, httponly=True)
     response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600, secure=True, httponly=True)
@@ -122,7 +123,7 @@ def get_post_token(request):
     it is also acceptable to provide the token as a query string parameter,
     if there is no POST body.
     """
-    if request.environ['webob.adhoc_attrs'].has_key(TOKEN_FIELD_NAME):
+    if TOKEN_FIELD_NAME in request.environ['webob.adhoc_attrs']:
         return request.token
 
     # handle query string token if there are no POST parameters
@@ -144,4 +145,3 @@ def get_post_token(request):
     del request.POST[TOKEN_FIELD_NAME]
 
     return request.token
-

@@ -89,7 +89,9 @@ class Request(webob.Request):
         log.debug("Checking token matches Token {}, cookie_token: {}".format(self.token, self.get_cookie_token()))
         return self.token is not None and self.token == self.get_cookie_token()
 
+
 class CSRFMiddleware(object):
+
     def __init__(self, app, config):
         self.app = app
         self.domain = config['ckanext.security.domain']
@@ -119,4 +121,4 @@ class CSRFMiddleware(object):
 
     def unsafe_request_is_valid(self, request):
         return request.is_secure() and request.good_referer(self.domain) and \
-               request.good_origin(self.domain) and request.check_token()
+            request.good_origin(self.domain) and request.check_token()

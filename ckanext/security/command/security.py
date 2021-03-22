@@ -32,7 +32,7 @@ class Security(CkanCommand):
             sys.exit(1)
 
     def help(self):
-        print self.__doc__
+        print(self.__doc__)
 
     def migrate(self):
         print("Migrating database for security")

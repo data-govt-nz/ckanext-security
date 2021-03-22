@@ -1,11 +1,12 @@
+# encoding: utf-8
+
 import datetime
 
 from ckan import model
 from ckan.model import DomainObject, User
-from ckan.model.meta import metadata,  mapper, Session
+from ckan.model.meta import metadata, mapper
 import ckan.plugins.toolkit as toolkit
-from sqlalchemy import Table, Column, ForeignKey, Index, types, text
-from sqlalchemy.orm import relation
+from sqlalchemy import Table, Column, types
 import logging
 import pyotp
 

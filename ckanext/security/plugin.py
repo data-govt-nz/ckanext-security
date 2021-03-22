@@ -11,6 +11,7 @@ from ckanext.security.logic import auth, action
 
 log = logging.getLogger(__name__)
 
+
 class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes)

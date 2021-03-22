@@ -1,5 +1,4 @@
 import logging
-import pyotp
 import json
 
 from ckan import authz, model
@@ -7,7 +6,6 @@ from ckan.common import _, c, request, config
 from ckan.controllers.user import UserController
 from ckan.lib.base import abort, render
 from ckan.lib import helpers, mailer
-from ckan.lib.navl.dictization_functions import Invalid
 from ckan.logic import schema, NotAuthorized, check_access, get_action, NotFound
 from ckan.plugins import toolkit as tk
 from paste.deploy.converters import asbool
@@ -44,7 +42,7 @@ class MFAUserController(tk.BaseController):
             # if the current user can update the target user, then they can manage the totp secret
             check_access('user_update', context, {'id': data_dict['id']})
             user_dict = get_action('user_show')(context, {'id': data_dict['id']})
-        except NotFound as e:
+        except NotFound:
             tk.redirect_to(controller='user', action='login')
         except NotAuthorized:
             abort(403, _('Not authorized to see this page'))
@@ -74,7 +72,6 @@ class MFAUserController(tk.BaseController):
             if request.method == 'POST' and mfa_test_code is not None:
                 c.mfa_test_valid = totp_challenger.check_code(mfa_test_code, verify_only=True)
                 c.mfa_test_invalid = not c.mfa_test_valid
-
 
     def login(self):
         """
@@ -189,8 +186,11 @@ class MFAUserController(tk.BaseController):
         helpers.flash_success(_('Successfully updated two factor authentication secret. Make sure you add the new secret to your authenticator app.'))
         helpers.redirect_to('mfa_configure', id=user_id)
 
+
 mailer.send_reset_link = secure_mailer.send_reset_link
 original_password_reset = UserController.request_reset
+
+
 class SecureUserController(UserController):
     edit_user_form = 'security/edit_user_form.html'
 
@@ -227,7 +227,7 @@ class SecureUserController(UserController):
             data_dict = {'id': id}
             user_obj = None
             try:
-                user_dict = get_action('user_show')(context, data_dict)
+                get_action('user_show')(context, data_dict)
                 user_obj = context['user_obj']
             except NotFound:
                 # Try searching the user
@@ -242,7 +242,7 @@ class SecureUserController(UserController):
                         # and user_list does not return them
                         del data_dict['q']
                         data_dict['id'] = user_list[0]['id']
-                        user_dict = get_action('user_show')(context, data_dict)
+                        get_action('user_show')(context, data_dict)
                         user_obj = context['user_obj']
 
             helpers.flash_success(_('A reset token has been sent.'))

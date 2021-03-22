@@ -5,7 +5,6 @@ from ckan.lib.cli import MockTranslator
 from ckan.model import User
 from ckan.common import config
 import pylons
-from flask import abort
 from repoze.who.interfaces import IAuthenticator
 from webob.request import Request
 from zope.interface import implements
@@ -14,13 +13,17 @@ from ckanext.security.model import SecurityTOTP, ReplayAttackException
 
 log = logging.getLogger(__name__)
 
+
 def get_request_ip_address(request):
     """Retrieves the IP address from the request if possible"""
-    remote_addr = request.headers.get('X-Forwarded-For') or request.environ.get('REMOTE_ADDR')
-    if remote_addr == None:
-        log.critical('X-Forwarded-For header/REMOTE_ADDR missing from request.')
+    remote_addr = request.headers.get(
+        'X-Forwarded-For') or request.environ.get('REMOTE_ADDR')
+    if remote_addr is None:
+        log.critical(
+            'X-Forwarded-For header/REMOTE_ADDR missing from request.')
 
     return remote_addr
+
 
 def get_login_throttle_key(request, user_name):
     login_throttle_key = get_request_ip_address(request)
@@ -71,9 +74,11 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
 
         # Run through the CKAN auth sequence first, so we can hit the DB
         # in every case and make timing attacks a little more difficult.
-        auth_user_name = super(CKANLoginThrottle, self).authenticate(environ, identity)
+        auth_user_name = super(
+            CKANLoginThrottle, self).authenticate(environ, identity)
 
-        login_throttle_key = get_login_throttle_key(Request(environ), user_name)
+        login_throttle_key = get_login_throttle_key(
+            Request(environ), user_name)
         if login_throttle_key is None:
             return None
 
@@ -95,15 +100,14 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
                 throttle.reset()
                 return totp_success
 
-
-
     def authenticate_totp(self, environ, auth_user):
         totp_challenger = SecurityTOTP.get_for_user(auth_user)
 
         # if there is no totp configured, don't allow auth
         # shouldn't happen, login flow should create a totp_challenger
         if totp_challenger is None:
-            log.info("Login attempted without MFA configured for: {}".format(auth_user))
+            log.info(
+                "Login attempted without MFA configured for: {}".format(auth_user))
             return None
 
         request = Request(environ, charset='utf-8')
@@ -114,11 +118,13 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         try:
             result = totp_challenger.check_code(request.POST['mfa'])
         except ReplayAttackException as e:
-            log.warning("Detected a possible replay attack for user: {}, context: {}".format(auth_user, e))
+            log.warning(
+                "Detected a possible replay attack for user: {}, context: {}".format(auth_user, e))
             return None
 
         if result:
             return auth_user
+
 
 class BeakerRedisAuth(object):
     implements(IAuthenticator)
@@ -129,4 +135,3 @@ class BeakerRedisAuth(object):
         # from the identity object if it's there, or None if the user's
         # identity is not verified.
         return identity.get('repoze.who.userid', None)
-
