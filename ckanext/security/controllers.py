@@ -1,5 +1,4 @@
 import logging
-import pyotp
 import json
 
 from ckan import authz, model
@@ -7,8 +6,8 @@ from ckan.common import _, c, request, config
 from ckan.controllers.user import UserController
 from ckan.lib.base import abort, render
 from ckan.lib import helpers, mailer
-from ckan.lib.navl.dictization_functions import Invalid
-from ckan.logic import schema, NotAuthorized, check_access, get_action, NotFound
+from ckan.logic import schema, NotAuthorized, check_access, get_action,\
+    NotFound
 from ckan.plugins import toolkit as tk
 from paste.deploy.converters import asbool
 
@@ -38,13 +37,16 @@ class MFAUserController(tk.BaseController):
         Get user dict or abort request
         :param context:
         :param data_dict: requires an id field
-        :return: user_dict: a dictionary of user information based on the supplied query
+        :return: user_dict: a dictionary of user information based on
+         the supplied query
         """
         try:
-            # if the current user can update the target user, then they can manage the totp secret
+            # if the current user can update the target user,
+            # then they can manage the totp secret
             check_access('user_update', context, {'id': data_dict['id']})
-            user_dict = get_action('user_show')(context, {'id': data_dict['id']})
-        except NotFound as e:
+            user_dict = get_action('user_show')(
+                context, {'id': data_dict['id']})
+        except NotFound:
             tk.redirect_to(controller='user', action='login')
         except NotAuthorized:
             abort(403, _('Not authorized to see this page'))
@@ -72,9 +74,9 @@ class MFAUserController(tk.BaseController):
 
             mfa_test_code = request.params.get('mfa')
             if request.method == 'POST' and mfa_test_code is not None:
-                c.mfa_test_valid = totp_challenger.check_code(mfa_test_code, verify_only=True)
+                c.mfa_test_valid = totp_challenger.check_code(
+                    mfa_test_code, verify_only=True)
                 c.mfa_test_invalid = not c.mfa_test_valid
-
 
     def login(self):
         """
@@ -109,9 +111,13 @@ class MFAUserController(tk.BaseController):
             throttle = LoginThrottle(user, login_throttle_key)
             locked_out = throttle.is_locked()
             if locked_out:
-                log.info('User %s attempted login while brute force lockout in place', user_name)
+                log.info(
+                    '[%s] attempted login while brute force lockout in place',
+                    user_name
+                )
 
-            invalid_login = user is None or not user.is_active() or not user.validate_password(identity['password'])
+            invalid_login = user is None or not user.is_active() \
+                or not user.validate_password(identity['password'])
             if invalid_login:
                 # Increment the throttle counter if the login failed.
                 throttle.increment()
@@ -126,7 +132,8 @@ class MFAUserController(tk.BaseController):
             if totp_challenger is None:
                 totp_challenger = SecurityTOTP.create_for_user(user.name)
 
-            mfaConfigured = totp_challenger.last_successful_challenge is not None
+            mfaConfigured = totp_challenger.last_successful_challenge \
+                is not None
             if not mfaConfigured:
                 res['totpSecret'] = totp_challenger.secret
                 res['totpChallengerURI'] = totp_challenger.provisioning_uri
@@ -135,7 +142,8 @@ class MFAUserController(tk.BaseController):
             set_response(200)
 
             if identity['mfa']:
-                code_valid = totp_challenger.check_code(identity['mfa'], verify_only=True)
+                code_valid = totp_challenger.check_code(
+                    identity['mfa'], verify_only=True)
                 res['mfaCodeValid'] = code_valid and not locked_out
                 if code_valid:
                     log.info('Login succeeded for %s', user_name)
@@ -157,25 +165,29 @@ class MFAUserController(tk.BaseController):
             'model': model, 'session': model.Session,
             'user': c.user, 'auth_user_obj': c.userobj
         }
-        # pylons includes the rest of the url in the param, so we need to strip the /new suffix
+        # pylons includes the rest of the url in the param,
+        # so we need to strip the /new suffix
         user_id = id.replace('/new', '')
 
         data_dict = {'id': user_id, 'user_obj': c.userobj}
         self._setup_totp_template_variables(context, data_dict)
 
         if c.mfa_test_valid:
-            helpers.flash_success(_('That\'s a valid code. Your authenticator app is correctly configured for future use.'))
+            helpers.flash_success(_('''That's a valid code. Your authenticator
+                app is correctly configured for future use.'''))
         if c.mfa_test_invalid:
-            helpers.flash_error(_('That\'s an incorrect code. Try scanning the QR code again with your authenticator app.'))
+            helpers.flash_error(_('''That's an incorrect code. Try scanning
+                the QR code again with your authenticator app.'''))
         return tk.render('security/configure_mfa.html')
 
     def new(self, id=None):
-        """Set up a users new security TOTP credentials"""
+        """Set up a user's new security TOTP credentials"""
         context = {
             'model': model, 'session': model.Session,
             'user': c.user, 'auth_user_obj': c.userobj
         }
-        # pylons includes the rest of the url in the param, so we need to strip the /new suffix
+        # pylons includes the rest of the url in the param,
+        # so we need to strip the /new suffix
         user_id = id.replace('/new', '')
 
         data_dict = {'id': user_id, 'user_obj': c.userobj}
@@ -183,11 +195,16 @@ class MFAUserController(tk.BaseController):
         SecurityTOTP.create_for_user(user_dict['name'])
         self._setup_totp_template_variables(context, data_dict)
         log.info("Rotated the 2fa secret for user {}".format(user_id))
-        helpers.flash_success(_('Successfully updated two factor authentication secret. Make sure you add the new secret to your authenticator app.'))
+        helpers.flash_success(_('''Successfully updated two factor
+            authentication secret. Make sure you add the new secret to
+            your authenticator app.'''))
         helpers.redirect_to('mfa_configure', id=user_id)
+
 
 mailer.send_reset_link = secure_mailer.send_reset_link
 original_password_reset = UserController.request_reset
+
+
 class SecureUserController(UserController):
     edit_user_form = 'security/edit_user_form.html'
 
@@ -197,15 +214,18 @@ class SecureUserController(UserController):
         return form_schema
 
     def request_reset(self):
-        # Later versions of CKAN core have fixed this behaviour, we default to overriding
-        # with our own implementation but allow client to disable if needed
-        if asbool(config.get('ckanext.security.disable_password_reset_override')):
+        # Later versions of CKAN core have fixed this behaviour, we default
+        # to overriding with our own implementation but allow client to
+        # disable if needed
+        if asbool(config.get(
+                'ckanext.security.disable_password_reset_override')):
             return original_password_reset(self)
 
         # This is a one-to-one copy from ckan core, except for user errors
         # handling. There should be no feedback about whether or not a user
         # is found in the db.
-        # Original method is `ckan.controllers.user.UserController.request_reset`
+        # Original method is
+        # `ckan.controllers.user.UserController.request_reset`
         context = {'model': model, 'session': model.Session, 'user': c.user,
                    'auth_user_obj': c.userobj}
         data_dict = {'id': request.params.get('user')}
@@ -224,7 +244,7 @@ class SecureUserController(UserController):
             data_dict = {'id': id}
             user_obj = None
             try:
-                user_dict = get_action('user_show')(context, data_dict)
+                get_action('user_show')(context, data_dict)
                 user_obj = context['user_obj']
             except NotFound:
                 # Try searching the user
@@ -239,7 +259,7 @@ class SecureUserController(UserController):
                         # and user_list does not return them
                         del data_dict['q']
                         data_dict['id'] = user_list[0]['id']
-                        user_dict = get_action('user_show')(context, data_dict)
+                        get_action('user_show')(context, data_dict)
                         user_obj = context['user_obj']
 
             helpers.flash_success(_('A reset token has been sent.'))

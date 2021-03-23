@@ -4,11 +4,13 @@ https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Cross-Site_Req
 
 This is integrated in the CSRFMiddleware
 """
-import ckan.lib.base as base
+import binascii
+import os
 import re
 from re import IGNORECASE, MULTILINE
 from logging import getLogger
-from ckan.common import request
+
+from ckan.lib import base
 
 LOG = getLogger(__name__)
 
@@ -26,21 +28,30 @@ but we'll set a new one for next time.
 TOKEN_FRESHNESS_COOKIE_NAME = 'token-fresh'
 
 # We need to edit confirm-action links, which get intercepted by JavaScript,
-#regardless of which order their 'data-module' and 'href' attributes appear.
-CONFIRM_LINK = re.compile(r'(<a [^>]*data-module=["\']confirm-action["\'][^>]*href=["\']([^"\']+))(["\'])', IGNORECASE | MULTILINE)
-CONFIRM_LINK_REVERSED = re.compile(r'(<a [^>]*href=["\']([^"\']+))(["\'][^>]*data-module=["\']confirm-action["\'])', IGNORECASE | MULTILINE)
+# regardless of which order their 'data-module' and 'href' attributes appear.
+DATA_MODULE_ATTRIBUTE = '''data-module=["\']confirm-action["\']'''
+HREF_ATTRIBUTE = '''href=["']([^"']+))(["']'''
+DATA_MODULE_LINK_PATTERN = r'(<a [^>]*{}[^>]*{})'
+CONFIRM_LINK = re.compile(DATA_MODULE_LINK_PATTERN.format(
+    DATA_MODULE_ATTRIBUTE, HREF_ATTRIBUTE), IGNORECASE | MULTILINE)
+CONFIRM_LINK_REVERSED = re.compile(DATA_MODULE_LINK_PATTERN.format(
+    HREF_ATTRIBUTE, DATA_MODULE_ATTRIBUTE), IGNORECASE | MULTILINE)
 
 """
-This will match a POST form that has whitespace after the opening tag (which all existing forms do).
+This will match a POST form that has whitespace after the opening tag
+(which all existing forms do).
 Once we have injected a token immediately after the opening tag,
 it won't match any more, which avoids redundant injection.
 """
-POST_FORM = re.compile(r'(<form [^>]*method=["\']post["\'][^>]*>)([^<]*\s<)', IGNORECASE | MULTILINE)
+POST_FORM = re.compile(
+    r'(<form [^>]*method=["\']post["\'][^>]*>)([^<]*\s<)',
+    IGNORECASE | MULTILINE)
 
 """The format of the token HTML field.
 """
-HEX_PATTERN=re.compile(r'^[0-9a-z]+$')
-TOKEN_PATTERN = r'<input type="hidden" name="' + TOKEN_FIELD_NAME + '" value="{token}"/>'
+HEX_PATTERN = re.compile(r'^[0-9a-z]+$')
+TOKEN_PATTERN = r'<input type="hidden" name="' + TOKEN_FIELD_NAME \
+    + '" value="{token}"/>'
 TOKEN_SEARCH_PATTERN = re.compile(TOKEN_PATTERN.format(token=r'([0-9a-f]+)'))
 API_URL = re.compile(r'^/api\b.*')
 
@@ -54,16 +65,21 @@ def apply_token(html, token):
         token = token_match.group(1)
 
     def insert_form_token(form_match):
-        return form_match.group(1) + TOKEN_PATTERN.format(token=token) + form_match.group(2)
+        return form_match.group(1) + TOKEN_PATTERN.format(token=token)\
+            + form_match.group(2)
 
     def insert_link_token(link_match):
         if '?' in link_match.group(2):
             separator = '&'
         else:
             separator = '?'
-        return link_match.group(1) + separator + TOKEN_FIELD_NAME + '=' + token + link_match.group(3)
+        return link_match.group(1) + separator + TOKEN_FIELD_NAME + '='\
+            + token + link_match.group(3)
 
-    return CONFIRM_LINK_REVERSED.sub(insert_link_token, CONFIRM_LINK.sub(insert_link_token, POST_FORM.sub(insert_form_token, html)))
+    return CONFIRM_LINK_REVERSED.sub(
+        insert_link_token,
+        CONFIRM_LINK.sub(insert_link_token,
+                         POST_FORM.sub(insert_form_token, html)))
 
 
 def get_cookie_token(request):
@@ -73,7 +89,7 @@ def get_cookie_token(request):
     If not, an error will occur.
     """
     token = None
-    if request.cookies.has_key(TOKEN_FIELD_NAME):
+    if TOKEN_FIELD_NAME in request.cookies:
         LOG.debug("Obtaining token from cookie")
         token = request.cookies.get(TOKEN_FIELD_NAME)
     if token is None or token.strip() == "":
@@ -88,7 +104,8 @@ def get_response_token(request, response):
     If not, a new token will be generated and a new cookie set.
     """
     # ensure that the same token is used when a page is assembled from pieces
-    if TOKEN_FIELD_NAME in request.cookies and TOKEN_FRESHNESS_COOKIE_NAME in request.cookies:
+    if TOKEN_FIELD_NAME in request.cookies\
+            and TOKEN_FRESHNESS_COOKIE_NAME in request.cookies:
         LOG.debug("Obtaining token from cookie")
         token = request.cookies.get(TOKEN_FIELD_NAME)
         if not HEX_PATTERN.match(token):
@@ -101,10 +118,10 @@ def get_response_token(request, response):
 
 
 def create_response_token(response):
-    import binascii, os
     token = binascii.hexlify(os.urandom(32))
     response.set_cookie(TOKEN_FIELD_NAME, token, secure=True, httponly=True)
-    response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600, secure=True, httponly=True)
+    response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600,
+                        secure=True, httponly=True)
     return token
 
 
@@ -122,7 +139,7 @@ def get_post_token(request):
     it is also acceptable to provide the token as a query string parameter,
     if there is no POST body.
     """
-    if request.environ['webob.adhoc_attrs'].has_key(TOKEN_FIELD_NAME):
+    if TOKEN_FIELD_NAME in request.environ['webob.adhoc_attrs']:
         return request.token
 
     # handle query string token if there are no POST parameters
@@ -144,4 +161,3 @@ def get_post_token(request):
     del request.POST[TOKEN_FIELD_NAME]
 
     return request.token
-
