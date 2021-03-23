@@ -19,11 +19,14 @@ from ckanext.security import validators
 def default_user_schema():
     schema = {
         'id': [ignore_missing, six.text_type],
-        'name': [not_empty, name_validator, user_name_validator, six.text_type],
+        'name': [not_empty, name_validator, user_name_validator,
+                 six.text_type],
         'fullname': [ignore_missing, six.text_type],
-        'password': [validators.user_password_validator, user_password_not_empty,
+        'password': [validators.user_password_validator,
+                     user_password_not_empty,
                      ignore_missing, six.text_type],
-        'password_hash': [ignore_missing, ignore_not_sysadmin, six.text_type],
+        'password_hash': [ignore_missing, ignore_not_sysadmin,
+                          six.text_type],
         'email': [not_empty, six.text_type],
         'about': [ignore_missing, user_about_validator, six.text_type],
         'created': [ignore],
@@ -41,7 +44,8 @@ def user_new_form_schema():
     schema = default_user_schema()
 
     schema['password1'] = [six.text_type, user_both_passwords_entered,
-                           validators.user_password_validator, user_passwords_match]
+                           validators.user_password_validator,
+                           user_passwords_match]
     schema['password2'] = [six.text_type]
 
     return schema
@@ -51,7 +55,8 @@ def user_edit_form_schema():
     schema = default_user_schema()
 
     schema['password'] = [ignore_missing]
-    schema['password1'] = [ignore_missing, six.text_type, validators.user_password_validator,
+    schema['password1'] = [ignore_missing, six.text_type,
+                           validators.user_password_validator,
                            user_passwords_match]
     schema['password2'] = [ignore_missing, six.text_type]
 
@@ -63,6 +68,7 @@ def default_update_user_schema():
 
     schema['name'] = [ignore_missing, name_validator, user_name_validator,
                       six.text_type]
-    schema['password'] = [validators.user_password_validator, ignore_missing, six.text_type]
+    schema['password'] = [validators.user_password_validator,
+                          ignore_missing, six.text_type]
 
     return schema

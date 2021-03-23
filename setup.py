@@ -7,7 +7,8 @@ setup(
     version=version,
     description='Various security patches for CKAN',
     long_description='',
-    classifiers=[],  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    classifiers=[],
     keywords='',
     author='Data.govt.nz',
     author_email='info@data.govt.nz',
@@ -26,7 +27,8 @@ setup(
         'six'
     ],
     dependency_links=[
-        'git+https://github.com/kaukas/repoze.who-use_beaker.git@8ec4cea#egg=repoze.who-use-beaker-0.4'
+        'git+https://github.com/kaukas/repoze.who-use_beaker.git@8ec4cea\
+#egg=repoze.who-use-beaker-0.4'
     ],
     entry_points="""
     [ckan.plugins]

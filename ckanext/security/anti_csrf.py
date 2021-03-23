@@ -29,20 +29,29 @@ TOKEN_FRESHNESS_COOKIE_NAME = 'token-fresh'
 
 # We need to edit confirm-action links, which get intercepted by JavaScript,
 # regardless of which order their 'data-module' and 'href' attributes appear.
-CONFIRM_LINK = re.compile(r'(<a [^>]*data-module=["\']confirm-action["\'][^>]*href=["\']([^"\']+))(["\'])', IGNORECASE | MULTILINE)
-CONFIRM_LINK_REVERSED = re.compile(r'(<a [^>]*href=["\']([^"\']+))(["\'][^>]*data-module=["\']confirm-action["\'])', IGNORECASE | MULTILINE)
+DATA_MODULE_ATTRIBUTE = '''data-module=["\']confirm-action["\']'''
+HREF_ATTRIBUTE = '''href=["']([^"']+))(["']'''
+DATA_MODULE_LINK_PATTERN = r'(<a [^>]*{}[^>]*{})'
+CONFIRM_LINK = re.compile(DATA_MODULE_LINK_PATTERN.format(
+    DATA_MODULE_ATTRIBUTE, HREF_ATTRIBUTE), IGNORECASE | MULTILINE)
+CONFIRM_LINK_REVERSED = re.compile(DATA_MODULE_LINK_PATTERN.format(
+    HREF_ATTRIBUTE, DATA_MODULE_ATTRIBUTE), IGNORECASE | MULTILINE)
 
 """
-This will match a POST form that has whitespace after the opening tag (which all existing forms do).
+This will match a POST form that has whitespace after the opening tag
+(which all existing forms do).
 Once we have injected a token immediately after the opening tag,
 it won't match any more, which avoids redundant injection.
 """
-POST_FORM = re.compile(r'(<form [^>]*method=["\']post["\'][^>]*>)([^<]*\s<)', IGNORECASE | MULTILINE)
+POST_FORM = re.compile(
+    r'(<form [^>]*method=["\']post["\'][^>]*>)([^<]*\s<)',
+    IGNORECASE | MULTILINE)
 
 """The format of the token HTML field.
 """
 HEX_PATTERN = re.compile(r'^[0-9a-z]+$')
-TOKEN_PATTERN = r'<input type="hidden" name="' + TOKEN_FIELD_NAME + '" value="{token}"/>'
+TOKEN_PATTERN = r'<input type="hidden" name="' + TOKEN_FIELD_NAME \
+    + '" value="{token}"/>'
 TOKEN_SEARCH_PATTERN = re.compile(TOKEN_PATTERN.format(token=r'([0-9a-f]+)'))
 API_URL = re.compile(r'^/api\b.*')
 
@@ -56,16 +65,21 @@ def apply_token(html, token):
         token = token_match.group(1)
 
     def insert_form_token(form_match):
-        return form_match.group(1) + TOKEN_PATTERN.format(token=token) + form_match.group(2)
+        return form_match.group(1) + TOKEN_PATTERN.format(token=token)\
+            + form_match.group(2)
 
     def insert_link_token(link_match):
         if '?' in link_match.group(2):
             separator = '&'
         else:
             separator = '?'
-        return link_match.group(1) + separator + TOKEN_FIELD_NAME + '=' + token + link_match.group(3)
+        return link_match.group(1) + separator + TOKEN_FIELD_NAME + '='\
+            + token + link_match.group(3)
 
-    return CONFIRM_LINK_REVERSED.sub(insert_link_token, CONFIRM_LINK.sub(insert_link_token, POST_FORM.sub(insert_form_token, html)))
+    return CONFIRM_LINK_REVERSED.sub(
+        insert_link_token,
+        CONFIRM_LINK.sub(insert_link_token,
+                         POST_FORM.sub(insert_form_token, html)))
 
 
 def get_cookie_token(request):
@@ -90,7 +104,8 @@ def get_response_token(request, response):
     If not, a new token will be generated and a new cookie set.
     """
     # ensure that the same token is used when a page is assembled from pieces
-    if TOKEN_FIELD_NAME in request.cookies and TOKEN_FRESHNESS_COOKIE_NAME in request.cookies:
+    if TOKEN_FIELD_NAME in request.cookies\
+            and TOKEN_FRESHNESS_COOKIE_NAME in request.cookies:
         LOG.debug("Obtaining token from cookie")
         token = request.cookies.get(TOKEN_FIELD_NAME)
         if not HEX_PATTERN.match(token):
@@ -105,7 +120,8 @@ def get_response_token(request, response):
 def create_response_token(response):
     token = binascii.hexlify(os.urandom(32))
     response.set_cookie(TOKEN_FIELD_NAME, token, secure=True, httponly=True)
-    response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600, secure=True, httponly=True)
+    response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600,
+                        secure=True, httponly=True)
     return token
 
 
