@@ -18,7 +18,8 @@ def _add_mimetypes():
         mimetypes.init()
 
     # Add mimetypes from config
-    config_mimetypes = eval(config.get('ckanext.security.extended_upload_mimetypes', '{}'))
+    config_mimetypes = eval(config.get(
+        'ckanext.security.extended_upload_mimetypes', '{}'))
     extended_mimetypes = DEFAULT_EXTENDED_UPLOAD_MIMETYPES.copy()
     extended_mimetypes.update(config_mimetypes)  # merges defaults and config
 
@@ -42,9 +43,11 @@ def _build_mimetypes_and_extensions(filename, file_content):
         extensions_and_mimetypes.extend(guessed_mimetypes)
 
     if file_content:
-        # get inferred mimetype of file and possible extensions for that mimetype
+        # get inferred mimetype of file and possible extensions
+        # for that mimetype
         try:
-            # try to get python-magic to infer upload file mime type from actual file content
+            # try to get python-magic to infer upload file mime type
+            # from actual file content
             mimetype = magic.from_buffer(file_content.read(2048), mime=True)
         except IOError:
             log.warning('Unable to detect mimetype from file content')
@@ -53,8 +56,10 @@ def _build_mimetypes_and_extensions(filename, file_content):
             extensions_and_mimetypes.append(mimetype)
 
             # build set of possible extensions for the mimetype
-            nonstandard_extensions = mimes_instance.types_map_inv[0].get(mimetype, [])
-            standard_extensions = mimes_instance.types_map_inv[1].get(mimetype, [])
+            nonstandard_extensions = mimes_instance.types_map_inv[0].get(
+                mimetype, [])
+            standard_extensions = mimes_instance.types_map_inv[1].get(
+                mimetype, [])
             extensions_and_mimetypes.extend(nonstandard_extensions)
             extensions_and_mimetypes.extend(standard_extensions)
 
@@ -72,9 +77,11 @@ def validate_upload_type(resource):
     """
     Uses the mimetypes builtin library to make inferences about the filename
     and test the possible mimetypes and extensions against the blacklist.
-    Also uses python-magic to attempt detection of the mimetype by file contents.
+    Also uses python-magic to attempt detection of the mimetype by file
+    contents.
 
-    NOTE: When linking files rather than uploading, we only test the extension at present.
+    NOTE: When linking files rather than uploading, we only test the
+    extension at present.
     """
     uploaded_file = None
     filename = resource.get('url')
@@ -84,16 +91,22 @@ def validate_upload_type(resource):
         filename = field_storage.filename
 
     _add_mimetypes()
-    extensions_and_mimetypes = _build_mimetypes_and_extensions(filename, uploaded_file)
+    extensions_and_mimetypes = _build_mimetypes_and_extensions(
+        filename, uploaded_file)
 
-    config_blacklist = eval(config.get('ckanext.security.upload_blacklist', '[]').lower())
+    config_blacklist = eval(config.get(
+        'ckanext.security.upload_blacklist', '[]').lower())
     blacklist = list(DEFAULT_UPLOAD_BLACKLIST)
     blacklist.extend(config_blacklist)
 
-    log.info('Detected extensions/mimetypes: {}'.format(extensions_and_mimetypes))
+    log.info('Detected extensions/mimetypes: %s', extensions_and_mimetypes)
     # test all extensions and mimetypes against blacklist, fail fast
-    if any(map(lambda ext: ext.lower() in blacklist, extensions_and_mimetypes)):
-        log.warning('Prevented upload of {}, detected mimetypes/extensions: {}, blacklist: {}'.format(resource.get('url'), extensions_and_mimetypes, blacklist))
+    if any(map(lambda ext: ext.lower() in blacklist,
+               extensions_and_mimetypes)):
+        log.warning(
+            'Prevented upload of %s, detected mimetypes/extensions: %s,\
+blacklist: %s',
+            resource.get('url'), extensions_and_mimetypes, blacklist)
         resource['url'] = ''
         action = 'upload' if uploaded_file else 'link'
         raise ValidationError(

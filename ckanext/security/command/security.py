@@ -4,14 +4,16 @@ import sys
 
 
 class Security(CkanCommand):
-    '''Command for managing the security module
-        Usage: paster --plugin=ckanext-security security <command> -c <path to config file>
+    '''Command for managing the security module.
+    Usage: paster --plugin=ckanext-security security <command> \
+    -c <path to config file>
 
-            command:
-            help  - prints this help
-            migrate - create the database table to support time based one time (TOTP) login
-            reset_totp <username> - generate a new totp secret for a given user
-        '''
+        command:
+        help  - prints this help
+        migrate - create the database table to support \
+        Time-based One Time Password login
+        reset_totp <username> - generate a new totp secret for a given user
+    '''
     summary = __doc__.split('\n')[0]
     usage = __doc__
 

@@ -2,11 +2,13 @@ import logging
 
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-import ckan.logic.schema
+from ckan.logic import schema as core_schema
 
 from ckanext.security.model import define_security_tables
-from ckanext.security import schema
-from ckanext.security.resource_upload_validator import validate_upload_type, validate_upload_presence
+from ckanext.security.resource_upload_validator import (
+    validate_upload_type, validate_upload_presence
+)
+from ckanext.security import schema as ext_schema
 from ckanext.security.logic import auth, action
 
 log = logging.getLogger(__name__)
@@ -23,13 +25,18 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
     def update_config(self, config):
         define_security_tables()  # map security models to db schema
 
-        # Monkeypatching all user schemas in order to enforce a stronger password
-        # policy. I tried mokeypatching `ckan.logic.validators.user_password_validator`
-        # instead without success.
-        ckan.logic.schema.default_user_schema = schema.default_user_schema
-        ckan.logic.schema.user_new_form_schema = schema.user_new_form_schema
-        ckan.logic.schema.user_edit_form_schema = schema.user_edit_form_schema
-        ckan.logic.schema.default_update_user_schema = schema.default_update_user_schema
+        # Monkeypatching all user schemas in order to enforce a stronger
+        # password policy. I tried monkeypatching
+        # `ckan.logic.validators.user_password_validator` instead
+        # without success.
+        core_schema.default_user_schema = \
+            ext_schema.default_user_schema
+        core_schema.user_new_form_schema = \
+            ext_schema.user_new_form_schema
+        core_schema.user_edit_form_schema = \
+            ext_schema.user_edit_form_schema
+        core_schema.default_update_user_schema = \
+            ext_schema.default_update_user_schema
 
         toolkit.add_template_directory(config, 'templates')
         toolkit.add_resource('fanstatic', 'security')
@@ -37,10 +44,14 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
     def before_map(self, urlmap):
         userController = 'ckanext.security.controllers:SecureUserController'
         urlmap.redirect('/user/edit/', '/user/edit')
-        urlmap.connect('/user/edit', controller=userController, action='edit')
-        urlmap.connect('/user/edit/{id:.*}', controller=userController, action='edit', ckan_icon='cog')
-        urlmap.connect('/user/reset/{id:.*}', controller=userController, action='perform_reset')
-        urlmap.connect('/user/reset', controller=userController, action='request_reset')
+        urlmap.connect('/user/edit', controller=userController,
+                       action='edit')
+        urlmap.connect('/user/edit/{id:.*}', controller=userController,
+                       action='edit', ckan_icon='cog')
+        urlmap.connect('/user/reset/{id:.*}', controller=userController,
+                       action='perform_reset')
+        urlmap.connect('/user/reset', controller=userController,
+                       action='request_reset')
         return urlmap
 
     def after_map(self, urlmap):

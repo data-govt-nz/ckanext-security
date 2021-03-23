@@ -16,13 +16,15 @@ class Request(webob.Request):
         self.token = self._get_post_token()
 
     def is_secure(self):
-        # allow requests which have the x-forwarded-proto of https (inserted by nginx)
+        """ Check if the request uses HTTPS,
+        either directly or via Nginx."""
         if self.headers.get('X-Forwarded-Proto') == 'https':
             return True
         return self.scheme == 'https'
 
     def is_safe(self):
-        "Check if the request is 'safe', if the request is safe it will not be checked for csrf"
+        """ Check if the request is 'safe'.
+        If so, it will not be checked for CSRF."""
         # api requests are exempt from csrf checks
         if self.path.startswith("/api"):
             return True
@@ -31,7 +33,8 @@ class Request(webob.Request):
         return self.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE')
 
     def good_referer(self, domain):
-        "Returns true if the referrer is https and matching the host"
+        """ Check whether the referrer header is HTTPS and matches the host.
+        """
         if not self.referer:
             return False
         else:
@@ -39,30 +42,33 @@ class Request(webob.Request):
             return self.referer.startswith(match)
 
     def good_origin(self, domain):
-        """
-        checks if the origin header is present and matches the header"
+        """Check if the origin header is present and matches the header.
         :param domain: string: the expected origin domain
-        :return: boolean: true if the origin header is present and matches the expected domain
+        :return: boolean: true if the origin header is present and
+         matches the expected domain
         """
         origin = self.headers.get('origin', None)
         if not origin:
-            log.warning("Potentially unsafe CSRF request is missing the origin header")
+            log.warning(
+                "Potentially unsafe request is missing the Origin header")
             return True
         else:
             match = "https://{}".format(domain)
             return origin.startswith(match)
 
     def _get_post_token(self):
-        """Retrieve the token provided by the client. Or return None if not present
+        """Retrieve the token provided by the client, or return None
+        if not present.
 
-            This is normally a single 'token' parameter in the POST body.
-            However, for compatibility with 'confirm-action' links,
-            it is also acceptable to provide the token as a query string parameter,
-            if there is no POST body.
+        This is normally a single 'token' parameter in the POST body.
+        However, for compatibility with 'confirm-action' links, it is
+        also acceptable to provide the token as a query string parameter,
+        if there is no POST body.
         """
         # handle query string token if there are no POST parameters
         # this is needed for the 'confirm-action' JavaScript module
-        if not self.POST and len(self.GET.getall(anti_csrf.TOKEN_FIELD_NAME)) == 1:
+        if not self.POST \
+                and len(self.GET.getall(anti_csrf.TOKEN_FIELD_NAME)) == 1:
             token = self.GET.getone(anti_csrf.TOKEN_FIELD_NAME)
             del self.GET[anti_csrf.TOKEN_FIELD_NAME]
             return token
@@ -86,7 +92,8 @@ class Request(webob.Request):
             return None
 
     def check_token(self):
-        log.debug("Checking token matches Token {}, cookie_token: {}".format(self.token, self.get_cookie_token()))
+        log.debug("Checking token matches Token %s, cookie_token: %s",
+                  self.token, self.get_cookie_token())
         return self.token is not None and self.token == self.get_cookie_token()
 
 
