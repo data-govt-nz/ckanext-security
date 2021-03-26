@@ -30,6 +30,31 @@ def get_login_throttle_key(request, user_name):
 
     return login_throttle_key
 
+
+def get_user_throttle(user_name):
+    if config.get('ckanext.security.brute_force_key') != 'user_name':
+        return {}
+    return LoginThrottle(User.by_name(user_name), user_name).get()
+
+
+def get_address_throttle(address):
+    if config.get('ckanext.security.brute_force_key') == 'user_name':
+        return {}
+    return LoginThrottle(None, address).get()
+
+
+def reset_user_throttle(user_name):
+    if config.get('ckanext.security.brute_force_key') != 'user_name':
+        return
+    LoginThrottle(User.by_name(user_name), user_name).reset()
+
+
+def reset_address_throttle(address):
+    if config.get('ckanext.security.brute_force_key') == 'user_name':
+        return
+    LoginThrottle(None, address).reset()
+
+
 class CKANLoginThrottle(UsernamePasswordAuthenticator):
     implements(IAuthenticator)
 
