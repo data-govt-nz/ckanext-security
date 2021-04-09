@@ -1,13 +1,7 @@
 Dear {{ user_name }},
 
-We have detected an unusually large amount of login attempts for your account.
+We have detected an unusually large number of login attempts for your account. 
 
-As a security precaution, we have temporarily blocked the IP address {{ ip_address }}
-from logging in with your credentials.
+As a security precaution, we have temporarily locked your account. Please allow at least {{ lockout_mins }} minutes before attempting to log in again. 
 
-If you would like to reset your password, you can use the form provided on {{ site_url }}.
-
-Have a nice day.
-
---
-Message sent by {{ site_title }} ({{ site_url }})
+If you would like to reset your password, you can use the form provided at {{ password_reset_url }}.

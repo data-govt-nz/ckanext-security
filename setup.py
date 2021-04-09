@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '1.1.0'
+version = '2.4.2'
 
 setup(
     name='ckanext-security',
@@ -20,7 +20,9 @@ setup(
     install_requires=[
         'repoze.who-use-beaker',
         'redis',
-        'beakeredis'
+        'beakeredis',
+        'pyotp',
+        'python-magic'
     ],
     dependency_links=[
         'git+https://github.com/kaukas/repoze.who-use_beaker.git@8ec4cea#egg=repoze.who-use-beaker-0.4'
@@ -29,5 +31,8 @@ setup(
     """
     [ckan.plugins]
     security=ckanext.security.plugin:CkanSecurityPlugin
+
+    [paste.paster_command]
+    security=ckanext.security.command.security:Security
     """,
 )
