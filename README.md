@@ -37,6 +37,10 @@ A notification email will be sent to locked out users.
 The email footer content can be overridden by providing a path to a file that will replace the content in `templates/security/emails/lockout_footer.txt` in this module.
 The path can be provided via the `ckanext.security.brute_force_footer_path` config option.
 
+Sysadmins may use the `security_throttle_user_show` or `security_throttle_address_show` actions to query the brute force lockout status for a username or IP address. The `security_throttle_user_reset` and `security_throttle_address_reset` actions may be used to clear a brute force lockout status before the configured timeout.
+
+Lockouts are removed automatically when a user's password is reset or their account is modified.
+
 ### Two Factor Authentication enforcement
 Users are required to use Two Factor Authentication (2fa). This feature adds a two step login flow, where the user adds their username and password first, then their 2fa code after. They are presented with a QR code to configure an authentication app on first login, then just an input for the one-time code on subsequent logins.
 

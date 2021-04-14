@@ -7,6 +7,7 @@ import ckan.logic.schema
 from ckanext.security.model import define_security_tables
 from ckanext.security import schema
 from ckanext.security.resource_upload_validator import validate_upload_type, validate_upload_presence
+from ckanext.security.logic import auth, action
 
 log = logging.getLogger(__name__)
 
@@ -15,6 +16,8 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IRoutes)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IResourceController, inherit=True)
+    plugins.implements(plugins.IActions)
+    plugins.implements(plugins.IAuthFunctions)
 
     def update_config(self, config):
         define_security_tables()  # map security models to db schema
@@ -65,3 +68,24 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
         validate_upload_type(resource)
         pass
     # END Hooks for IResourceController
+
+    # BEGIN Hooks for IActions
+    def get_actions(self):
+        return {
+            'security_throttle_user_reset': action.security_throttle_user_reset,
+            'security_throttle_address_reset': action.security_throttle_address_reset,
+            'security_throttle_user_show': action.security_throttle_user_show,
+            'security_throttle_address_show': action.security_throttle_address_show,
+            'user_update': action.user_update,
+        }
+    # END Hooks for IActions
+
+    # BEGIN Hooks for IAuthFunctions
+    def get_auth_functions(self):
+        return {
+            'security_throttle_user_reset': auth.security_throttle_user_reset,
+            'security_throttle_address_reset': auth.security_throttle_address_reset,
+            'security_throttle_user_show': auth.security_throttle_user_show,
+            'security_throttle_address_show': auth.security_throttle_address_show,
+        }
+    # END Hooks for IAuthFunctions
