@@ -147,6 +147,11 @@ ckanext.security.redis.db = 1                 # ckan uses db 0
 # 15 minute timeout with 10 attempts
 ckanext.security.lock_timeout = 900           # Login throttling lock period
 ckanext.security.login_max_count = 10         # Login throttling attempt limit
+
+# CSRF token age
+ckanext.security.token_max_age = 3600
+ckanext.security.token_rotation_age = 600
+
 ckanext.security.brute_force_key = user_name  # Detect brute force attempts by username rather than IP address
 
 # If using 2.7.7 or recent patches of 2.8, the password reset behaviour has been fixed in CKAN core
