@@ -39,7 +39,7 @@ def _build_mimetypes_and_extensions(filename, file_content):
         ])
         extensions_and_mimetypes.extend(guessed_mimetypes)
 
-    if file_content:
+    if file_content and False:  # FIXME: reading first 2k is interfering with cloudstorage
         # get inferred mimetype of file and possible extensions for that mimetype
         try:
             # try to get python-magic to infer upload file mime type from actual file content
