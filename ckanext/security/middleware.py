@@ -26,6 +26,9 @@ class Request(webob.Request):
         # api requests are exempt from csrf checks
         if self.path.startswith("/api"):
             return True
+        # ckanext-canada recombinant template downloads are safe and form is generated from JS
+        if self.path.startswith("/recombinant-template/"):
+            return True
 
         # get/head/options/trace are exempt from csrf checks
         return self.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE')
