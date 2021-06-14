@@ -80,6 +80,11 @@
     if (!loginState.mfaConfigured) {
       showQRCode(loginState)
     }
+
+    if (loginState.mfaHelpLink) {
+      $('#mfa-help-link').attr('href', loginState.mfaHelpLink)
+      $('#mfa-help-link').show()
+    }
   }
 
   var showError = function (type) {
