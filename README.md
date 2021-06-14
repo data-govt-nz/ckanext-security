@@ -154,6 +154,10 @@ ckanext.security.brute_force_key = user_name  # Detect brute force attempts by u
 # reset may be broken due to permission restrictions on user lookups,
 # You can disable the fix in this plugin by:
 ckanext.security.disable_password_reset_override = true
+
+# Provide a help page to allow 2fa users to contact support or get more information
+# Shows up as 'Need help?' on the 2fa entry form beside the submit button. Does not display a link if none provided
+ckanext.security.mfa_help_link = https://data.govt.nz/catalogue-guide/releasing-data-on-data-govt-nz/how-do-i-set-up-two-factor-authentication/
 ```
 
 ## How to install?
