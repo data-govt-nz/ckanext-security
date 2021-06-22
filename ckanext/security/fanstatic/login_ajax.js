@@ -48,17 +48,17 @@
         showMfaForm(loginState)
       },
       error: function (xhr) {
-        var jsonResponse = null;
-        try {
-          jsonResponse = JSON.parse(xhr.responseText)
-        } catch (e) {}
-
-        if (jsonResponse && jsonResponse.hasOwnProperty('mfaCodeValid')) {
-          showError('mfa')
-          return
-        }
-
         if (xhr.status === 403) {
+          // Show MFA error message if mfa code is not valid
+          try {
+            var jsonResponse = JSON.parse(xhr.responseText)
+            if (jsonResponse && jsonResponse.mfaCodeValid === false) {
+              showError('mfa')
+              return
+            }
+          } catch (e) {}
+
+          // Otherwise we're on the username/password form, show error for that
           showError('login')
           return
         }
