@@ -8,6 +8,7 @@ from ckanext.security.model import define_security_tables
 from ckanext.security import schema
 from ckanext.security.resource_upload_validator import validate_upload_type, validate_upload_presence
 from ckanext.security.logic import auth, action
+from ckanext.security import helpers
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IResourceController, inherit=True)
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IAuthFunctions)
+    plugins.implements(plugins.ITemplateHelpers)
 
     def update_config(self, config):
         define_security_tables()  # map security models to db schema
@@ -89,3 +91,11 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
             'security_throttle_address_show': auth.security_throttle_address_show,
         }
     # END Hooks for IAuthFunctions
+
+    # BEGIN Hooks for ITemplateHelpers
+
+    def get_helpers(self):
+        return {
+            'security_disable_totp': helpers.security_disable_totp,
+        }
+    # END Hooks for ITemplateHelpers
