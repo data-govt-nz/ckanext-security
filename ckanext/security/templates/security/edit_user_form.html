@@ -47,10 +47,12 @@
     {{ form.input('password2', type='password', label=_('Confirm Password'), id='field-password-confirm', value=data.password2, error=errors.password2, classes=['control-medium'], attrs={'autocomplete': 'off'}) }}
   </fieldset>
 
+  {% if h.security_disable_totp() == false %}
   <fieldset>
     <legend>{{_('Two factor authentication')}}</legend>
     {% link_for _('Manage two factor authentication'), controller='ckanext.security.controllers:MFAUserController', action='configure_mfa', id=data.id, class_='btn pull-left', icon='cog' %}
   </fieldset>
+  {% endif %}
 
   <div class="form-actions">
     {% block delete_button %}
