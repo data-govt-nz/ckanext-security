@@ -130,5 +130,7 @@ class CSRFMiddleware(object):
         return request.is_safe() or self.unsafe_request_is_valid(request)
 
     def unsafe_request_is_valid(self, request):
-        return request.good_referer(self.domain) and \
-               request.good_origin(self.domain) and request.check_token()
+        #  XXX: disable referer and origin check to support multiple host names
+        #return request.good_referer(self.domain) and \
+        #       request.good_origin(self.domain) and request.check_token()
+        return request.check_token()
