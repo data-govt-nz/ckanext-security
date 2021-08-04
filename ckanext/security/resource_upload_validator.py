@@ -2,8 +2,8 @@ import mimetypes
 import magic
 import logging
 import os
-from cgi import FieldStorage
 
+from cgi import FieldStorage
 from ckan.logic import ValidationError
 from ckan.common import config
 

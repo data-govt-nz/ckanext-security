@@ -1,10 +1,10 @@
 import logging
+import pylons
 
 from ckan.lib.authenticator import UsernamePasswordAuthenticator
 from ckan.lib.cli import MockTranslator
 from ckan.model import User
 from ckan.common import config
-import pylons
 from repoze.who.interfaces import IAuthenticator
 from webob.request import Request
 from zope.interface import implements
@@ -76,13 +76,8 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
 
         # Run through the CKAN auth sequence first, so we can hit the DB
         # in every case and make timing attacks a little more difficult.
-<< << << < HEAD
-        auth_user_name = super(
-            CKANLoginThrottle, self).authenticate(environ, identity)
-== == == =
         auth_user_name = super(CKANLoginThrottle, self).authenticate(
             environ, identity)
->>>>>> > clean up for  # 35
 
         login_throttle_key = get_login_throttle_key(
             Request(environ), user_name)
@@ -115,13 +110,8 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         # if there is no totp configured, don't allow auth
         # shouldn't happen, login flow should create a totp_challenger
         if totp_challenger is None:
-<<<<<<< HEAD
-            log.info(
-                "Login attempted without MFA configured for: {}".format(auth_user))
-=======
             log.info("Login attempted without MFA configured for: %s",
                      auth_user)
->>>>>>> clean up for #35
             return None
 
         request = Request(environ, charset='utf-8')
@@ -133,12 +123,8 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
             result = totp_challenger.check_code(request.POST['mfa'])
         except ReplayAttackException as e:
             log.warning(
-<<<<<<< HEAD
-                "Detected a possible replay attack for user: {}, context: {}".format(auth_user, e))
-=======
                 "Detected a possible replay attack for user: %s, context: %s",
                 auth_user, e)
->>>>>>> clean up for #35
             return None
 
         if result:

@@ -1,15 +1,14 @@
 import logging
-
+import schema as ext_schema
 import ckan.plugins as plugins
-import ckan.plugins.toolkit as toolkit
-from ckan.logic import schema as core_schema
 
+from ckanext.security.logic import auth, action
+from ckan.plugins import toolkit
+from ckan.logic import schema as core_schema
 from ckanext.security.model import define_security_tables
-from ckanext.security.resource_upload_validator import (
+from resource_upload_validator import (
     validate_upload_type, validate_upload_presence
 )
-from ckanext.security import schema as ext_schema
-from ckanext.security.logic import auth, action
 
 log = logging.getLogger(__name__)
 

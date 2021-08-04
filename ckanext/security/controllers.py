@@ -6,13 +6,13 @@ from ckan.common import _, c, request, config
 from ckan.controllers.user import UserController
 from ckan.lib.base import abort, render
 from ckan.lib import helpers, mailer
-from ckan.logic import schema, NotAuthorized, check_access, get_action,\
-    NotFound
+from ckan.logic import (
+    schema, NotAuthorized, check_access, get_action, NotFound
+)
 from ckan.plugins import toolkit as tk
 from paste.deploy.converters import asbool
-
 from ckanext.security.authenticator import get_login_throttle_key
-import ckanext.security.mailer as secure_mailer
+from ckanext.security import mailer as secure_mailer
 from ckanext.security.validators import old_username_validator
 from ckanext.security.model import SecurityTOTP
 from ckanext.security.cache.login import LoginThrottle
@@ -142,7 +142,8 @@ class MFAUserController(tk.BaseController):
             set_response(200)
 
             if config.get('ckanext.security.mfa_help_link') is not None:
-                res['mfaHelpLink'] = config.get('ckanext.security.mfa_help_link')
+                res['mfaHelpLink'] = config.get(
+                    'ckanext.security.mfa_help_link')
 
             if identity['mfa']:
                 code_valid = totp_challenger.check_code(

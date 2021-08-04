@@ -1,12 +1,9 @@
 import anti_csrf
+import logging
 import webob
 from webob.exc import HTTPForbidden
 
-import logging
-
 log = logging.getLogger(__name__)
-
-
 CSRF_ERR = 'CSRF authentication failed. Token missing or invalid.'
 
 

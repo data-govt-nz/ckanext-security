@@ -3,7 +3,6 @@ import logging
 import time
 
 from ckan.common import config
-
 from ckanext.security.mailer import notify_lockout
 from ckanext.security.cache.clients import ThrottleClient
 

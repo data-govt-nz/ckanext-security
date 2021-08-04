@@ -3,12 +3,12 @@
 import six
 
 from ckan.lib.navl.validators import ignore_missing, not_empty, ignore
-from ckan.logic.validators import name_validator, user_name_validator, \
-    user_password_not_empty, user_passwords_match, ignore_not_sysadmin, \
-    user_about_validator, user_both_passwords_entered
-
+from ckan.logic.validators import (
+    name_validator, user_name_validator, user_password_not_empty,
+    user_passwords_match, ignore_not_sysadmin, user_about_validator,
+    user_both_passwords_entered
+)
 from ckanext.security import validators
-
 
 # The main purpose of this file is to modify CKAN's user-related schemas, and
 # to replace the default password validators everywhere. We are also replacing

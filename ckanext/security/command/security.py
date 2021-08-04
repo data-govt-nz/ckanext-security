@@ -1,6 +1,5 @@
-from ckan.lib.cli import CkanCommand
-
 import sys
+from ckan.lib.cli import CkanCommand
 
 
 class Security(CkanCommand):

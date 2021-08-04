@@ -1,18 +1,17 @@
 # encoding: utf-8
 
 import datetime
+import logging
+import pyotp
+import sys
 
 from ckan import model
 from ckan.model import DomainObject, User
 from ckan.model.meta import metadata, mapper
-import ckan.plugins.toolkit as toolkit
+from ckan.plugins import toolkit
 from sqlalchemy import Table, Column, types
-import logging
-import pyotp
 
-import sys
 log = logging.getLogger(__name__)
-
 user_security_totp = None
 
 
