@@ -49,6 +49,16 @@
       },
       error: function (xhr) {
         if (xhr.status === 403) {
+          // Show MFA error message if mfa code is not valid
+          try {
+            var jsonResponse = JSON.parse(xhr.responseText)
+            if (jsonResponse && jsonResponse.mfaCodeValid === false) {
+              showError('mfa')
+              return
+            }
+          } catch (e) {}
+
+          // Otherwise we're on the username/password form, show error for that
           showError('login')
           return
         }
@@ -69,6 +79,11 @@
 
     if (!loginState.mfaConfigured) {
       showQRCode(loginState)
+    }
+
+    if (loginState.mfaHelpLink) {
+      $('#mfa-help-link').attr('href', loginState.mfaHelpLink)
+      $('#mfa-help-link').show()
     }
   }
 

@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '2.4.2'
+version = '2.5.0'
 
 setup(
     name='ckanext-security',
@@ -22,7 +22,7 @@ setup(
         'repoze.who-use-beaker',
         'redis',
         'beakeredis',
-        'pyotp',
+        'pyotp<2.4.0',
         'python-magic',
         'six'
     ],

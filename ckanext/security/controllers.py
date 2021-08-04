@@ -141,6 +141,9 @@ class MFAUserController(tk.BaseController):
             res['mfaConfigured'] = mfaConfigured
             set_response(200)
 
+            if config.get('ckanext.security.mfa_help_link') is not None:
+                res['mfaHelpLink'] = config.get('ckanext.security.mfa_help_link')
+
             if identity['mfa']:
                 code_valid = totp_challenger.check_code(
                     identity['mfa'], verify_only=True)
