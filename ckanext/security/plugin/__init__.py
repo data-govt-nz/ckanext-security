@@ -1,25 +1,30 @@
 import logging
-import schema as ext_schema
-import ckan.plugins as plugins
+import ckan.plugins as p
 
-from ckanext.security.logic import auth, action
-from ckan.plugins import toolkit
+from ckanext.security import schema as ext_schema
+from ckan.plugins import toolkit as tk
 from ckan.logic import schema as core_schema
 from ckanext.security.model import define_security_tables
 from resource_upload_validator import (
     validate_upload_type, validate_upload_presence
 )
+from ckanext.security.logic import auth, action
+
+try:
+    tk.requires_ckan_version("2.9")
+except tk.CkanVersionException:
+    from ckanext.ext.plugin.pylons_plugin import MixinPlugin
+else:
+    from ckanext.ext.plugin.flask_plugin import MixinPlugin
 
 log = logging.getLogger(__name__)
 
 
-class CkanSecurityPlugin(plugins.SingletonPlugin):
-    plugins.implements(plugins.IConfigurer)
-    plugins.implements(plugins.IRoutes)
-    plugins.implements(plugins.IBlueprint)
-    plugins.implements(plugins.IResourceController, inherit=True)
-    plugins.implements(plugins.IActions)
-    plugins.implements(plugins.IAuthFunctions)
+class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
+    p.implements(p.IConfigurer)
+    p.implements(p.IResourceController, inherit=True)
+    p.implements(p.IActions)
+    p.implements(p.IAuthFunctions)
 
     def update_config(self, config):
         define_security_tables()  # map security models to db schema
@@ -37,36 +42,20 @@ class CkanSecurityPlugin(plugins.SingletonPlugin):
         core_schema.default_update_user_schema = \
             ext_schema.default_update_user_schema
 
-        toolkit.add_template_directory(config, 'templates')
-        toolkit.add_resource('fanstatic', 'security')
+        tk.add_template_directory(config, 'templates')
+        tk.add_resource('fanstatic', 'security')
 
-    def before_map(self, urlmap):
-        userController = 'ckanext.security.controllers:SecureUserController'
-        urlmap.redirect('/user/edit/', '/user/edit')
-        urlmap.connect('/user/edit', controller=userController,
-                       action='edit')
-        urlmap.connect('/user/edit/{id:.*}', controller=userController,
-                       action='edit', ckan_icon='cog')
-        urlmap.connect('/user/reset/{id:.*}', controller=userController,
-                       action='perform_reset')
-        urlmap.connect('/user/reset', controller=userController,
-                       action='request_reset')
-        return urlmap
+    # BEGIN Hooks for IResourceController
+    def before_create(self, context, resource):
+        validate_upload_presence(resource)
+        validate_upload_type(resource)
+        pass
 
-    def after_map(self, urlmap):
-        controller = 'ckanext.security.controllers:MFAUserController'
-        # Mapping urls for the MFA/TOTP feature
-        urlmap.connect('/configure_mfa/{id:.*}/new',
-                       controller=controller,
-                       action='new')
-        urlmap.connect('mfa_configure', '/configure_mfa/{id:.*}',
-                       controller=controller,
-                       action='configure_mfa')
-        urlmap.connect('/api/mfa_login',
-                       controller=controller,
-                       action='login')
-
-        return urlmap
+    def before_update(self, context, current, resource):
+        validate_upload_presence(resource)
+        validate_upload_type(resource)
+        pass
+    # END Hooks for IResourceController
 
     # BEGIN Hooks for IResourceController
     def before_create(self, context, resource):
