@@ -5,7 +5,6 @@ A CKAN extension to hold various security improvements for CKAN, including:
 
 * Stronger password reset tokens
 * Brute force protection
-* Double-submit CSRF protection for requests (Courtesy of the Queensland Government)
 * Removed ability to change usernames after signup
 * Server-side session storage
 * Session invalidation on logout
@@ -15,7 +14,9 @@ disclose whether or not that email address exists in the DB
 * Two Factor Authentication is enforced for all users
 * Preventing upload/linking of certain file types for resources
 
-**Please note**: This extension has been used and tested against CKAN version 2.7.x. Using it in the context of CKAN 2.8 or higher versions may not work fully. If you are wanting to use this extension in other CKAN versions and you do strike issues, the maintainers would be happy to accept contributions to fix anything you find. Please raise an issue or open a pull request.
+**Please note**:
+* This extension has been used and tested against CKAN version 2.7.x. Using it in the context of CKAN 2.8 or higher versions may not work fully. If you are wanting to use this extension in other CKAN versions and you do strike issues, the maintainers would be happy to accept contributions to fix anything you find. Please raise an issue or open a pull request.
+* This extension used to provide CSRF protection (in git tags 2.5.0 and earlier). This is no longer provided, please use [ckanext-csrf-filter](https://github.com/qld-gov-au/ckanext-csrf-filter) instead.
 
 ### Reset tokens
 Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
@@ -87,10 +88,6 @@ You can also achieve this by adding the detected mime type to your blacklist dir
 Links are only checked based on the extension in the url, we do not request the file at the linked url to infer the mime type.
 
 ## Requirements
-* The CSRFMiddleware needs to be placed at the bottom of the middleware
-stack. This requires to patch `ckan.config.middleware.pylons_app`. The patch is
-currently available in the data.govt.nz [CKAN repository](https://github.com/data-govt-nz/ckan/) on the `dia` branch,
-or [commit `74f78865`](https://github.com/data-govt-nz/ckan/commit/74f78865b8825c91d1dfe6b189228f4b975610a3) for cherry-pick.
 * A running Redis instance to store brute force protection tokens configured with a maxmemory and maxmemory-policy=lru so it overwrites the least recently used item rather than running out of space. This instance should be a different instance from the one used for Harvest items to avoid data loss. [Redis LRU-Cache documentation](https://redis.io/topics/lru-cache).
 
 ### Changes to `who.ini`
