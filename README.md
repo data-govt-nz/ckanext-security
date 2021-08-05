@@ -176,6 +176,10 @@ setuptools-supported way for specifying private repo dependencies*
 
 You need to migrate the database in order to enable the Two Factor Auth. This command is idempotent, it will not modify the database if run again once the table exists.
 ```shell
+# ckan >= 2.9
+ckan  -c /PATH_TO_YOUR_INI_FILE/FILENAME.ini security migrate
+
+# ckan < 2.9
 paster --plugin=ckanext-security security migrate
 ```
 
