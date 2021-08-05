@@ -5,7 +5,7 @@ from ckanext.security import schema as ext_schema
 from ckan.plugins import toolkit as tk
 from ckan.logic import schema as core_schema
 from ckanext.security.model import define_security_tables
-from resource_upload_validator import (
+from ckanext.security.resource_upload_validator import (
     validate_upload_type, validate_upload_presence
 )
 from ckanext.security.logic import auth, action
