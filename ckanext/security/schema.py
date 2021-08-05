@@ -54,6 +54,7 @@ def user_new_form_schema():
 def user_edit_form_schema():
     schema = default_user_schema()
 
+    schema['name'] += [validators.old_username_validator]
     schema['password'] = [ignore_missing]
     schema['password1'] = [ignore_missing, six.text_type,
                            validators.user_password_validator,

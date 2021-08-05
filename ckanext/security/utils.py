@@ -19,9 +19,6 @@ from ckanext.security.cache.login import LoginThrottle
 
 log = logging.getLogger(__name__)
 
-# Provide ability to fallback to old behaviour if needed
-original_password_reset = UserController.request_reset
-
 # Override password reset link
 mailer.send_reset_link = secure_mailer.send_reset_link
 
@@ -86,20 +83,14 @@ def login():
     Ajax call to test username/password/mfa code
     """
 
-    def set_response(status):
-        tk.response.status_int = status
-        tk.response.headers.update({'Content-Type': 'application/json'})
-
     try:
         res = {}
         if request.method != 'POST':
-            set_response(405)
-            return json.dumps(res)
+            return (405, json.dumps(res))
 
         identity = request.params
         if not ('login' in identity and 'password' in identity):
-            set_response(422)
-            return json.dumps(res)
+            return (422, json.dumps(res))
 
         on_mfa_form = identity.get('mfa-form-active') == 'true'
 
@@ -108,8 +99,7 @@ def login():
 
         login_throttle_key = get_login_throttle_key(request, user_name)
         if login_throttle_key is None:
-            set_response(403)
-            return json.dumps(res)
+            return (403, json.dumps(res))
 
         throttle = LoginThrottle(user, login_throttle_key)
         locked_out = throttle.is_locked()
@@ -127,8 +117,7 @@ def login():
 
         if invalid_login or (locked_out and not on_mfa_form):
             log.info('login failed for %s', user_name)
-            set_response(403)
-            return json.dumps(res)
+            return (403, json.dumps(res))
 
         # find or create 2 factor auth record
         totp_challenger = SecurityTOTP.get_for_user(user.name)
@@ -142,7 +131,7 @@ def login():
             res['totpChallengerURI'] = totp_challenger.provisioning_uri
 
         res['mfaConfigured'] = mfaConfigured
-        set_response(200)
+        response_status = 200
 
         if config.get('ckanext.security.mfa_help_link') is not None:
             res['mfaHelpLink'] = config.get(
@@ -156,15 +145,14 @@ def login():
                 log.info('Login succeeded for %s', user_name)
             else:
                 log.info('User %s supplied invalid 2fa code', user_name)
-                set_response(403)
+                response_status = 403
                 throttle.increment()
 
-        return json.dumps(res)
+        return (response_status, json.dumps(res))
 
     except Exception as err:
         log.error('Unhandled error during login: %s', err)
-        set_response(500)
-        return json.dumps({})
+        return (500, json.dumps({}))
 
 
 def configure_mfa(id=None):
@@ -208,65 +196,4 @@ def new(id=None):
     helpers.flash_success(_('''Successfully updated two factor
             authentication secret. Make sure you add the new secret to
             your authenticator app.'''))
-    helpers.redirect_to('mfa_configure', id=user_id)
-
-
-def edit_form_to_db_schema():
-    form_schema = schema.user_edit_form_schema()
-    form_schema['name'] += [old_username_validator]
-    return form_schema
-
-
-def request_reset():
-    # Later versions of CKAN core have fixed this behaviour, we default
-    # to overriding with our own implementation but allow client to
-    # disable if needed
-    if asbool(config.get(
-            'ckanext.security.disable_password_reset_override')):
-        return original_password_reset()
-
-    # This is a one-to-one copy from ckan core, except for user errors
-    # handling. There should be no feedback about whether or not a user
-    # is found in the db.
-    # Original method is
-    # `ckan.controllers.user.UserController.request_reset`
-    context = {'model': model, 'session': model.Session, 'user': c.user,
-               'auth_user_obj': c.userobj}
-    data_dict = {'id': request.params.get('user')}
-    try:
-        check_access('request_reset', context)
-    except NotAuthorized:
-        abort(403, _('Unauthorized to request reset password.'))
-
-    if request.method == 'POST':
-        id = request.params.get('user')
-
-        context = {'model': model,
-                   'user': c.user,
-                   u'ignore_auth': True}
-
-        data_dict = {'id': id}
-        user_obj = None
-        try:
-            get_action('user_show')(context, data_dict)
-            user_obj = context['user_obj']
-        except NotFound:
-            # Try searching the user
-            del data_dict['id']
-            data_dict['q'] = id
-
-            if id and len(id) > 2:
-                user_list = get_action('user_list')(context, data_dict)
-                if len(user_list) == 1:
-                    # This is ugly, but we need the user object for the
-                    # mailer,
-                    # and user_list does not return them
-                    del data_dict['q']
-                    data_dict['id'] = user_list[0]['id']
-                    get_action('user_show')(context, data_dict)
-                    user_obj = context['user_obj']
-
-        helpers.flash_success(_('A reset token has been sent.'))
-        if user_obj:
-            mailer.send_reset_link(user_obj)
-    return render('user/request_reset.html')
+    helpers.redirect_to('/configure_mfa/{}'.format(user_id))
