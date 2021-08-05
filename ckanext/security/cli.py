@@ -9,17 +9,27 @@ def get_commands():
     return [security]
 
 
-@click.group(short_help="Command for managing the security module.")
+@click.group(short_help="Commands for managing the security module.")
 def security():
     pass
 
 
 @security.command()
 def migrate():
+    """
+    Create the database table to support Time-based One Time Password login
+    """
+    print("Migrating database for security")
     db_setup()
+    print("finished tables setup for security")
 
 
 @security.command()
 @click.argument('username')
 def reset_totp(username):
-     SecurityTOTP.create_for_user(username)
+    """
+    Generate a new totp secret for a given user
+    """
+    print('Resetting totp secret for user', username)
+    SecurityTOTP.create_for_user(username)
+    print('Success!')
