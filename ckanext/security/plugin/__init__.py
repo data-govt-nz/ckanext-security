@@ -25,6 +25,7 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     p.implements(p.IResourceController, inherit=True)
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)
+    p.implements(p.ITemplateHelpers)
 
     def update_config(self, config):
         define_security_tables()  # map security models to db schema
@@ -42,8 +43,8 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
         core_schema.default_update_user_schema = \
             ext_schema.default_update_user_schema
 
-        tk.add_template_directory(config, 'templates')
-        tk.add_resource('fanstatic', 'security')
+        tk.add_template_directory(config, '../templates')
+        tk.add_resource('../fanstatic', 'security')
 
     # BEGIN Hooks for IResourceController
     def before_create(self, context, resource):
@@ -89,3 +90,10 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
             'security_throttle_address_show': auth.security_throttle_address_show,
         }
     # END Hooks for IAuthFunctions
+
+    # ITemplateHelpers
+
+    def get_helpers(self):
+        return {
+            'check_ckan_version': tk.check_ckan_version,
+        }

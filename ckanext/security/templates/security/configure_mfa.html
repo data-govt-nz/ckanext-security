@@ -22,8 +22,13 @@
 {% endblock %}
 
 {% block primary_content %}
-    {% resource 'security/qrious.js' %}
-    {% resource 'security/qrcode_renderer.js' %}
+    {% if h.check_ckan_version('2.9') %}
+        {% asset 'ckanext-security/mfa_configure' %}
+    {% else %}
+        {% resource 'security/qrious.js' %}
+        {% resource 'security/qrcode_renderer.js' %}
+    {% endif %}
+
     <form id="mfa-form" method="POST">
         <fieldset>
             <legend>{{_('Scan this QR code with your two factor authentication app')}}</legend>

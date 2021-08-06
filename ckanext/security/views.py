@@ -20,7 +20,7 @@ mfa_user = Blueprint("mfa_user", __name__)
 def login():
     headers = {'Content-Type': 'application/json'}
     (status, res_data) = utils.login()
-    make_response((res_data, status, headers))
+    return make_response((res_data, status, headers))
 
 
 @login_required
@@ -33,7 +33,7 @@ def new(id=None):
     return utils.new(id)
 
 
-mfa_user.add_url_rule('/api/mfa_login', view_func=login)
+mfa_user.add_url_rule('/api/mfa_login', view_func=login, methods=['POST'])
 mfa_user.add_url_rule('/configure_mfa/<id>', view_func=configure_mfa)
 mfa_user.add_url_rule('/configure_mfa/<id>/new', view_func=new)
 

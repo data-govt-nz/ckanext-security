@@ -2,7 +2,7 @@ import logging
 import json
 
 from ckan import authz, model
-from ckan.common import _, c, request, config
+from ckan.common import _, c
 from ckan.controllers.user import UserController
 from ckan.lib.base import abort, render
 from ckan.lib import helpers, mailer
@@ -10,6 +10,7 @@ from ckan.logic import (
     schema, NotAuthorized, check_access, get_action, NotFound
 )
 from ckan.plugins import toolkit as tk
+from ckan.plugins.toolkit import request, config
 from paste.deploy.converters import asbool
 from ckanext.security.authenticator import get_login_throttle_key
 from ckanext.security import mailer as secure_mailer
@@ -88,7 +89,7 @@ def login():
         if request.method != 'POST':
             return (405, json.dumps(res))
 
-        identity = request.params
+        identity = request.form
         if not ('login' in identity and 'password' in identity):
             return (422, json.dumps(res))
 
