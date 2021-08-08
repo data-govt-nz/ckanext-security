@@ -2,7 +2,7 @@
 
 from ckan.views import user
 from ckanext.security import utils
-from flask import Blueprint, make_response
+from flask import Blueprint, make_response, redirect
 from functools import wraps
 
 
@@ -30,12 +30,13 @@ def configure_mfa(id=None):
 
 @login_required
 def new(id=None):
-    return utils.new(id)
+    utils.new(id)
+    return redirect('/configure_mfa/{}'.format(id))
 
 
 mfa_user.add_url_rule('/api/mfa_login', view_func=login, methods=['POST'])
-mfa_user.add_url_rule('/configure_mfa/<id>', view_func=configure_mfa)
-mfa_user.add_url_rule('/configure_mfa/<id>/new', view_func=new)
+mfa_user.add_url_rule('/configure_mfa/<id>', view_func=configure_mfa, methods=['GET', 'POST'])
+mfa_user.add_url_rule('/configure_mfa/<id>/new', view_func=new, methods=['GET'])
 
 
 def get_blueprints():

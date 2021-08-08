@@ -37,7 +37,8 @@ class MFAUserController(tk.BaseController):
         return utils.configure_mfa(id)
 
     def new(self, id=None):
-        return utils.new(id)
+        utils.new(id)
+        helpers.redirect_to('/configure_mfa/{}'.format(user_id))
 
 
 # Provide ability to fallback to old behaviour if needed
@@ -62,14 +63,14 @@ class SecureUserController(UserController):
         # `ckan.controllers.user.UserController.request_reset`
         context = {'model': model, 'session': model.Session, 'user': c.user,
                    'auth_user_obj': c.userobj}
-        data_dict = {'id': request.params.get('user')}
+        data_dict = {'id': request.form.get('user')}
         try:
             check_access('request_reset', context)
         except NotAuthorized:
             abort(403, _('Unauthorized to request reset password.'))
 
         if request.method == 'POST':
-            id = request.params.get('user')
+            id = request.form.get('user')
 
             context = {'model': model,
                        'user': c.user,

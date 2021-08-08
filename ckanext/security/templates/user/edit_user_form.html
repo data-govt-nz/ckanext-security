@@ -49,7 +49,11 @@
 
   <fieldset>
     <legend>{{_('Two factor authentication')}}</legend>
-    {% link_for _('Manage two factor authentication'), controller='ckanext.security.controllers:MFAUserController', action='configure_mfa', id=data.id, class_='btn pull-left', icon='cog' %}
+    {% if h.check_ckan_version('2.9') %}
+      {% link_for _('Manage two factor authentication'), controller='mfa_user', action='configure_mfa', id=data.id, class_='btn pull-left', icon='cog' %}
+    {% else %}
+      {% link_for _('Manage two factor authentication'), controller='ckanext.security.controllers:MFAUserController', action='configure_mfa', id=data.id, class_='btn pull-left', icon='cog' %}
+    {% endif %}
   </fieldset>
 
   <div class="form-actions">

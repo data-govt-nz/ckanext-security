@@ -72,7 +72,7 @@ def _setup_totp_template_variables(context, data_dict):
         c.totp_secret = totp_challenger.secret
         c.totp_challenger_uri = totp_challenger.provisioning_uri
 
-        mfa_test_code = request.params.get('mfa')
+        mfa_test_code = request.form.get('mfa')
         if request.method == 'POST' and mfa_test_code is not None:
             c.mfa_test_valid = totp_challenger.check_code(
                 mfa_test_code, verify_only=True)
@@ -169,12 +169,13 @@ def configure_mfa(id=None):
     data_dict = {'id': user_id, 'user_obj': c.userobj}
     _setup_totp_template_variables(context, data_dict)
 
-    if c.mfa_test_valid:
-        helpers.flash_success(_('''That's a valid code. Your authenticator
-            app is correctly configured for future use.'''))
-    if c.mfa_test_invalid:
-        helpers.flash_error(_('''That's an incorrect code. Try scanning
-            the QR code again with your authenticator app.'''))
+    if request.method == 'POST':
+        if c.mfa_test_valid:
+            helpers.flash_success(_('''That's a valid code. Your authenticator
+                app is correctly configured for future use.'''))
+        if c.mfa_test_invalid:
+            helpers.flash_error(_('''That's an incorrect code. Try scanning
+                the QR code again with your authenticator app.'''))
 
     return tk.render('security/configure_mfa.html')
 
@@ -197,4 +198,3 @@ def new(id=None):
     helpers.flash_success(_('''Successfully updated two factor
             authentication secret. Make sure you add the new secret to
             your authenticator app.'''))
-    helpers.redirect_to('/configure_mfa/{}'.format(user_id))
