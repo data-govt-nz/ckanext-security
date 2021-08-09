@@ -34,7 +34,8 @@ class MFAUserController(tk.BaseController):
         return res_data
 
     def configure_mfa(self, id=None):
-        return utils.configure_mfa(id)
+        utils.configure_mfa(id)
+        return tk.render('security/configure_mfa.html')
 
     def new(self, id=None):
         utils.new(id)

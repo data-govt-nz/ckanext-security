@@ -2,7 +2,6 @@ import logging
 import json
 
 from ckan import authz, model
-from ckan.common import _, c
 from ckan.controllers.user import UserController
 from ckan.lib.base import abort, render
 from ckan.lib import helpers, mailer
@@ -10,7 +9,7 @@ from ckan.logic import (
     schema, NotAuthorized, check_access, get_action, NotFound
 )
 from ckan.plugins import toolkit as tk
-from ckan.plugins.toolkit import request, config
+from ckan.plugins.toolkit import request, config, _, c, g
 from paste.deploy.converters import asbool
 from ckanext.security.authenticator import get_login_throttle_key
 from ckanext.security import mailer as secure_mailer
@@ -25,9 +24,10 @@ mailer.send_reset_link = secure_mailer.send_reset_link
 
 
 def check_user_and_access():
-    context = {'model': model, 'user': c.user, 'auth_user_obj': c.userobj}
+    gc = _get_global()
+    context = {'model': model, 'user': gc.user, 'auth_user_obj': gc.userobj}
     check_access('site_read', context)
-    if not c.userobj:
+    if not gc.userobj:
         abort(403, _('No user specified'))
 
 
@@ -52,6 +52,19 @@ def _fetch_user_or_fail(context, data_dict):
     return user_dict
 
 
+def _get_global():
+    return g if tk.check_ckan_version(min_version='2.9.0') \
+        else c
+
+
+def _get_template_context():
+    class TemplateContext(object):
+        pass
+
+    return TemplateContext() if tk.check_ckan_version(min_version='2.9.0') \
+        else c
+
+
 def _setup_totp_template_variables(context, data_dict):
     """Populates context with
     is_sysadmin
@@ -59,24 +72,28 @@ def _setup_totp_template_variables(context, data_dict):
     totp_secret
     mfa_test_valid
     """
-    c.is_sysadmin = authz.is_sysadmin(c.user)
-    c.totp_user_id = data_dict['id']
+    tc = _get_template_context()
+    gc = _get_global()
+
+    tc.is_sysadmin = authz.is_sysadmin(gc.user)
+    tc.totp_user_id = data_dict['id']
 
     user_dict = _fetch_user_or_fail(context, data_dict)
 
-    c.user_dict = user_dict
-    c.is_myself = user_dict['name'] == c.user
+    tc.user_dict = user_dict
+    tc.is_myself = user_dict['name'] == gc.user
 
     totp_challenger = SecurityTOTP.get_for_user(user_dict['name'])
     if totp_challenger is not None:
-        c.totp_secret = totp_challenger.secret
-        c.totp_challenger_uri = totp_challenger.provisioning_uri
+        tc.totp_secret = totp_challenger.secret
+        tc.totp_challenger_uri = totp_challenger.provisioning_uri
 
         mfa_test_code = request.form.get('mfa')
         if request.method == 'POST' and mfa_test_code is not None:
-            c.mfa_test_valid = totp_challenger.check_code(
+            tc.mfa_test_valid = totp_challenger.check_code(
                 mfa_test_code, verify_only=True)
-            c.mfa_test_invalid = not c.mfa_test_valid
+            tc.mfa_test_invalid = not tc.mfa_test_valid
+    return tc
 
 
 def login():
@@ -158,42 +175,42 @@ def login():
 
 def configure_mfa(id=None):
     """Display the config of the users MFA"""
+    gc = _get_global()
     context = {
         'model': model, 'session': model.Session,
-        'user': c.user, 'auth_user_obj': c.userobj
+        'user': gc.user, 'auth_user_obj': gc.userobj
     }
     # pylons includes the rest of the url in the param,
     # so we need to strip the /new suffix
     user_id = id.replace('/new', '')
 
-    data_dict = {'id': user_id, 'user_obj': c.userobj}
-    _setup_totp_template_variables(context, data_dict)
+    data_dict = {'id': user_id, 'user_obj': gc.userobj}
+    tc = _setup_totp_template_variables(context, data_dict)
 
     if request.method == 'POST':
-        if c.mfa_test_valid:
+        if tc.mfa_test_valid:
             helpers.flash_success(_('''That's a valid code. Your authenticator
                 app is correctly configured for future use.'''))
-        if c.mfa_test_invalid:
+        if tc.mfa_test_invalid:
             helpers.flash_error(_('''That's an incorrect code. Try scanning
                 the QR code again with your authenticator app.'''))
-
-    return tk.render('security/configure_mfa.html')
+    return tc
 
 
 def new(id=None):
     """Set up a user's new security TOTP credentials"""
+    gc = _get_global()
     context = {
         'model': model, 'session': model.Session,
-        'user': c.user, 'auth_user_obj': c.userobj
+        'user': gc.user, 'auth_user_obj': gc.userobj
     }
     # pylons includes the rest of the url in the param,
     # so we need to strip the /new suffix
     user_id = id.replace('/new', '')
 
-    data_dict = {'id': user_id, 'user_obj': c.userobj}
+    data_dict = {'id': user_id, 'user_obj': gc.userobj}
     user_dict = _fetch_user_or_fail(context, data_dict)
     SecurityTOTP.create_for_user(user_dict['name'])
-    _setup_totp_template_variables(context, data_dict)
     log.info("Rotated the 2fa secret for user {}".format(user_id))
     helpers.flash_success(_('''Successfully updated two factor
             authentication secret. Make sure you add the new secret to

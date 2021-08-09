@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from ckan.views import user
 from ckanext.security import utils
-from flask import Blueprint, make_response, redirect
+from ckan.lib import helpers
+from flask import Blueprint, make_response, request
 from functools import wraps
+from ckan.plugins import toolkit as tk
+
+log = logging.getLogger(__name__)
 
 
 def login_required(f):
@@ -25,13 +31,14 @@ def login():
 
 @login_required
 def configure_mfa(id=None):
-    return utils.configure_mfa(id)
+    extra_vars = utils.configure_mfa(id)
+    return tk.render('security/configure_mfa.html', extra_vars={ 'c': extra_vars })
 
 
 @login_required
 def new(id=None):
     utils.new(id)
-    return redirect('/configure_mfa/{}'.format(id))
+    return helpers.redirect_to('mfa_user.configure_mfa', id=id)
 
 
 mfa_user.add_url_rule('/api/mfa_login', view_func=login, methods=['POST'])
@@ -41,7 +48,3 @@ mfa_user.add_url_rule('/configure_mfa/<id>/new', view_func=new, methods=['GET'])
 
 def get_blueprints():
     return [mfa_user]
-
-
-# Override user edit form template
-user.edit_user_form = u'security/edit_user_form.html'
