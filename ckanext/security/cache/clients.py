@@ -1,3 +1,4 @@
+from builtins import object
 import redis
 from ckan.common import config
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import click
 
 from ckanext.security.model import db_setup, SecurityTOTP
@@ -30,6 +31,6 @@ def reset_totp(username):
     """
     Generate a new totp secret for a given user
     """
-    print('Resetting totp secret for user', username)
+    print('Resetting totp secret for user {}'.format(username))
     SecurityTOTP.create_for_user(username)
     print('Success!')

@@ -36,10 +36,10 @@ def _build_mimetypes_and_extensions(filename, file_content):
     if supplied_file_extension:
         extensions_and_mimetypes.append(supplied_file_extension)
 
-        guessed_mimetypes = filter(lambda type: type is not None, [
+        guessed_mimetypes = [type for type in [
             mimes_instance.types_map[0].get(supplied_file_extension),
             mimes_instance.types_map[1].get(supplied_file_extension)
-        ])
+        ] if type is not None]
         extensions_and_mimetypes.extend(guessed_mimetypes)
 
     if file_content:
@@ -101,8 +101,7 @@ def validate_upload_type(resource):
 
     log.info('Detected extensions/mimetypes: %s', extensions_and_mimetypes)
     # test all extensions and mimetypes against blacklist, fail fast
-    if any(map(lambda ext: ext.lower() in blacklist,
-               extensions_and_mimetypes)):
+    if any([ext.lower() in blacklist for ext in extensions_and_mimetypes]):
         log.warning(
             'Prevented upload of %s, detected mimetypes/extensions: %s,\
 blacklist: %s',
