@@ -1,9 +1,7 @@
 from ckan.plugins.toolkit import (
     get_action,
     chained_action,
-    check_access, get_or_bust, ValidationError)
-from ckan.model import User
-
+    check_access, get_or_bust)
 from ckanext.security.authenticator import (
     get_user_throttle,
     get_address_throttle,

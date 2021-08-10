@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '2.5.0'
+version = '3.0.0'
 
 setup(
     name='ckanext-security',
