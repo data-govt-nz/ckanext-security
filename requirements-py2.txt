@@ -10,5 +10,5 @@ redis==3.5.3
 repoze.who==2.4
 repoze.who-use-beaker==0.3
 six==1.16.0
-WebOb==1.8.7
+WebOb==1.0.8
 zope.interface==5.4.0
