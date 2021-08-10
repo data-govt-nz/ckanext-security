@@ -18,18 +18,8 @@ setup(
     namespace_packages=['ckanext'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=[
-        'repoze.who-use-beaker',
-        'redis',
-        'beakeredis',
-        'pyotp<2.4.0',
-        'python-magic',
-        'six'
-    ],
-    dependency_links=[
-        'git+https://github.com/kaukas/repoze.who-use_beaker.git@8ec4cea\
-#egg=repoze.who-use-beaker-0.4'
-    ],
+    install_requires=[],
+    dependency_links=[],
     entry_points="""
     [ckan.plugins]
     security=ckanext.security.plugin:CkanSecurityPlugin

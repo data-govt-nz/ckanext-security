@@ -15,7 +15,8 @@ disclose whether or not that email address exists in the DB
 * Preventing upload/linking of certain file types for resources
 
 **Please note**:
-* This extension has been used and tested against CKAN version 2.7.x. Using it in the context of CKAN 2.8 or higher versions may not work fully. If you are wanting to use this extension in other CKAN versions and you do strike issues, the maintainers would be happy to accept contributions to fix anything you find. Please raise an issue or open a pull request.
+* This extension has been used and tested against CKAN version 2.7.x on git tag 2.5.0 and earlier
+* CKAN 2.9.x and Python 3 support was added from git tag 3.0.0
 * This extension used to provide CSRF protection (in git tags 2.5.0 and earlier). This is no longer provided, please use [ckanext-csrf-filter](https://github.com/qld-gov-au/ckanext-csrf-filter) instead.
 
 ### Reset tokens
@@ -88,6 +89,7 @@ You can also achieve this by adding the detected mime type to your blacklist dir
 Links are only checked based on the extension in the url, we do not request the file at the linked url to infer the mime type.
 
 ## Requirements
+* The server-side session storage requires the session middleware in CKAN core to be moved near the end of the middleware stack. An example changeset (relevant to CKAN 2.9.3) for this is provided in [ckanext-security.patch](ckanext-security.patch). The installed CKAN core codebase will need to have this patch applied (or similar changes made if not using 2.9.3).
 * A running Redis instance to store brute force protection tokens configured with a maxmemory and maxmemory-policy=lru so it overwrites the least recently used item rather than running out of space. This instance should be a different instance from the one used for Harvest items to avoid data loss. [Redis LRU-Cache documentation](https://redis.io/topics/lru-cache).
 
 ### Changes to `who.ini`
@@ -165,23 +167,17 @@ ckanext.security.mfa_help_link = https://data.govt.nz/catalogue-guide/releasing-
 You can use `pip` to install this plugin into your virtual environment:
 
 ```shell
-pip install --process-dependency-links -e 'https://github.com/data-govt-nz/ckanext-security.git#egg=ckanext-security==0.1.0'
+pip install -e git+https://github.com/data-govt-nz/ckanext-security.git#egg=ckanext-security
+pip install -r ckanext-security/requirements.txt # or requirements-py2.txt if running Python 2.7 still
 ```
-*NOTE: The ``--process-dependency-links` flag has officially been deprecated, but
-has not been removed from pip, because it is the currently the only
-setuptools-supported way for specifying private repo dependencies*
 
 You need to migrate the database in order to enable the Two Factor Auth. This command is idempotent, it will not modify the database if run again once the table exists.
 ```shell
-# ckan >= 2.9
-ckan  -c /PATH_TO_YOUR_INI_FILE/FILENAME.ini security migrate
-
-# ckan < 2.9
-paster --plugin=ckanext-security security migrate
+ckan -c /PATH_TO_YOUR_INI_FILE/FILENAME.ini security migrate
 ```
 
 Finally, add `security` to `ckan.plugins` in your config file.
 
 ## Possible problems
 
-- If your service is responding with `Internal Server Error`, try using `paster request <config> /`. If you see a `ValueError: No Beaker session (beaker.session) in environment` then you have not installed the patch to CKAN correctly.
+- If you see a `ValueError: No Beaker session (beaker.session) in environment` then you have not installed the patch to CKAN correctly.
