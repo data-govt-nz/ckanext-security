@@ -3,10 +3,12 @@ import os
 import codecs
 import logging
 import six
+import flask
 
 from ckan.common import config
 from ckan.lib.base import render_jinja2
 from ckan.lib.mailer import get_reset_link_body, mail_user
+from ckan.plugins import toolkit as tk
 from ckan import model
 
 log = logging.getLogger(__name__)
@@ -42,7 +44,10 @@ def _build_footer_content(extra_vars):
                     custom_path)
         with open(custom_path, 'r') as footer_file:
             footer_content = footer_file.read()
-        env = config['pylons.app_globals'].jinja_env
+        if tk.check_ckan_version('2.9'):
+            env = flask.current_app.jinja_env
+        else:
+            env = config['pylons.app_globals'].jinja_env
         template = env.from_string(footer_content)
         return '\n\n' + template.render(**extra_vars)
     else:
