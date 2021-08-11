@@ -27,6 +27,8 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     p.implements(p.IAuthFunctions)
     p.implements(p.ITemplateHelpers)
 
+    # BEGIN Hooks for IConfigurer
+
     def update_config(self, config):
         define_security_tables()  # map security models to db schema
 
@@ -46,7 +48,10 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
         tk.add_template_directory(config, '../templates')
         tk.add_resource('../fanstatic', 'security')
 
+    # END Hooks for IConfigurer
+
     # BEGIN Hooks for IResourceController
+
     def before_create(self, context, resource):
         validate_upload_presence(resource)
         validate_upload_type(resource)
@@ -56,38 +61,38 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
         validate_upload_presence(resource)
         validate_upload_type(resource)
         pass
-    # END Hooks for IResourceController
 
-    # BEGIN Hooks for IResourceController
-    def before_create(self, context, resource):
-        validate_upload_presence(resource)
-        validate_upload_type(resource)
-        pass
-
-    def before_update(self, context, current, resource):
-        validate_upload_presence(resource)
-        validate_upload_type(resource)
-        pass
     # END Hooks for IResourceController
 
     # BEGIN Hooks for IActions
+
     def get_actions(self):
         return {
-            'security_throttle_user_reset': action.security_throttle_user_reset,
-            'security_throttle_address_reset': action.security_throttle_address_reset,
-            'security_throttle_user_show': action.security_throttle_user_show,
-            'security_throttle_address_show': action.security_throttle_address_show,
-            'user_update': action.user_update,
+            'security_throttle_user_reset':
+                action.security_throttle_user_reset,
+            'security_throttle_address_reset':
+                action.security_throttle_address_reset,
+            'security_throttle_user_show':
+                action.security_throttle_user_show,
+            'security_throttle_address_show':
+                action.security_throttle_address_show,
+            'user_update':
+                action.user_update,
         }
     # END Hooks for IActions
 
     # BEGIN Hooks for IAuthFunctions
+
     def get_auth_functions(self):
         return {
-            'security_throttle_user_reset': auth.security_throttle_user_reset,
-            'security_throttle_address_reset': auth.security_throttle_address_reset,
-            'security_throttle_user_show': auth.security_throttle_user_show,
-            'security_throttle_address_show': auth.security_throttle_address_show,
+            'security_throttle_user_reset':
+                auth.security_throttle_user_reset,
+            'security_throttle_address_reset':
+                auth.security_throttle_address_reset,
+            'security_throttle_user_show':
+                auth.security_throttle_user_show,
+            'security_throttle_address_show':
+                auth.security_throttle_address_show,
         }
     # END Hooks for IAuthFunctions
 

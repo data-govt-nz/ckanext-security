@@ -3,13 +3,15 @@ import os
 import codecs
 import logging
 import six
-import flask
 
 from ckan.common import config
 from ckan.lib.base import render_jinja2
 from ckan.lib.mailer import get_reset_link_body, mail_user
 from ckan.plugins import toolkit as tk
 from ckan import model
+
+if tk.check_ckan_version('2.9'):
+    import flask
 
 log = logging.getLogger(__name__)
 

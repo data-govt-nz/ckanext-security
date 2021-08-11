@@ -38,7 +38,7 @@ class MFAUserController(tk.BaseController):
 
     def new(self, id=None):
         utils.new(id)
-        helpers.redirect_to('/configure_mfa/{}'.format(user_id))
+        helpers.redirect_to('/configure_mfa/{}'.format(id))
 
 
 # Provide ability to fallback to old behaviour if needed

@@ -70,7 +70,8 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         except KeyError:
             return None
 
-        # TODO: This may need to be removed in CKAN 3+ when paste/pylons are removed
+        # TODO: This may need to be removed in CKAN 3+ when
+        # paste/pylons are removed
         environ['paste.registry'].register(pylons.translator, MockTranslator())
 
         if not ('login' in identity and 'password' in identity):

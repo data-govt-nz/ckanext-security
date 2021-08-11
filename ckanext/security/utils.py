@@ -3,17 +3,15 @@ import logging
 import json
 
 from ckan import authz, model
-from ckan.controllers.user import UserController
-from ckan.lib.base import abort, render
+from ckan.lib.base import abort
 from ckan.lib import helpers, mailer
 from ckan.logic import (
-    schema, NotAuthorized, check_access, get_action, NotFound
+    NotAuthorized, check_access, get_action, NotFound
 )
 from ckan.plugins import toolkit as tk
 from ckan.plugins.toolkit import request, config, _, c, g
 from ckanext.security.authenticator import get_login_throttle_key
 from ckanext.security import mailer as secure_mailer
-from ckanext.security.validators import old_username_validator
 from ckanext.security.model import SecurityTOTP
 from ckanext.security.cache.login import LoginThrottle
 
