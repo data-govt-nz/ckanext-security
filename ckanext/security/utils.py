@@ -63,15 +63,29 @@ def _get_template_context():
         else c
 
 
+def _get_request_form_data(request):
+    """Provides support for form data lookups for Flask and Pylons"""
+    if hasattr(request, 'form'):
+        return request.form
+    else:
+        return request.params
+
+
 def _setup_totp_template_variables(context, data_dict):
-    """Populates context with
-    is_sysadmin
-    totp_challenger_uri
-    totp_secret
-    mfa_test_valid
+    """
+    Populates context with:
+        user_dict
+        is_myself
+        is_sysadmin
+        totp_user_id
+        totp_challenger_uri
+        totp_secret
+        mfa_test_valid
+        mfa_test_invalid
     """
     tc = _get_template_context()
     gc = _get_global()
+    form_data = _get_request_form_data()
 
     tc.is_sysadmin = authz.is_sysadmin(gc.user)
     tc.totp_user_id = data_dict['id']
@@ -86,7 +100,7 @@ def _setup_totp_template_variables(context, data_dict):
         tc.totp_secret = totp_challenger.secret
         tc.totp_challenger_uri = totp_challenger.provisioning_uri
 
-        mfa_test_code = request.form.get('mfa')
+        mfa_test_code = form_data.get('mfa')
         if request.method == 'POST' and mfa_test_code is not None:
             tc.mfa_test_valid = totp_challenger.check_code(
                 mfa_test_code, verify_only=True)
@@ -95,16 +109,13 @@ def _setup_totp_template_variables(context, data_dict):
 
 
 def login():
-    """
-    Ajax call to test username/password/mfa code
-    """
-
+    """Ajax call to test username/password/mfa code"""
     try:
         res = {}
         if request.method != 'POST':
             return (405, json.dumps(res))
 
-        identity = request.form
+        identity = _get_request_form_data(request)
         if not ('login' in identity and 'password' in identity):
             return (422, json.dumps(res))
 

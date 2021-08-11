@@ -56,6 +56,8 @@ class SecureUserController(UserController):
                 'ckanext.security.disable_password_reset_override')):
             return original_password_reset()
 
+        form_data = utils._get_request_form_data(request)
+
         # This is a one-to-one copy from ckan core, except for user errors
         # handling. There should be no feedback about whether or not a user
         # is found in the db.
@@ -63,14 +65,14 @@ class SecureUserController(UserController):
         # `ckan.controllers.user.UserController.request_reset`
         context = {'model': model, 'session': model.Session, 'user': c.user,
                    'auth_user_obj': c.userobj}
-        data_dict = {'id': request.form.get('user')}
+        data_dict = {'id': form_data.get('user')}
         try:
             check_access('request_reset', context)
         except NotAuthorized:
             abort(403, _('Unauthorized to request reset password.'))
 
         if request.method == 'POST':
-            id = request.form.get('user')
+            id = form_data.get('user')
 
             context = {'model': model,
                        'user': c.user,
