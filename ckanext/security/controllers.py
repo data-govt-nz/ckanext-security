@@ -9,7 +9,6 @@ from ckan.logic import (
     NotAuthorized, check_access, get_action, NotFound
 )
 from ckan.plugins import toolkit as tk
-from paste.deploy.converters import asbool
 from ckanext.security import utils
 
 log = logging.getLogger(__name__)
@@ -53,7 +52,7 @@ class SecureUserController(UserController):
         # Later versions of CKAN core have fixed this behaviour, we default
         # to overriding with our own implementation but allow client to
         # disable if needed
-        if asbool(config.get(
+        if tk.asbool(config.get(
                 'ckanext.security.disable_password_reset_override')):
             return original_password_reset()
 

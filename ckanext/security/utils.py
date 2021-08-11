@@ -11,7 +11,6 @@ from ckan.logic import (
 )
 from ckan.plugins import toolkit as tk
 from ckan.plugins.toolkit import request, config, _, c, g
-from paste.deploy.converters import asbool
 from ckanext.security.authenticator import get_login_throttle_key
 from ckanext.security import mailer as secure_mailer
 from ckanext.security.validators import old_username_validator
