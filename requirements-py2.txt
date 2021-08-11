@@ -1,9 +1,6 @@
 Beaker~=1.11.0
 beakeredis~=0.1.0
 funcsigs~=1.0.2
-Paste~=3.5.0
-PasteDeploy~=2.1.1
-PasteScript~=3.2.1
 pyotp<2.4.0
 python-magic~=0.4.24
 redis~=3.5.3
