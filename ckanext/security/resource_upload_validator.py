@@ -2,10 +2,12 @@ import mimetypes
 import magic
 import logging
 import os
-
 from cgi import FieldStorage
+
 from ckan.logic import ValidationError
-from ckan.common import config
+from ckan.common import config, is_flask_request
+import ckan.plugins.toolkit as tk
+
 
 log = logging.getLogger(__name__)
 
@@ -70,7 +72,10 @@ def _build_mimetypes_and_extensions(filename, file_content):
 
 
 def _has_upload(resource):
-    return isinstance(resource.get('upload'), FieldStorage)
+    if is_flask_request():
+        return tk.request.files['upload'].filename != ''
+    else:
+        return isinstance(resource.get('upload'), FieldStorage)
 
 
 def validate_upload_type(resource):
@@ -87,7 +92,8 @@ def validate_upload_type(resource):
     filename = resource.get('url')
     if _has_upload(resource):
         field_storage = resource.get('upload')
-        uploaded_file = field_storage.file
+        uploaded_file = field_storage.stream if is_flask_request() else \
+            field_storage.file
         filename = field_storage.filename
 
     _add_mimetypes()
