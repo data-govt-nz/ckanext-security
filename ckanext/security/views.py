@@ -32,7 +32,8 @@ def login():
 @login_required
 def configure_mfa(id=None):
     extra_vars = utils.configure_mfa(id)
-    return tk.render('security/configure_mfa.html', extra_vars={ 'c': extra_vars })
+    return tk.render('security/configure_mfa.html',
+                     extra_vars={'c': extra_vars})
 
 
 @login_required
@@ -42,8 +43,10 @@ def new(id=None):
 
 
 mfa_user.add_url_rule('/api/mfa_login', view_func=login, methods=['POST'])
-mfa_user.add_url_rule('/configure_mfa/<id>', view_func=configure_mfa, methods=['GET', 'POST'])
-mfa_user.add_url_rule('/configure_mfa/<id>/new', view_func=new, methods=['GET'])
+mfa_user.add_url_rule('/configure_mfa/<id>',
+                      view_func=configure_mfa, methods=['GET', 'POST'])
+mfa_user.add_url_rule('/configure_mfa/<id>/new',
+                      view_func=new, methods=['GET', 'POST'])
 
 
 def get_blueprints():
