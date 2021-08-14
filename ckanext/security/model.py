@@ -100,7 +100,9 @@ class SecurityTOTP(DomainObject):
         :return boolean true if the code is valid
         """
         totp = pyotp.TOTP(self.secret)
-        result = totp.verify(code)
+        # valid_window means that the code will verify in the next 30s
+        # window as well
+        result = totp.verify(code, valid_window=1)
         if result and not verify_only:
             # check for replay attack...
             if self.last_successful_challenge\
