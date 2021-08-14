@@ -85,7 +85,7 @@ def _setup_totp_template_variables(context, data_dict):
     """
     tc = _get_template_context()
     gc = _get_global()
-    form_data = _get_request_form_data()
+    form_data = _get_request_form_data(request)
 
     tc.is_sysadmin = authz.is_sysadmin(gc.user)
     tc.totp_user_id = data_dict['id']
