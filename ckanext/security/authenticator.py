@@ -1,14 +1,16 @@
 from builtins import object
 import logging
-import pylons
+import six
+
+if six.PY2:
+    import pylons
+    from ckan.lib.cli import MockTranslator
 
 from ckan.lib.authenticator import UsernamePasswordAuthenticator
-from ckan.lib.cli import MockTranslator
 from ckan.model import User
 from ckan.common import config
-from repoze.who.interfaces import IAuthenticator
 from webob.request import Request
-from zope.interface import implements
+import ckan.plugins as p
 from ckanext.security.cache.login import LoginThrottle
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
 
@@ -59,7 +61,7 @@ def reset_address_throttle(address):
 
 
 class CKANLoginThrottle(UsernamePasswordAuthenticator):
-    implements(IAuthenticator)
+    p.implements(p.IAuthenticator)
 
     def authenticate(self, environ, identity):
         """A username/password authenticator that throttles login request
@@ -70,9 +72,11 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         except KeyError:
             return None
 
-        # TODO: This may need to be removed in CKAN 3+ when
-        # paste/pylons are removed
-        environ['paste.registry'].register(pylons.translator, MockTranslator())
+        if six.PY2:
+            # TODO: This may need to be removed in CKAN 3+ when
+            # paste/pylons are removed
+            environ['paste.registry'].register(
+                pylons.translator, MockTranslator())
 
         if not ('login' in identity and 'password' in identity):
             return None
@@ -135,7 +139,7 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
 
 
 class BeakerRedisAuth(object):
-    implements(IAuthenticator)
+    p.implements(p.IAuthenticator)
 
     def authenticate(self, environ, identity):
         # At this stage, the identity has already been validated from
