@@ -131,8 +131,8 @@ beaker.session.httponly = true
 beaker.session.secure = true
 beaker.session.timeout = 3600
 beaker.session.save_accessed_time = true
-beaker.session.type = redis
-beaker.session.url = 127.0.0.1:6739
+beaker.session.type = ext:redis
+beaker.session.url = redis://127.0.0.1:6739
 beaker.session.cookie_expires = true
 # Your domain should show here.
 beaker.session.cookie_domain = 192.168.232.65
