@@ -4,7 +4,7 @@ pyotp~=2.6.0
 python-magic~=0.4.24
 redis~=3.5.3
 repoze.who~=2.4
-git+https://github.com/mediasuitenz/repoze.who-use_beaker.git@master
+git+https://github.com/mediasuitenz/repoze.who-use_beaker@0.5.0#egg=repoze.who-use_beaker
 six~=1.16.0
 WebOb~=1.8.7
 zope.interface~=5.4.0
