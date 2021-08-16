@@ -60,6 +60,10 @@ def reset_address_throttle(address):
     LoginThrottle(None, address).reset()
 
 
+def reset_totp(user_name):
+    SecurityTOTP.create_for_user(user_name)
+
+
 class CKANLoginThrottle(UsernamePasswordAuthenticator):
     p.implements(p.IAuthenticator)
 

@@ -7,6 +7,7 @@ from ckanext.security.authenticator import (
     get_address_throttle,
     reset_user_throttle,
     reset_address_throttle,
+    reset_totp
 )
 
 
@@ -52,6 +53,12 @@ def security_throttle_address_show(context, data_dict):
     check_access('security_throttle_address_show', context, data_dict)
     address = get_or_bust(data_dict, 'address')
     return get_address_throttle(address)
+
+
+def security_reset_totp(context, data_dict):
+    check_access('security_reset_totp', context, data_dict)
+    user = get_or_bust(data_dict, 'user')
+    return reset_totp(user)
 
 
 @chained_action
