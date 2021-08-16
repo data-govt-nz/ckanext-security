@@ -73,9 +73,9 @@ def _build_mimetypes_and_extensions(filename, file_content):
 
 def _has_upload(resource):
     if is_flask_request():
-        try:
+        if 'upload' in tk.request.files:
             return tk.request.files['upload'].filename != ''
-        except KeyError:
+        else:
             return False
     else:
         return isinstance(resource.get('upload'), FieldStorage)
