@@ -76,6 +76,8 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
                 action.security_throttle_user_show,
             'security_throttle_address_show':
                 action.security_throttle_address_show,
+            'security_reset_totp':
+                action.security_reset_totp,
             'user_update':
                 action.user_update,
         }
@@ -93,6 +95,8 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
                 auth.security_throttle_user_show,
             'security_throttle_address_show':
                 auth.security_throttle_address_show,
+            'security_reset_totp':
+                auth.security_reset_totp,
         }
     # END Hooks for IAuthFunctions
 
