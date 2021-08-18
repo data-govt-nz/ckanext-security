@@ -21,7 +21,7 @@ def make_key():
 
 
 def create_reset_key(user):
-    user.reset_key = six.text_type(make_key())
+    user.reset_key = six.ensure_text(make_key())
     model.repo.commit_and_remove()
 
 
