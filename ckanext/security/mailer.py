@@ -4,8 +4,8 @@ import codecs
 import logging
 import six
 
-from ckan.common import config
-from ckan.lib.base import render_jinja2
+from ckan.common import config, is_flask_request
+from ckan.lib.base import render_jinja2, render
 from ckan.lib.mailer import get_reset_link_body, mail_user
 from ckan.plugins import toolkit as tk
 from ckan import model
@@ -31,7 +31,12 @@ def send_reset_link(user):
     extra_vars = {
         'site_title': config.get('ckan.site_title')
     }
-    subject = render_jinja2('emails/reset_password_subject.txt', extra_vars)
+    if is_flask_request():
+        subject = render(
+            'emails/reset_password_subject.txt', extra_vars)
+    else:
+        subject = render_jinja2(
+            'emails/reset_password_subject.txt', extra_vars)
 
     # Make sure we only use the first line
     subject = subject.split('\n')[0]
@@ -67,10 +72,20 @@ def notify_lockout(user, lockout_timeout):
         'lockout_mins': lockout_timeout // 60,
     }
 
-    subject = render_jinja2('security/emails/lockout_subject.txt', extra_vars)
+    if is_flask_request():
+        subject = render(
+            'security/emails/lockout_subject.txt', extra_vars)
+    else:
+        subject = render_jinja2(
+            'security/emails/lockout_subject.txt', extra_vars)
+
     subject = subject.split('\n')[0]  # Make sure we only use the first line
 
-    body = render_jinja2('security/emails/lockout_mail.txt', extra_vars)\
-        + _build_footer_content(extra_vars)
+    if is_flask_request():
+        body = render('security/emails/lockout_mail.txt', extra_vars)\
+            + _build_footer_content(extra_vars)
+    else:
+        body = render_jinja2('security/emails/lockout_mail.txt', extra_vars)\
+            + _build_footer_content(extra_vars)
 
     mail_user(user, subject, body)
