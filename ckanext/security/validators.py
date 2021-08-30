@@ -1,9 +1,10 @@
+# encoding: utf-8
+import six
 import string
 
 from ckan import authz
 from ckan.common import _
 from ckan.lib.navl.dictization_functions import Missing, Invalid
-
 
 MIN_PASSWORD_LENGTH = 10
 MIN_LEN_ERROR = (
@@ -18,7 +19,7 @@ def user_password_validator(key, data, errors, context):
 
     if isinstance(value, Missing):
         pass  # Already handeled in core
-    elif not isinstance(value, basestring):
+    elif not isinstance(value, six.string_types):
         raise Invalid(_('Passwords must be strings.'))
     elif value == '':
         pass  # Already handeled in core

@@ -8,7 +8,13 @@ overrides rendering of the login form
 {% set username_error = true if error_summary %}
 {% set password_error = true if error_summary %}
 
-{% resource 'security/login_ajax.js' %}
+{% if h.check_ckan_version('2.9') %}
+  {% asset 'security/mfa_login' %}
+{% else %}
+  {% resource 'security/login_ajax.js' %}
+  {% resource 'security/qrious.js' %}
+{% endif %}
+
 
 <form id="mfa-login-form" action="{{ action }}" method="post" class="form-horizontal">
   <div class="error-explanation alert alert-error" style="display: none;">
@@ -39,8 +45,6 @@ overrides rendering of the login form
 
   <div id="mfa-form" style="display: none;">
     <fieldset id="mfa-setup" style="display: none;">
-      {% resource 'security/qrious.js' %}
-
       <legend>{{_('Scan this QR code with your two factor authentication app')}}</legend>
       <p>{% trans %}If you don't already have an authenticator app, you could try Google Authenticator.{% endtrans %}</p>
 
