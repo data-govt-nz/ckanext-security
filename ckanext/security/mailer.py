@@ -10,7 +10,7 @@ from ckan.lib.mailer import get_reset_link_body, mail_user
 from ckan.plugins import toolkit as tk
 from ckan import model
 
-if tk.check_ckan_version('2.9'):
+if tk.check_ckan_version('2.8'):
     import flask
 
 log = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ def _build_footer_content(extra_vars):
                     custom_path)
         with open(custom_path, 'r') as footer_file:
             footer_content = footer_file.read()
-        if tk.check_ckan_version('2.9'):
+        if is_flask_request():
             env = flask.current_app.jinja_env
         else:
             env = config['pylons.app_globals'].jinja_env
