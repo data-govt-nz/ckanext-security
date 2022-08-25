@@ -10,7 +10,7 @@
 
 {% block secondary_content %}
   <section class="module module-narrow module-shallow">
-    <h2 class="module-heading"><i class="fa fa-medium fa-info-circle"></i> {{ _('Manage two factor authentication') }}</h2>
+    <h2 class="module-heading"><i class="fa fa-info-circle"></i> {{ _('Manage two factor authentication') }}</h2>
     <div class="module-content">
         <p>
             {% trans %}
@@ -22,8 +22,13 @@
 {% endblock %}
 
 {% block primary_content %}
-    {% resource 'security/qrious.js' %}
-    {% resource 'security/qrcode_renderer.js' %}
+    {% if h.check_ckan_version('2.9') %}
+        {% asset 'security/mfa_configure' %}
+    {% else %}
+        {% resource 'security/qrious.js' %}
+        {% resource 'security/qrcode_renderer.js' %}
+    {% endif %}
+
     <form id="mfa-form" method="POST">
         <fieldset>
             <legend>{{_('Scan this QR code with your two factor authentication app')}}</legend>
@@ -51,7 +56,7 @@
     </form>
 
     {% set locale = h.dump_json({'content': _('Are you sure you want to generate a new two factor secret?')}) %}
-    {% set new_mfa_challenge = h.url_for(controller='ckanext.security.controllers:MFAUserController', action='new', id=c.totp_user_id) %}
+    {% set new_mfa_challenge = h.url_for(controller='mfa_user' if h.check_ckan_version('2.9') else 'ckanext.security.controllers:MFAUserController', action='new', id=c.totp_user_id) %}
     <a class="btn btn-danger" href="{{new_mfa_challenge}}" data-module="confirm-action" data-module-i18n="{{ locale }}">{{_('Generate new two factor secret')}}</a>
     <p>{{_('This should only be necessary if you have deleted the authenticator app or are replacing your phone.')}}</p>
 {% endblock %}

@@ -1,5 +1,7 @@
+from builtins import object
 import redis
 from ckan.common import config
+
 
 class RedisClient(object):
     prefix = ''
@@ -21,6 +23,7 @@ class RedisClient(object):
 
     def delete(self, key):
         return self.client.delete(self.prefix + key)
+
 
 class ThrottleClient(RedisClient):
     prefix = 'security_throttle_'

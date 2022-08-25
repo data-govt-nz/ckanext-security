@@ -1,13 +1,14 @@
 from setuptools import setup, find_packages
 
-version = '2.4.2'
+version = '3.0.0'
 
 setup(
     name='ckanext-security',
     version=version,
     description='Various security patches for CKAN',
     long_description='',
-    classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    classifiers=[],
     keywords='',
     author='Data.govt.nz',
     author_email='info@data.govt.nz',
@@ -17,18 +18,9 @@ setup(
     namespace_packages=['ckanext'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=[
-        'repoze.who-use-beaker',
-        'redis',
-        'beakeredis',
-        'pyotp<2.4.0',
-        'python-magic'
-    ],
-    dependency_links=[
-        'git+https://github.com/kaukas/repoze.who-use_beaker.git@8ec4cea#egg=repoze.who-use-beaker-0.4'
-    ],
-    entry_points=\
-    """
+    install_requires=[],
+    dependency_links=[],
+    entry_points="""
     [ckan.plugins]
     security=ckanext.security.plugin:CkanSecurityPlugin
 
