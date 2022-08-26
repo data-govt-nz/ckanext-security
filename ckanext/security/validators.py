@@ -6,7 +6,7 @@ from ckan import authz
 from ckan.common import _
 from ckan.lib.navl.dictization_functions import Missing, Invalid
 
-MIN_PASSWORD_LENGTH = 10
+MIN_PASSWORD_LENGTH = 8
 MIN_LEN_ERROR = (
     'Your password must be {} characters or longer, and consist of at least '
     'three of the following character sets: uppercase characters, lowercase '
