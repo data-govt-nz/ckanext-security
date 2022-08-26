@@ -9,6 +9,7 @@ from ckanext.security.resource_upload_validator import (
     validate_upload_type, validate_upload_presence
 )
 from ckanext.security.logic import auth, action
+from ckanext.security.helpers import security_disable_totp
 
 try:
     tk.requires_ckan_version("2.9")
@@ -105,5 +106,5 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     def get_helpers(self):
         return {
             'check_ckan_version': tk.check_ckan_version,
-            'security_disable_totp': helpers.security_disable_totp,
+            'security_disable_totp': security_disable_totp,
         }
