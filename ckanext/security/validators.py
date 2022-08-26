@@ -18,11 +18,11 @@ def user_password_validator(key, data, errors, context):
     value = data[key]
 
     if isinstance(value, Missing):
-        pass  # Already handeled in core
+        pass  # Already handled in core
     elif not isinstance(value, six.string_types):
         raise Invalid(_('Passwords must be strings.'))
     elif value == '':
-        pass  # Already handeled in core
+        pass  # Already handled in core
     else:
         # NZISM compliant password rules
         rules = [
