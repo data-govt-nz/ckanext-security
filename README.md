@@ -146,7 +146,6 @@ ckanext.security.domain = 192.168.232.65          # Cookie domain
 ckanext.security.redis.host = 127.0.0.1
 ckanext.security.redis.port = 6379
 ckanext.security.redis.db = 1                     # ckan uses db 0
-ckanext.security.redis.db = 1                     # ckan uses db 0
 ckanext.security.redis.password = StrongPassword  # optional password for Redis
 
 # 15 minute timeout with 10 attempts
