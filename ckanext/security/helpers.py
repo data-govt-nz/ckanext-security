@@ -2,5 +2,5 @@ from ckan.common import config
 from paste.deploy.converters import asbool
 
 
-def security_disable_totp():
-    return asbool(config.get('ckanext.security.disable_totp', False))
+def security_enable_totp():
+    return asbool(config.get('ckanext.security.enable_totp', True))

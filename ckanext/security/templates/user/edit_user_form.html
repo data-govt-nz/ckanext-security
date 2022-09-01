@@ -8,7 +8,7 @@
   {% endcall %}
 {% endif %}
 
-{% if not h.security_disable_totp() %}
+{% if h.security_enable_totp() %}
   <fieldset>
     <legend>{{_('Two factor authentication')}}</legend>
     {% link_for _('Manage two factor authentication'), controller='mfa_user', action='configure_mfa', id=data.id, class_='btn btn-default pull-left', icon='cog' %}

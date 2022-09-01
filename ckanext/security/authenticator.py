@@ -90,8 +90,8 @@ def authenticate(identity):
 
     # totp authentication is enabled by default for all users
     # totp can be disabled, if needed, by setting
-    # ckanext.security.disable_totp to True in configurations
-    if asbool(config.get('ckanext.security.disable_totp', False)):
+    # ckanext.security.enable_totp to false in configurations
+    if not asbool(config.get('ckanext.security.enable_totp', True)):
         return ckan_auth_result
     else:
         # if the CKAN authenticator has successfully authenticated

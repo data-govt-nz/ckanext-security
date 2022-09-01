@@ -9,7 +9,7 @@ from ckanext.security.resource_upload_validator import (
     validate_upload
 )
 from ckanext.security.logic import auth, action
-from ckanext.security.helpers import security_disable_totp
+from ckanext.security.helpers import security_enable_totp
 
 from ckanext.security.plugin.flask_plugin import MixinPlugin
 
@@ -105,5 +105,5 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     def get_helpers(self):
         return {
             'check_ckan_version': tk.check_ckan_version,
-            'security_disable_totp': security_disable_totp,
+            'security_enable_totp': security_enable_totp,
         }

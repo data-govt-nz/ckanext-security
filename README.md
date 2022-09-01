@@ -162,7 +162,7 @@ ckanext.security.disable_password_reset_override = true
 
 # Two factor authentication is enabled for all users by default
 # optional configuration to disable 2fa
-ckanext.security.disable_totp = false         # set to true to disable 2fa 
+ckanext.security.enable_totp = true         # set to false to disable 2fa 
 
 # Provide a help page to allow 2fa users to contact support or get more information
 # Shows up as 'Need help?' on the 2fa entry form beside the submit button. Does not display a link if none provided
