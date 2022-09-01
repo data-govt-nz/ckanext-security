@@ -8,6 +8,7 @@ import ckan.plugins as p
 from ckan.plugins.toolkit import request
 from ckanext.security.cache.login import LoginThrottle
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
+from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 
@@ -87,15 +88,21 @@ def authenticate(identity):
         # Increment the throttle counter if the login failed.
         throttle.increment()
 
-    # if the CKAN authenticator has successfully authenticated
-    # the request and the user wasn't locked out above,
-    # then check the TOTP parameter to see if it is valid
-    if ckan_auth_result is not None:
-        totp_success = authenticate_totp(user_name)
-        # if TOTP was successful -- reset the log in throttle
-        if totp_success:
-            throttle.reset()
-            return ckan_auth_result
+    # totp authentication is enabled by default for all users
+    # totp can be disabled, if needed, by setting
+    # ckanext.security.disable_totp to True in configurations
+    if asbool(config.get('ckanext.security.disable_totp', False)):
+        return ckan_auth_result
+    else:
+        # if the CKAN authenticator has successfully authenticated
+        # the request and the user wasn't locked out above,
+        # then check the TOTP parameter to see if it is valid
+        if ckan_auth_result is not None:
+            totp_success = authenticate_totp(user_name)
+            # if TOTP was successful -- reset the log in throttle
+            if totp_success:
+                throttle.reset()
+                return totp_success
 
 
 def authenticate_totp(auth_user):
@@ -104,8 +111,9 @@ def authenticate_totp(auth_user):
     # if there is no totp configured, don't allow auth
     # shouldn't happen, login flow should create a totp_challenger
     if totp_challenger is None:
-        log.info("Login attempted without MFA configured for: %s",
-                    auth_user)
+        log.info(
+            "Login attempted without MFA configured for: %s",
+            auth_user)
         return None
 
     if not ('mfa' in request.form):
