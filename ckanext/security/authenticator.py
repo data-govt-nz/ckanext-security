@@ -3,12 +3,10 @@ import logging
 
 from ckan.lib.authenticator import default_authenticate
 from ckan.model import User
-from ckan.common import config
 import ckan.plugins as p
-from ckan.plugins.toolkit import request
+from ckan.plugins.toolkit import request, asbool, config
 from ckanext.security.cache.login import LoginThrottle
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
-from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 
@@ -91,9 +89,7 @@ def authenticate(identity):
     # totp authentication is enabled by default for all users
     # totp can be disabled, if needed, by setting
     # ckanext.security.enable_totp to false in configurations
-    if not asbool(config.get('ckanext.security.enable_totp', True)):
-        return ckan_auth_result
-    else:
+    if asbool(config.get('ckanext.security.enable_totp', True)):
         # if the CKAN authenticator has successfully authenticated
         # the request and the user wasn't locked out above,
         # then check the TOTP parameter to see if it is valid
@@ -103,6 +99,8 @@ def authenticate(identity):
             if totp_success:
                 throttle.reset()
                 return totp_success
+    else:
+        return ckan_auth_result
 
 
 def authenticate_totp(auth_user):
