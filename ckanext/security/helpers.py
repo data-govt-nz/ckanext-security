@@ -1,5 +1,4 @@
-from ckan.common import config
-from paste.deploy.converters import asbool
+from ckan.plugins.toolkit import asbool, config
 
 
 def security_enable_totp():
