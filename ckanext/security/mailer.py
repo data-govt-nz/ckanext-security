@@ -58,8 +58,12 @@ def _build_footer_content(extra_vars):
         template = env.from_string(footer_content)
         return '\n\n' + template.render(**extra_vars)
     else:
-        footer_path = 'security/emails/lockout_footer.txt'
-        return '\n\n' + render_jinja2(footer_path, extra_vars)
+        if is_flask_request():
+            footer_path = 'security/emails/lockout_footer.txt'
+            return '\n\n' + render(footer_path, extra_vars)
+        else:
+            footer_path = 'security/emails/lockout_footer.txt'
+            return '\n\n' + render_jinja2(footer_path, extra_vars)
 
 
 def notify_lockout(user, lockout_timeout):
