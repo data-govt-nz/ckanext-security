@@ -86,7 +86,7 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     # BEGIN Hooks for IAuthFunctions
 
     def get_auth_functions(self):
-        return {
+        auth_functions = {
             'security_throttle_user_reset':
                 auth.security_throttle_user_reset,
             'security_throttle_address_reset':
@@ -98,6 +98,13 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
             'security_reset_totp':
                 auth.security_reset_totp,
         }
+        if not tk.asbool(tk.config.get('ckan.auth.public_user_details', True)):
+            auth_functions.update({
+                'user_list': auth.user_list,
+                'user_show': auth.user_show,
+                'group_show': auth.group_show,
+            })
+        return auth_functions
     # END Hooks for IAuthFunctions
 
     # ITemplateHelpers
