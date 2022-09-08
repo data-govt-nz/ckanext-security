@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import logging
 import ckan.plugins as p
 
@@ -10,12 +12,10 @@ from ckanext.security.resource_upload_validator import (
 )
 from ckanext.security.logic import auth, action
 
-try:
-    tk.requires_ckan_version("2.9")
-except tk.CkanVersionException:
-    from ckanext.security.plugin.pylons_plugin import MixinPlugin
-else:
+if tk.check_ckan_version("2.9"):
     from ckanext.security.plugin.flask_plugin import MixinPlugin
+else:
+    from ckanext.security.plugin.pylons_plugin import MixinPlugin
 
 log = logging.getLogger(__name__)
 
