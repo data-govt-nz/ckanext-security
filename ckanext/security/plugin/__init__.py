@@ -97,13 +97,10 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
                 auth.security_throttle_address_show,
             'security_reset_totp':
                 auth.security_reset_totp,
+            'user_list': auth.user_list,
+            'user_show': auth.user_show,
+            'group_show': auth.group_show,
         }
-        if not tk.asbool(tk.config.get('ckan.auth.public_user_details', True)):
-            auth_functions.update({
-                'user_list': auth.user_list,
-                'user_show': auth.user_show,
-                'group_show': auth.group_show,
-            })
         return auth_functions
     # END Hooks for IAuthFunctions
 

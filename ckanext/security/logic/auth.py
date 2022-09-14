@@ -4,7 +4,8 @@ Action functions, all sysadmin-only
 
 from ckan import authz, model
 from ckan.logic import auth as logic_auth
-from ckan.plugins.toolkit import _, asbool, auth_allow_anonymous_access
+from ckan.plugins.toolkit import _, asbool, config, \
+    auth_allow_anonymous_access, chained_auth_function
 
 
 def security_throttle_user_reset(context, data_dict):
@@ -30,48 +31,60 @@ def security_reset_totp(context, data_dict):
 # User privacy enhancements
 
 
-def user_list(context, data_dict=None):
+@chained_auth_function
+def user_list(next_auth, context, data_dict=None):
     """Check whether access to the user list is authorised.
     Restricted to admins.
     """
-    return {'success': _requester_is_admin(context)}
+    if asbool(config.get('ckan.auth.public_user_details', True)) \
+            or _requester_is_admin(context):
+        return next_auth(context, data_dict)
+    else:
+        return {'success': False}
 
 
+@chained_auth_function
 @auth_allow_anonymous_access
-def user_show(context, data_dict):
+def user_show(next_auth, context, data_dict):
     """Check whether access to individual user details is authorised.
     Restricted to admins or self.
     """
-    if _requester_is_admin(context):
-        return {'success': True}
-    requester = context.get('user')
-    id = data_dict.get('id', None)
-    if id:
-        user_obj = model.User.get(id)
+    if asbool(config.get('ckan.auth.public_user_details', True)) \
+            or _requester_is_admin(context):
+        authorized = True
     else:
-        user_obj = data_dict.get('user_obj', None)
-    if user_obj:
-        return {'success': requester in [user_obj.name, user_obj.id]}
+        requester = context.get('user')
+        id = data_dict.get('id', None)
+        if id:
+            user_obj = model.User.get(id)
+        else:
+            user_obj = data_dict.get('user_obj', None)
+        authorized = user_obj and requester in [user_obj.name, user_obj.id]
+    if authorized:
+        return next_auth(context, data_dict)
 
     return {'success': False}
 
 
+@chained_auth_function
 @auth_allow_anonymous_access
-def group_show(context, data_dict):
+def group_show(next_auth, context, data_dict):
     """Check whether access to a group is authorised.
     If it's just the group metadata, this requires no privileges,
     but if user details have been requested, it requires a group admin.
     """
-    user = context.get('user')
-    group = logic_auth.get_group_object(context, data_dict)
-    if group.state == 'active' and \
-        not asbool(data_dict.get('include_users', False)) and \
-            data_dict.get('object_type', None) != 'user':
-        return {'success': True}
-    authorized = authz.has_user_permission_for_group_or_org(
-        group.id, user, 'update')
+    if asbool(config.get('ckan.auth.public_user_details', True)):
+        authorized = True
+    else:
+        user = context.get('user')
+        group = logic_auth.get_group_object(context, data_dict)
+        authorized = (
+            group.state == 'active'
+            and not asbool(data_dict.get('include_users', False))
+            and data_dict.get('object_type', None) != 'user'
+        ) or authz.has_user_permission_for_group_or_org(group.id, user, 'update')
     if authorized:
-        return {'success': True}
+        return next_auth(context, data_dict)
     else:
         return {'success': False,
                 'msg': _('User %s not authorized to read group %s') % (user, group.id)}
