@@ -77,18 +77,18 @@ def group_show(next_auth, context, data_dict):
     if asbool(config.get('ckan.auth.public_user_details', True)):
         authorized = True
     else:
-        user = context.get('user')
+        requester = context.get('user')
         group = logic_auth.get_group_object(context, data_dict)
         authorized = (
             group.state == 'active'
             and not asbool(data_dict.get('include_users', False))
             and data_dict.get('object_type', None) != 'user'
-        ) or authz.has_user_permission_for_group_or_org(group.id, user, 'update')
+        ) or authz.has_user_permission_for_group_or_org(group.id, requester, 'update')
     if authorized:
         return next_auth(context, data_dict)
     else:
         return {'success': False,
-                'msg': _('User %s not authorized to read group %s') % (user, group.id)}
+                'msg': _('User %s not authorized to read group %s') % (requester, group.id)}
 
 
 def _requester_is_admin(context):
