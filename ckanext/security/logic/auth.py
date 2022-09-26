@@ -34,7 +34,7 @@ def security_reset_totp(context, data_dict):
 @chained_auth_function
 def user_list(next_auth, context, data_dict=None):
     """Check whether access to the user list is authorised.
-    Restricted to admins.
+    Restricted to admins if 'ckan.auth.public_user_details' is False.
     """
     if asbool(config.get('ckan.auth.public_user_details', True)) \
             or _requester_is_admin(context):
@@ -47,7 +47,7 @@ def user_list(next_auth, context, data_dict=None):
 @auth_allow_anonymous_access
 def user_show(next_auth, context, data_dict):
     """Check whether access to individual user details is authorised.
-    Restricted to admins or self.
+    Restricted to admins or self if 'ckan.auth.public_user_details' is False.
     """
     if asbool(config.get('ckan.auth.public_user_details', True)) \
             or _requester_is_admin(context):
@@ -71,7 +71,8 @@ def user_show(next_auth, context, data_dict):
 def group_show(next_auth, context, data_dict):
     """Check whether access to a group is authorised.
     If it's just the group metadata, this requires no privileges,
-    but if user details have been requested, it requires a group admin.
+    but if user details have been requested and
+    'ckan.auth.public_user_details' is False, it requires a group admin.
     """
     if asbool(config.get('ckan.auth.public_user_details', True)):
         authorized = True
