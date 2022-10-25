@@ -109,11 +109,13 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         # the request and the user wasn't locked out above,
         # then check the TOTP parameter to see if it is valid
         if auth_user_name is not None:
-            totp_success = self.authenticate_totp(environ, auth_user_name)
-            # if TOTP was successful -- reset the log in throttle
-            if totp_success:
-                throttle.reset()
-                return totp_success
+            throttle.reset()
+            return auth_user_name
+            # totp_success = self.authenticate_totp(environ, auth_user_name)
+            # # if TOTP was successful -- reset the log in throttle
+            # if totp_success:
+            #     throttle.reset()
+            #     return totp_success
 
     def authenticate_totp(self, environ, auth_user):
         totp_challenger = SecurityTOTP.get_for_user(auth_user)
