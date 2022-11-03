@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import json
 
 from ckan.views import user
-from ckanext.security import utils
+from ckanext.security import utils, authenticator
 from ckan.lib import helpers
 from flask import Blueprint, make_response, request
 from functools import wraps
 from ckan.plugins import toolkit as tk
+from ckan.model import User
+from ckanext.security.cache.login import LoginThrottle
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +31,19 @@ def login():
     (status, res_data) = utils.login()
     return make_response((res_data, status, headers))
 
+def check_lockout():
+    user_name = request.args['user']
+    locked = False
+    lockout = {}
+    throttle = LoginThrottle(User.by_name(user_name), user_name)
+    if throttle:
+        locked = throttle.is_locked()
+        if locked:
+            lockout['timeout'] = throttle.login_lock_timeout
+
+    lockout['result'] = locked
+    return json.dumps(lockout)
+
 
 @login_required
 def configure_mfa(id=None):
@@ -47,7 +63,7 @@ mfa_user.add_url_rule('/configure_mfa/<id>',
                       view_func=configure_mfa, methods=['GET', 'POST'])
 mfa_user.add_url_rule('/configure_mfa/<id>/new',
                       view_func=new, methods=['GET', 'POST'])
-
+mfa_user.add_url_rule('/api/check_lockout', view_func=check_lockout, methods=['GET'])
 
 def get_blueprints():
     return [mfa_user]
