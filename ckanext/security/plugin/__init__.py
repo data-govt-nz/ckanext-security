@@ -4,7 +4,7 @@ import ckan.plugins as p
 from ckanext.security import schema as ext_schema
 from ckan.plugins import toolkit as tk
 from ckan.logic import schema as core_schema
-from ckanext.security.model import define_security_tables
+from ckanext.security.model import define_security_tables, db_setup
 from ckanext.security.resource_upload_validator import (
     validate_upload_type, validate_upload_presence
 )
@@ -26,6 +26,7 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)
     p.implements(p.ITemplateHelpers)
+    p.implements(p.IConfigurable)
 
     # BEGIN Hooks for IConfigurer
 
@@ -106,3 +107,7 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
         return {
             'check_ckan_version': tk.check_ckan_version,
         }
+
+    # IConfigurable
+    def configure(self, config):
+        db_setup()
