@@ -4,6 +4,8 @@ import logging
 import os
 from cgi import FieldStorage
 
+from flask import has_request_context
+
 from ckan.logic import ValidationError
 from ckan.common import config, is_flask_request
 import ckan.plugins.toolkit as tk
@@ -73,7 +75,7 @@ def _build_mimetypes_and_extensions(filename, file_content):
 
 def _has_upload(resource):
     if is_flask_request():
-        if 'upload' in tk.request.files:
+        if has_request_context() and 'upload' in tk.request.files:
             return tk.request.files['upload'].filename != ''
         else:
             return False
