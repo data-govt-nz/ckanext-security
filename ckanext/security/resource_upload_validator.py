@@ -5,6 +5,7 @@ import os
 from cgi import FieldStorage
 
 from flask import has_request_context
+from werkzeug.datastructures import FileStorage
 
 from ckan.logic import ValidationError
 from ckan.common import config, is_flask_request
@@ -78,7 +79,7 @@ def _has_upload(resource):
         if has_request_context() and 'upload' in tk.request.files:
             return tk.request.files['upload'].filename != ''
         else:
-            return False
+            return isinstance(resource.get('upload'), FileStorage)
     else:
         return isinstance(resource.get('upload'), FieldStorage)
 
