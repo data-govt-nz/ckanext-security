@@ -90,18 +90,19 @@ def authenticate(identity):
     # totp authentication is enabled by default for all users
     # totp can be disabled, if needed, by setting
     # ckanext.security.enable_totp to false in configurations
-    if security_enable_totp():
-        # if the CKAN authenticator has successfully authenticated
-        # the request and the user wasn't locked out above,
-        # then check the TOTP parameter to see if it is valid
-        if ckan_auth_result is not None:
-            totp_success = authenticate_totp(user_name)
-            # if TOTP was successful -- reset the log in throttle
-            if totp_success:
-                throttle.reset()
-                return totp_success
-    else:
+    if not security_enable_totp():
+        throttle.reset()
         return ckan_auth_result
+
+    # if the CKAN authenticator has successfully authenticated
+    # the request and the user wasn't locked out above,
+    # then check the TOTP parameter to see if it is valid
+    if ckan_auth_result is not None:
+        totp_success = authenticate_totp(user_name)
+        # if TOTP was successful -- reset the log in throttle
+        if totp_success:
+            throttle.reset()
+            return ckan_auth_result
 
 
 def authenticate_totp(auth_user):
