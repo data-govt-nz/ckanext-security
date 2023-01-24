@@ -8,8 +8,9 @@ overrides rendering of the login form
 {% set username_error = true if error_summary %}
 {% set password_error = true if error_summary %}
 
-{% asset 'security/mfa_login' %}
-
+{% if h.security_enable_totp() %}
+  {% asset 'security/mfa_login' %}
+{% endif %}
 
 <form id="mfa-login-form" action="{{ action }}" method="post" class="form-horizontal">
   <div class="error-explanation alert alert-error" style="display: none;">
@@ -38,27 +39,29 @@ overrides rendering of the login form
     </div>
   </div>
 
-  <div id="mfa-form" style="display: none;">
-    <fieldset id="mfa-setup" style="display: none;">
-      <legend>{{_('Scan this QR code with your two factor authentication app')}}</legend>
-      <p>{% trans %}If you don't already have an authenticator app, you could try Google Authenticator.{% endtrans %}</p>
+  {% if h.security_enable_totp() %}
+    <div id="mfa-form" style="display: none;">
+      <fieldset id="mfa-setup" style="display: none;">
+        <legend>{{_('Scan this QR code with your two factor authentication app')}}</legend>
+        <p>{% trans %}If you don't already have an authenticator app, you could try Google Authenticator.{% endtrans %}</p>
 
-      <div>
-        <canvas class="radius-lg padding-sm margin-b-sm border-solid" id="qr-code-container"></canvas>
+        <div>
+          <canvas class="radius-lg padding-sm margin-b-sm border-solid" id="qr-code-container"></canvas>
+        </div>
+        <p>
+          {% trans %}If you are not able to scan the QR code, you can manually enter this secret into your authenticator app: {% endtrans %}<code id="totp-secret"></code>
+        </p>
+      </fieldset>
+
+      <p>{{_('Please enter your authenticator app generated 6-digit verification code.')}}</p>
+      {{ form.input('mfa', label=_("Verification code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"], attrs={"autocomplete": "off"}) }}
+
+      <input id="mfa-form-active" name="mfa-form-active" type="hidden" value="" />
+      <div class="form-actions">
+        <a id="mfa-help-link" href="/" style="display: none; margin-right: 20px;">{{_('Need help?')}}</a>
+        <button class="btn btn-primary" type="submit">{{ _('Submit') }}</button>
       </div>
-      <p>
-        {% trans %}If you are not able to scan the QR code, you can manually enter this secret into your authenticator app: {% endtrans %}<code id="totp-secret"></code>
-      </p>
-    </fieldset>
-
-    <p>{{_('Please enter your authenticator app generated 6-digit verification code.')}}</p>
-    {{ form.input('mfa', label=_("Verification code"), id='field-mfa', type="text", value="", error=mfa_error, classes=["control-medium"], attrs={"autocomplete": "off"}) }}
-
-    <input id="mfa-form-active" name="mfa-form-active" type="hidden" value="" />
-    <div class="form-actions">
-      <a id="mfa-help-link" href="/" style="display: none; margin-right: 20px;">{{_('Need help?')}}</a>
-      <button class="btn btn-primary" type="submit">{{ _('Submit') }}</button>
     </div>
-  </div>
+  {% endif %}
 
 </form>
