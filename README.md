@@ -141,16 +141,17 @@ beaker.session.cookie_domain = 192.168.232.65
 ### ckanext-security configuration options
 ```ini
 ## Security
-ckanext.security.domain = 192.168.232.65      # Cookie domain
+ckanext.security.domain = 192.168.232.65          # Cookie domain
 
 ckanext.security.redis.host = 127.0.0.1
 ckanext.security.redis.port = 6379
-ckanext.security.redis.db = 1                 # ckan uses db 0
+ckanext.security.redis.db = 1                     # ckan uses db 0
+ckanext.security.redis.password = StrongPassword  # optional password for Redis
 
 # 15 minute timeout with 10 attempts
-ckanext.security.lock_timeout = 900           # Login throttling lock period
-ckanext.security.login_max_count = 10         # Login throttling attempt limit
-ckanext.security.brute_force_key = user_name  # Detect brute force attempts by username rather than IP address
+ckanext.security.lock_timeout = 900               # Login throttling lock period
+ckanext.security.login_max_count = 10             # Login throttling attempt limit
+ckanext.security.brute_force_key = user_name      # Detect brute force attempts by username rather than IP address
 
 # If using 2.7.7 or recent patches of 2.8, the password reset behaviour has been fixed in CKAN core
 # (no longer discloses info about non-existent accounts) and the way this plugin overrides the password

@@ -88,7 +88,7 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
 
         # Run through the CKAN auth sequence first, so we can hit the DB
         # in every case and make timing attacks a little more difficult.
-        auth_user_name = super(CKANLoginThrottle, self).authenticate(
+        ckan_auth_result = super(CKANLoginThrottle, self).authenticate(
             environ, identity)
 
         login_throttle_key = get_login_throttle_key(
@@ -102,7 +102,7 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         if throttle.is_locked():
             return None
 
-        if auth_user_name is None:
+        if ckan_auth_result is None:
             # Increment the throttle counter if the login failed.
             throttle.increment()
 
@@ -111,17 +111,17 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         # this can be done by setting ckanext.security.disable_totp
         # flag to true in config file
         if asbool(config.get('ckanext.security.disable_totp')):
-            return auth_user_name
+            return ckan_auth_result
         else:
             # if the CKAN authenticator has successfully authenticated
             # the request and the user wasn't locked out above,
             # then check the TOTP parameter to see if it is valid
-            if auth_user_name is not None:
-                totp_success = self.authenticate_totp(environ, auth_user_name)
+            if ckan_auth_result is not None:
+                totp_success = self.authenticate_totp(environ, user_name)
                 # if TOTP was successful -- reset the log in throttle
                 if totp_success:
                     throttle.reset()
-                    return totp_success
+                    return ckan_auth_result
 
     def authenticate_totp(self, environ, auth_user):
         totp_challenger = SecurityTOTP.get_for_user(auth_user)
