@@ -57,13 +57,16 @@ def _build_mimetypes_and_extensions(filename, file_content):
         if mimetype:
             extensions_and_mimetypes.append(mimetype)
 
-            # build set of possible extensions for the mimetype
-            nonstandard_extensions = mimes_instance.types_map_inv[0].get(
-                mimetype, [])
-            standard_extensions = mimes_instance.types_map_inv[1].get(
-                mimetype, [])
-            extensions_and_mimetypes.extend(nonstandard_extensions)
-            extensions_and_mimetypes.extend(standard_extensions)
+            # 'text/plain' returns '.bat' extension, if this is blacklisted then
+            # any text files are blocked. Assume text files are ok.
+            if mimetype != 'text/plain':
+                # build set of possible extensions for the mimetype
+                nonstandard_extensions = mimes_instance.types_map_inv[0].get(
+                    mimetype, [])
+                standard_extensions = mimes_instance.types_map_inv[1].get(
+                    mimetype, [])
+                extensions_and_mimetypes.extend(nonstandard_extensions)
+                extensions_and_mimetypes.extend(standard_extensions)
 
     unique_set = set(extensions_and_mimetypes)
     unique_list = list(unique_set)
