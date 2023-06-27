@@ -28,13 +28,13 @@
       {% endcall %}
     {% endif %}
 
-    {% set is_upload = data.image_url and not data.image_url.startswith('http') %}	
-    {% set is_url = data.image_url and data.image_url.startswith('http') %}	
+    {% set is_upload = data.image_url and not data.image_url.startswith('http') %}
+    {% set is_url = data.image_url and data.image_url.startswith('http') %}
 
-    {{ form.image_upload(data, errors, is_upload_enabled=h.uploads_enabled(), is_url=is_url, is_upload=is_upload, upload_label=_('Profile picture'), url_label=_('Profile picture URL') ) }}	
-    
+    {{ form.image_upload(data, errors, is_upload_enabled=h.uploads_enabled(), is_url=is_url, is_upload=is_upload, upload_label=_('Profile picture'), url_label=_('Profile picture URL') ) }}
+
   </fieldset>
-  
+
 
   <fieldset>
     <legend>{{ _('Change password') }}</legend>
@@ -47,7 +47,7 @@
                     classes=['control-medium'],
                     attrs={'autocomplete': 'off', 'class': 'form-control'}
                     ) }}
-                    
+
     {{ form.input('password1', type='password', label=_('Password'), id='field-password', value=data.password1, error=errors.password1, classes=['control-medium'], attrs={'autocomplete': 'off', 'class': 'form-control'} ) }}
 
     {{ form.input('password2', type='password', label=_('Confirm Password'), id='field-password-confirm', value=data.password2, error=errors.password2, classes=['control-medium'], attrs={'autocomplete': 'off', 'class': 'form-control'}) }}
@@ -64,6 +64,8 @@
   </fieldset>
   {% endif %}
 
+  {{ form.required_message() }}
+
   <div class="form-actions">
     {% block delete_button %}
       {% if h.check_access('user_delete', {'id': data.id})  %}
@@ -75,7 +77,6 @@
         <a class="btn btn-warning" href="{% url_for 'user.generate_apikey', id=data.id %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to regenerate the API key?') }}">{% block generate_button_text %}{{ _('Regenerate API Key') }}{% endblock %}</a>
       {% endif %}
     {% endblock %}
-    {{ form.required_message() }}
     <button class="btn btn-primary" type="submit" name="save">{{ _('Update Profile') }}</button>
   </div>
 </form>
