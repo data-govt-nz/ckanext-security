@@ -1,4 +1,4 @@
-from pylons import config
+from ckan.plugins.toolkit import config
 from paste.deploy.converters import asbool
 
 
