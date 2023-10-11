@@ -136,7 +136,7 @@ def login():
                 user_name
             )
 
-        invalid_login = user is None or not user.is_active() \
+        invalid_login = user is None or not user.is_active \
             or not user.validate_password(identity['password'])
         if invalid_login:
             # Increment the throttle counter if the login failed.
@@ -178,7 +178,7 @@ def login():
         return (response_status, json.dumps(res))
 
     except Exception as err:
-        log.error('Unhandled error during login: %s', err)
+        log.error('Unhandled error during login: %s', err, exc_info=True)
         return (500, json.dumps({}))
 
 

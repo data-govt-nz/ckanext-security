@@ -39,3 +39,7 @@ def old_username_validator(key, data, errors, context):
     # Completely prevents changing of user names
     old_user = authz._get_user(context.get('user'))
     return old_user.name
+
+
+def ensure_str(value):
+    return six.text_type(value)

@@ -8,12 +8,7 @@ overrides rendering of the login form
 {% set username_error = true if error_summary %}
 {% set password_error = true if error_summary %}
 
-{% if h.check_ckan_version('2.9') %}
-  {% asset 'security/mfa_login' %}
-{% else %}
-  {% resource 'security/login_ajax.js' %}
-  {% resource 'security/qrious.js' %}
-{% endif %}
+{% asset 'security/mfa_login' %}
 
 
 <form id="mfa-login-form" action="{{ action }}" method="post" class="form-horizontal">

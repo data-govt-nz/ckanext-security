@@ -52,6 +52,7 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
 
     # BEGIN Hooks for IResourceController
 
+    # CKAN < 2.10
     def before_create(self, context, resource):
         try:
             validate_upload_presence(resource)
@@ -65,6 +66,17 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
         except tk.ValidationError:
             return
         validate_upload_type(resource)
+
+    # CKAN >= 2.10
+    def before_resource_create(self, context, resource):
+        validate_upload_presence(resource)
+        validate_upload_type(resource)
+        pass
+
+    def before_resource_update(self, context, current, resource):
+        validate_upload_presence(resource)
+        validate_upload_type(resource)
+        pass
 
     # END Hooks for IResourceController
 
