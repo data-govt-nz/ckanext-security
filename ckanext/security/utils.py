@@ -18,7 +18,9 @@ from ckanext.security.cache.login import LoginThrottle
 log = logging.getLogger(__name__)
 
 # Override password reset link
-mailer.send_reset_link = secure_mailer.send_reset_link
+if not tk.asbool(config.get(
+                'ckanext.security.disable_password_reset_override')):
+    mailer.send_reset_link = secure_mailer.send_reset_link
 
 
 def check_user_and_access():
