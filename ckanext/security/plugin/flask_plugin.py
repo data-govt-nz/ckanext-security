@@ -2,6 +2,7 @@
 
 import ckan.plugins as p
 from ckanext.security import views, cli, authenticator
+from ckan.common import session
 
 
 class MixinPlugin(p.SingletonPlugin):
@@ -23,3 +24,7 @@ class MixinPlugin(p.SingletonPlugin):
 
     def authenticate(self, identity):
         return authenticator.authenticate(identity)
+
+    # Delete session cookie information
+    def logout(self):
+        session.invalidate()
