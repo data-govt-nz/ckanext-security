@@ -138,7 +138,11 @@ def login():
                 user_name
             )
 
-        invalid_login = user is None or not user.is_active \
+        # Flask-login changed is_active from function to attribute on user
+        user_is_active = user is not None and (
+           user.is_active() if callable(user.is_active) else user.is_active
+        )
+        invalid_login = not user_is_active \
             or not user.validate_password(identity['password'])
         if invalid_login:
             # Increment the throttle counter if the login failed.
