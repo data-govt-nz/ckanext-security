@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import logging
 import ckan.plugins as p
 
@@ -10,12 +12,10 @@ from ckanext.security.resource_upload_validator import (
 )
 from ckanext.security.logic import auth, action
 
-try:
-    tk.requires_ckan_version("2.9")
-except tk.CkanVersionException:
-    from ckanext.security.plugin.pylons_plugin import MixinPlugin
-else:
+if tk.check_ckan_version("2.9"):
     from ckanext.security.plugin.flask_plugin import MixinPlugin
+else:
+    from ckanext.security.plugin.pylons_plugin import MixinPlugin
 
 log = logging.getLogger(__name__)
 
@@ -90,7 +90,7 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     # BEGIN Hooks for IAuthFunctions
 
     def get_auth_functions(self):
-        return {
+        auth_functions = {
             'security_throttle_user_reset':
                 auth.security_throttle_user_reset,
             'security_throttle_address_reset':
@@ -101,7 +101,11 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
                 auth.security_throttle_address_show,
             'security_reset_totp':
                 auth.security_reset_totp,
+            'user_list': auth.user_list,
+            'user_show': auth.user_show,
+            'group_show': auth.group_show,
         }
+        return auth_functions
     # END Hooks for IAuthFunctions
 
     # ITemplateHelpers
