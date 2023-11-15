@@ -1,5 +1,5 @@
 from ckan.plugins.toolkit import config
-from paste.deploy.converters import asbool
+from ckan.common import asbool
 
 
 def security_disable_totp():

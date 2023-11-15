@@ -23,8 +23,5 @@ setup(
     entry_points="""
     [ckan.plugins]
     security=ckanext.security.plugin:CkanSecurityPlugin
-
-    [paste.paster_command]
-    security=ckanext.security.command.security:Security
     """,
 )

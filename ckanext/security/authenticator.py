@@ -8,12 +8,11 @@ if six.PY2:
 
 from ckan.lib.authenticator import UsernamePasswordAuthenticator
 from ckan.model import User
-from ckan.common import config
+from ckan.common import config, asbool
 from webob.request import Request
 import ckan.plugins as p
 from ckanext.security.cache.login import LoginThrottle
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
-from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 
