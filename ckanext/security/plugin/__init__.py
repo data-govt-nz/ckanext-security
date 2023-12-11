@@ -9,6 +9,7 @@ from ckanext.security.resource_upload_validator import (
     validate_upload_type, validate_upload_presence
 )
 from ckanext.security.logic import auth, action
+from ckanext.security import validators
 
 try:
     tk.requires_ckan_version("2.9")
@@ -26,6 +27,7 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)
     p.implements(p.ITemplateHelpers)
+    p.implements(p.IValidators)
 
     # BEGIN Hooks for IConfigurer
 
@@ -50,6 +52,14 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
 
     # END Hooks for IConfigurer
 
+    # BEGIN hooks for IValidators
+    def get_validators(self):
+        return {
+            'user_password_validator': validators.user_password_validator,
+            'old_username_validator': validators.old_username_validator,
+        }
+    # END hooks for IValidators
+    
     # BEGIN Hooks for IResourceController
 
     def before_create(self, context, resource):
