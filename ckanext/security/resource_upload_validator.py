@@ -133,3 +133,11 @@ def validate_upload_presence(resource):
         raise ValidationError(
             {'File': ['Please upload a file or link to an external resource']}
         )
+
+
+def validate_upload(resource):
+    try:
+        validate_upload_presence(resource)
+    except tk.ValidationError:
+        return
+    validate_upload_type(resource)
