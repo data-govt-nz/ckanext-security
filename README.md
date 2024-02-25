@@ -18,6 +18,7 @@ disclose whether or not that email address exists in the DB
 * This extension has been used and tested against CKAN version 2.7.x on git tag 2.5.0 and earlier
 * CKAN 2.9.x and Python 3 support was added from git tag 3.0.0
 * This extension used to provide CSRF protection (in git tags 2.5.0 and earlier). This is no longer provided, please use [ckanext-csrf-filter](https://github.com/qld-gov-au/ckanext-csrf-filter) instead.
+* Support for CKAN versions earlier than 2.9.x is now dropped from git tag 4.0.0
 
 ### Reset tokens
 Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
