@@ -4,7 +4,7 @@ import logging
 from ckan.lib.authenticator import default_authenticate
 from ckan.model import User
 import ckan.plugins as p
-from ckan.plugins.toolkit import request, config
+from ckan.plugins.toolkit import request, config, abort
 from ckanext.security.cache.login import LoginThrottle
 from ckanext.security.helpers import security_enable_totp
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
@@ -86,6 +86,7 @@ def authenticate(identity):
     if ckan_auth_result is None:
         # Increment the throttle counter if the login failed.
         throttle.increment()
+        return None
 
     # totp authentication is enabled by default for all users
     # totp can be disabled, if needed, by setting
@@ -97,12 +98,19 @@ def authenticate(identity):
     # if the CKAN authenticator has successfully authenticated
     # the request and the user wasn't locked out above,
     # then check the TOTP parameter to see if it is valid
-    if ckan_auth_result is not None:
-        totp_success = authenticate_totp(user_name)
-        # if TOTP was successful -- reset the log in throttle
-        if totp_success:
-            throttle.reset()
-            return ckan_auth_result
+    totp_success = authenticate_totp(user_name)
+    # if TOTP was successful -- reset the log in throttle
+    if totp_success:
+        throttle.reset()
+        return ckan_auth_result
+    else:
+        # This means that the login form has been submitted
+        # with an invalid TOTP code, bypassing the ajax
+        # login() workflow in utils.login.
+        # The username and password were fine, but the 2fa
+        # code was missing or invalid
+        throttle.increment()
+        abort(403, 'Two factor authentication failed, please try again')
 
 
 def authenticate_totp(auth_user):
