@@ -78,10 +78,10 @@ def authenticate(identity):
         return None
 
     throttle = LoginThrottle(User.by_name(user_name), login_throttle_key)
-    # Check if there is a lock on the requested user, and return None if
+    # Check if there is a lock on the requested user, and abort if
     # we have a lock.
     if throttle.is_locked():
-        return None
+        return abort(403, 'Too many login attempts, please try again later')
 
     if ckan_auth_result is None:
         # Increment the throttle counter if the login failed.
