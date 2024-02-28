@@ -67,6 +67,12 @@ def authenticate(identity):
     # Run through the CKAN auth sequence first, so we can hit the DB
     # in every case and make timing attacks a little more difficult.
     ckan_auth_result = default_authenticate(identity)
+
+    # Don't throttle or check MFA in other parts of the application
+    # like user/edit/<username> when changing password
+    if 'user/login' not in request.path:
+        return ckan_auth_result
+
     try:
         user_name = identity['login']
     except KeyError:
