@@ -1,10 +1,15 @@
 from builtins import object
 import logging
+from typing import Any, Union
 
+from ckan.types import Response
 from ckan.lib.authenticator import default_authenticate
 from ckan.model import User
 import ckan.plugins as p
-from ckan.plugins.toolkit import request, config, abort
+from ckan.plugins.toolkit import \
+    request, config, current_user, base, login_user, h, _
+from ckan.views.user import next_page_or_default, rotate_token
+
 from ckanext.security.cache.login import LoginThrottle
 from ckanext.security.helpers import security_enable_totp
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
@@ -68,11 +73,6 @@ def authenticate(identity):
     # in every case and make timing attacks a little more difficult.
     ckan_auth_result = default_authenticate(identity)
 
-    # Don't throttle or check MFA in other parts of the application
-    # like user/edit/<username> when changing password
-    if 'user/login' not in request.path:
-        return ckan_auth_result
-
     try:
         user_name = identity['login']
     except KeyError:
@@ -87,7 +87,7 @@ def authenticate(identity):
     # Check if there is a lock on the requested user, and abort if
     # we have a lock.
     if throttle.is_locked():
-        return abort(403, 'Too many login attempts, please try again later')
+        return None
 
     if ckan_auth_result is None:
         # Increment the throttle counter if the login failed.
@@ -116,7 +116,7 @@ def authenticate(identity):
         # The username and password were fine, but the 2fa
         # code was missing or invalid
         throttle.increment()
-        abort(403, 'Two factor authentication failed, please try again')
+        return None
 
 
 def authenticate_totp(auth_user):
@@ -144,6 +144,45 @@ def authenticate_totp(auth_user):
 
     if result:
         return auth_user
+
+
+def login() -> Union[Response, str]:
+    """Override the CKAN default login functionality to provide
+    Throttle and MFA protection"""
+    extra_vars: dict[str, Any] = {}
+
+    if current_user.is_authenticated:
+        return base.render("user/logout_first.html", extra_vars)
+
+    if request.method == "POST":
+        username_or_email = request.form.get("login")
+        password = request.form.get("password")
+        _remember = request.form.get("remember")
+
+        identity = {
+            u"login": username_or_email,
+            u"password": password
+        }
+
+        user_obj = authenticate(identity)
+        if user_obj:
+            next = request.args.get('next', request.args.get('came_from'))
+            if _remember:
+                from datetime import timedelta
+                duration_time = timedelta(milliseconds=int(_remember))
+                login_user(user_obj, remember=True, duration=duration_time)
+                rotate_token()
+                return next_page_or_default(next)
+            else:
+                login_user(user_obj)
+                rotate_token()
+                return next_page_or_default(next)
+        else:
+            err = _(u"Login failed. Bad username or password.")
+            h.flash_error(err)
+            return base.render("user/login.html", extra_vars)
+
+    return base.render("user/login.html", extra_vars)
 
 
 class CKANLoginThrottle():
