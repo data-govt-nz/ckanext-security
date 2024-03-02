@@ -22,8 +22,8 @@ class MixinPlugin(p.SingletonPlugin):
 
     # IAuthenticator
 
-    def authenticate(self, identity):
-        return authenticator.authenticate(identity)
+    def login(self):
+        return authenticator.login()
 
     # Delete session cookie information
     def logout(self):
