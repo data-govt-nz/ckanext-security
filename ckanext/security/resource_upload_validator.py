@@ -58,13 +58,16 @@ def _build_mimetypes_and_extensions(filename, file_content):
         if mimetype:
             extensions_and_mimetypes.append(mimetype)
 
-            # build set of possible extensions for the mimetype
-            nonstandard_extensions = mimes_instance.types_map_inv[0].get(
-                mimetype, [])
-            standard_extensions = mimes_instance.types_map_inv[1].get(
-                mimetype, [])
-            extensions_and_mimetypes.extend(nonstandard_extensions)
-            extensions_and_mimetypes.extend(standard_extensions)
+            # 'text/plain' returns '.bat' extension, if this is blacklisted then
+            # any text files are blocked. Assume text files are ok.
+            if mimetype != 'text/plain':
+                # build set of possible extensions for the mimetype
+                nonstandard_extensions = mimes_instance.types_map_inv[0].get(
+                    mimetype, [])
+                standard_extensions = mimes_instance.types_map_inv[1].get(
+                    mimetype, [])
+                extensions_and_mimetypes.extend(nonstandard_extensions)
+                extensions_and_mimetypes.extend(standard_extensions)
 
     unique_set = set(extensions_and_mimetypes)
     unique_list = list(unique_set)
@@ -99,11 +102,9 @@ def validate_upload_type(resource):
     if _has_upload(resource):
         field_storage = resource.get('upload')
         if not field_storage and is_flask_request():
-            if has_request_context():
-                field_storage = tk.request.files['upload']
-            uploaded_file = field_storage.stream  # async from xloader (canada fork only)
-        else:
-            uploaded_file = field_storage.file
+            field_storage = tk.request.files['upload']
+        uploaded_file = field_storage.stream if is_flask_request() else \
+            field_storage.file
         filename = field_storage.filename
 
     _add_mimetypes()
@@ -135,3 +136,11 @@ def validate_upload_presence(resource):
         raise ValidationError(
             {'File': ['Please upload a file or link to an external resource']}
         )
+
+
+def validate_upload(resource):
+    try:
+        validate_upload_presence(resource)
+    except tk.ValidationError:
+        return
+    validate_upload_type(resource)

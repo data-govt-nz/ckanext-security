@@ -18,7 +18,9 @@ from ckanext.security.cache.login import LoginThrottle
 log = logging.getLogger(__name__)
 
 # Override password reset link
-mailer.send_reset_link = secure_mailer.send_reset_link
+if not tk.asbool(config.get(
+                'ckanext.security.disable_password_reset_override')):
+    mailer.send_reset_link = secure_mailer.send_reset_link
 
 
 def check_user_and_access():
@@ -136,7 +138,11 @@ def login():
                 user_name
             )
 
-        invalid_login = user is None or not user.is_active() \
+        # Flask-login changed is_active from function to attribute on user
+        user_is_active = user is not None and (
+           user.is_active() if callable(user.is_active) else user.is_active
+        )
+        invalid_login = not user_is_active \
             or not user.validate_password(identity['password'])
         if invalid_login:
             # Increment the throttle counter if the login failed.
@@ -178,7 +184,7 @@ def login():
         return (response_status, json.dumps(res))
 
     except Exception as err:
-        log.error('Unhandled error during login: %s', err)
+        log.error('Unhandled error during login: %s', err, exc_info=True)
         return (500, json.dumps({}))
 
 

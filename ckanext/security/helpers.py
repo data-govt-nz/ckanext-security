@@ -1,6 +1,5 @@
-from ckan.plugins.toolkit import config
-from ckan.common import asbool
+from ckan.plugins.toolkit import asbool, config
 
 
-def security_disable_totp():
-    return asbool(config.get('ckanext.security.disable_totp'))
+def security_enable_totp():
+    return asbool(config.get('ckanext.security.enable_totp', True))
