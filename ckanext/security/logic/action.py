@@ -9,6 +9,7 @@ from ckanext.security.authenticator import (
     reset_address_throttle,
     reset_totp
 )
+from ckanext.security import validators
 
 
 def security_throttle_user_reset(context, data_dict):
@@ -67,6 +68,9 @@ def user_update(up_func, context, data_dict):
     ckanext-security: reset throttling information for updated users
     to allow new login attempts after password reset
     """
+    # (canada fork only): update the user update form schema for username field
+    # TODO: upstream contrib??
+    context['schema']['name'].append(validators.old_username_validator)
     rval = up_func(context, data_dict)
     get_action('security_throttle_user_reset')(
         dict(context, ignore_auth=True), {'user': rval['name']})
