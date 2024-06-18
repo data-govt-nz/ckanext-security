@@ -1,7 +1,8 @@
 from ckan.plugins.toolkit import (
     get_action,
     chained_action,
-    check_access, get_or_bust)
+    check_access, get_or_bust,
+    config, asbool)
 from ckanext.security.authenticator import (
     get_user_throttle,
     get_address_throttle,
@@ -70,7 +71,8 @@ def user_update(up_func, context, data_dict):
     """
     # (canada fork only): update the user update form schema for username field
     # TODO: upstream contrib??
-    context['schema']['name'].append(validators.old_username_validator)
+    if asbool(config.get('ckanext.security.use_ivalidators', False)):
+        context['schema']['name'].append(validators.old_username_validator)
     rval = up_func(context, data_dict)
     get_action('security_throttle_user_reset')(
         dict(context, ignore_auth=True), {'user': rval['name']})
