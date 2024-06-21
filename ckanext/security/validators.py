@@ -8,13 +8,11 @@ from ckan.lib.navl.dictization_functions import Missing, Invalid
 # (canada fork only): more configs
 from ckan.plugins.toolkit import config, asbool
 
-MIN_PASSWORD_LENGTH = int(config.get('ckanext.security.min_password_length', 8))
 MIN_LEN_ERROR = 'Your password must be {} characters or longer.'
 COMPLEXITY_ERROR = (
     'Your password must consist of at least three of the following character sets: '
     'uppercase characters, lowercase characters, digits, punctuation & special characters.'
 )
-NZISM_COMPLIANT = asbool(config.get('ckanext.security.nzism_compliant_passwords', True))
 
 
 def user_password_validator(key, data, errors, context):
@@ -29,9 +27,11 @@ def user_password_validator(key, data, errors, context):
     else:
         # (canad fork only): better error messages
         # TODO: upstream contrib??
-        if len(value) < MIN_PASSWORD_LENGTH:
-            errors[key].append(_(MIN_LEN_ERROR.format(MIN_PASSWORD_LENGTH)))
-        if NZISM_COMPLIANT:
+        min_password_length = int(config.get('ckanext.security.min_password_length', 8))
+        nzism_compliant = asbool(config.get('ckanext.security.nzism_compliant_passwords', True))
+        if len(value) < min_password_length:
+            errors[key].append(_(MIN_LEN_ERROR.format(min_password_length)))
+        if nzism_compliant:
             # NZISM compliant password rules
             rules = [
                 any(x.isupper() for x in value),
