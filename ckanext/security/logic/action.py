@@ -10,6 +10,9 @@ from ckanext.security.authenticator import (
     reset_address_throttle,
     reset_totp
 )
+# (canada fork only): update the user update form schema for username field
+# TODO: upstream contrib??
+from ckan.logic.schema import default_update_user_schema
 
 
 def security_throttle_user_reset(context, data_dict):
@@ -71,6 +74,8 @@ def user_update(up_func, context, data_dict):
     # (canada fork only): update the user update form schema for username field
     # TODO: upstream contrib??
     old_username_validator = get_validator('old_username_validator')
+    if 'schema' not in context:
+        context['schema'] = default_update_user_schema()
     context['schema']['name'].append(old_username_validator)
     rval = up_func(context, data_dict)
     get_action('security_throttle_user_reset')(
