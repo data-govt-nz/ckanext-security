@@ -30,7 +30,7 @@ def user_password_validator(key, data, errors, context):
         min_password_length = int(config.get('ckanext.security.min_password_length', 8))
         nzism_compliant = asbool(config.get('ckanext.security.nzism_compliant_passwords', True))
         if len(value) < min_password_length:
-            errors[key].append(_(MIN_LEN_ERROR.format(min_password_length)))
+            errors[key].append(_(MIN_LEN_ERROR).format(min_password_length))
         if nzism_compliant:
             # NZISM compliant password rules
             rules = [
