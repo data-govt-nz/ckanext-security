@@ -7,6 +7,7 @@ import six
 from ckan.common import config, is_flask_request
 from ckan.lib.base import render_jinja2, render
 from ckan.lib.mailer import get_reset_link_body, mail_user
+import ckan.lib.mailer as mailer  # (canada fork only): GC Notify support
 from ckan.plugins import toolkit as tk
 from ckan import model
 
@@ -23,6 +24,27 @@ def make_key():
 def create_reset_key(user):
     user.reset_key = six.ensure_text(make_key())
     model.repo.commit_and_remove()
+
+
+def _build_template(file_path, replacements={}):
+    # (canada fork only): fixes app context
+    # TODO: upstream contrib??
+    template = ''
+    with open(file_path, 'r') as f:
+        template = f.read()
+        for replacement, value in replacements.items():
+            template = template.replace("{{ %s }}" % replacement, str(value))\
+                .replace("{{%s}}" % replacement, str(value))
+    return template
+
+
+def _get_template(template_name):
+    # (canada fork only): fixes app context
+    # TODO: upstream contrib??
+    # FIXME: this prevents users from being able to extend/override
+    #        the email txt files in the templates directories.
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        'templates/security/emails/%s' % template_name)
 
 
 def send_reset_link(user):
@@ -45,50 +67,38 @@ def send_reset_link(user):
 
 
 def _build_footer_content(extra_vars):
+    # (canada fork only): fixes app context
+    # TODO: upstream contrib??
     custom_path = config.get('ckanext.security.brute_force_footer_path')
     if (custom_path and os.path.exists(custom_path)):
         log.warning('Overriding brute force lockout email footer with %s',
                     custom_path)
-        with open(custom_path, 'r') as footer_file:
-            footer_content = footer_file.read()
-        if is_flask_request():
-            env = flask.current_app.jinja_env
-        else:
-            env = config['pylons.app_globals'].jinja_env
-        template = env.from_string(footer_content)
-        return '\n\n' + template.render(**extra_vars)
+        return '\n\n' + _build_template(custom_path, extra_vars)
     else:
-        footer_path = 'security/emails/lockout_footer.txt'
-        if is_flask_request():
-            return '\n\n' + render(footer_path, extra_vars)
-        else:
-            return '\n\n' + render_jinja2(footer_path, extra_vars)
+        return '\n\n' + _build_template(_get_template('lockout_footer.txt'), extra_vars)
 
 
 def notify_lockout(user, lockout_timeout):
-    extra_vars = {
-        'site_title': config.get('ckan.site_title'),
-        'site_url': config.get('ckan.site_url'),
-        'user_name': user.name,
-        'password_reset_url':
-            config.get('ckan.site_url').rstrip('/') + '/user/login',
-        'lockout_mins': lockout_timeout // 60,
-    }
+    # (canada fork only): GC Notify support
+    try:
+        # see: ckanext.gcnotify.mailer.notify_lockout
+        mailer.notify_lockout(user, lockout_timeout)
+    except (mailer.MailerException, AttributeError, TypeError):
+        extra_vars = {
+            'site_title': config.get('ckan.site_title'),
+            'site_url': config.get('ckan.site_url'),
+            'user_name': user.name,
+            'password_reset_url':
+                config.get('ckan.site_url').rstrip('/') + '/user/login',
+            'lockout_mins': int(lockout_timeout / 60),
+        }
 
-    if is_flask_request():
-        subject = render(
-            'security/emails/lockout_subject.txt', extra_vars)
-    else:
-        subject = render_jinja2(
-            'security/emails/lockout_subject.txt', extra_vars)
+        # (canada fork only): fixes app context
+        # TODO: upstream contrib??
+        subject = _build_template(_get_template('lockout_subject.txt'), extra_vars)
+        subject = subject.split('\n')[0]  # Make sure we only use the first line
 
-    subject = subject.split('\n')[0]  # Make sure we only use the first line
-
-    if is_flask_request():
-        body = render('security/emails/lockout_mail.txt', extra_vars)\
-            + _build_footer_content(extra_vars)
-    else:
-        body = render_jinja2('security/emails/lockout_mail.txt', extra_vars)\
+        body = _build_template(_get_template('lockout_mail.txt'), extra_vars)\
             + _build_footer_content(extra_vars)
 
-    mail_user(user, subject, body)
+        mail_user(user, subject, body)
