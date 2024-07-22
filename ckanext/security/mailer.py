@@ -83,7 +83,7 @@ def notify_lockout(user, lockout_timeout):
     try:
         # see: ckanext.gcnotify.mailer.notify_lockout
         mailer.notify_lockout(user, lockout_timeout)
-    except mailer.MailerException:
+    except (mailer.MailerException, AttributeError, TypeError):
         extra_vars = {
             'site_title': config.get('ckan.site_title'),
             'site_url': config.get('ckan.site_url'),
