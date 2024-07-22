@@ -13,6 +13,7 @@ COMPLEXITY_ERROR = (
     'Your password must consist of at least three of the following character sets: '
     'uppercase characters, lowercase characters, digits, punctuation & special characters.'
 )
+SAME_USERNAME_PASSWORD_ERROR = 'Your password cannot be the same as your username.'
 
 
 def user_password_validator(key, data, errors, context):
@@ -25,10 +26,18 @@ def user_password_validator(key, data, errors, context):
     elif value == '':
         pass  # Already handled in core
     else:
-        # (canad fork only): better error messages
+        # (canada fork only): better error messages
         # TODO: upstream contrib??
         min_password_length = int(config.get('ckanext.security.min_password_length', 8))
         nzism_compliant = asbool(config.get('ckanext.security.nzism_compliant_passwords', True))
+
+        username = data.get(('name',), None)
+        password1 = data.get(('password1',), None)
+        password2 = data.get(('password2',), None)
+
+        if username == password1 or username == password2:
+            errors[key].append(_(SAME_USERNAME_PASSWORD_ERROR))
+
         if len(value) < min_password_length:
             errors[key].append(_(MIN_LEN_ERROR).format(min_password_length))
         if nzism_compliant:
