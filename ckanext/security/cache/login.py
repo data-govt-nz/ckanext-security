@@ -53,6 +53,8 @@ class LoginThrottle(object):
         value = self.get()
         value['count'] = 0
         self.cli.set(self.key, json.dumps(value))
+        # (canada fork only): return value of throttle
+        return self.get()
 
     def increment(self):
         value = self.get()
