@@ -51,7 +51,8 @@ def get_address_throttle(address):
 def reset_user_throttle(user_name):
     if config.get('ckanext.security.brute_force_key') != 'user_name':
         return
-    LoginThrottle(User.by_name(user_name), user_name).reset()
+    # (canada fork only): return value of throttle
+    return LoginThrottle(User.by_name(user_name), user_name).reset()
 
 
 def reset_address_throttle(address):
@@ -110,6 +111,10 @@ class CKANLoginThrottle(UsernamePasswordAuthenticator):
         # this can be done by setting ckanext.security.disable_totp
         # flag to true in config file
         if asbool(config.get('ckanext.security.disable_totp')):
+            # (canada fork only): reset throttle after successful authentication
+            # TODO: upstream contrib??
+            if ckan_auth_result:
+                throttle.reset()
             return ckan_auth_result
         else:
             # if the CKAN authenticator has successfully authenticated
