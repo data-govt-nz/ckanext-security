@@ -32,10 +32,13 @@ def user_password_validator(key, data, errors, context):
         nzism_compliant = asbool(config.get('ckanext.security.nzism_compliant_passwords', True))
 
         username = data.get(('name',), None)
-        password1 = data.get(('password1',), None)
-        password2 = data.get(('password2',), None)
+        password_fields = [
+            data.get(('password',), None),
+            data.get(('password1',), None),
+            data.get(('password2',), None),
+        ]
 
-        if username == password1 or username == password2:
+        if username in password_fields:
             errors[key].append(_(SAME_USERNAME_PASSWORD_ERROR))
 
         if len(value) < min_password_length:

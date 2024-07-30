@@ -7,12 +7,19 @@ from ckan.lib.authenticator import default_authenticate
 from ckan.model import User
 import ckan.plugins as p
 from ckan.plugins.toolkit import \
-    request, config, current_user, base, login_user, h, _
+    request, config, current_user, base, login_user, h, _, asbool
 from ckan.views.user import next_page_or_default, rotate_token
 
 from ckanext.security.cache.login import LoginThrottle
 from ckanext.security.helpers import security_enable_totp
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
+
+# (canada fork only): enforce strong passwords at login
+# TODO: upstream contrib??
+from ckanext.security.schema import force_strong_password_at_login_schema
+from ckan.lib.navl.dictization_functions import validate
+from ckan import model
+from ckan.lib.mailer import create_reset_key
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +91,10 @@ def authenticate(identity):
     if login_throttle_key is None:
         return None
 
-    throttle = LoginThrottle(User.by_name(user_name), login_throttle_key)
+    # (canada fork only): enforce strong passwords at login
+    # TODO: upstream contrib??
+    user_obj = User.by_name(user_name)
+    throttle = LoginThrottle(user_obj, login_throttle_key)
     # Check if there is a lock on the requested user, and abort if
     # we have a lock.
     if throttle.is_locked():
@@ -103,6 +113,16 @@ def authenticate(identity):
         # TODO: upstream contrib??
         if ckan_auth_result:
             throttle.reset()
+            # (canada fork only): enforce strong passwords at login
+            # TODO: upstream contrib??
+            if asbool(config.get('ckanext.security.force_strong_passwords_at_login', False)):
+                data, errors = validate({'name': user_name, 'password': identity['password']},
+                                        force_strong_password_at_login_schema(), {'user': user_name,
+                                                                                  'user_obj': user_obj,
+                                                                                  'model': model})
+                if errors and 'password' in errors:
+                    create_reset_key(user_obj)
+                    return {'WEAK_PASS': h.redirect_to('user.perform_reset', id=user_obj.id, key=user_obj.reset_key)}
         return ckan_auth_result
 
     # if the CKAN authenticator has successfully authenticated
@@ -170,6 +190,12 @@ def login() -> Union[Response, str]:
 
         user_obj = authenticate(identity)
         if user_obj:
+            # (canada fork only): enforce strong passwords at login
+            # TODO: upstream contrib??
+            if isinstance(user_obj, dict) and user_obj.get('WEAK_PASS', False):
+                # FIXME: revise flash message
+                h.flash_error(_('Your current password is too weak. Please create a new password before logging in again.'))
+                return user_obj.get('WEAK_PASS')
             next = request.args.get('next', request.args.get('came_from'))
             if _remember:
                 from datetime import timedelta
