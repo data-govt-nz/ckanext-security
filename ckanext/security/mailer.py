@@ -5,8 +5,7 @@ import logging
 import six
 import flask
 
-from ckan.common import config
-from ckan.lib.base import render
+from ckan.plugins.toolkit import config, render, check_ckan_version
 from ckan.lib.mailer import get_reset_link_body, mail_user
 from ckan import model
 
@@ -21,6 +20,21 @@ def make_key():
 def create_reset_key(user):
     user.reset_key = six.ensure_text(make_key())
     model.repo.commit_and_remove()
+
+
+def _build_template(file_path, replacements={}):
+    template = ''
+    with open(file_path, 'r') as f:
+        template = f.read()
+        for replacement, value in replacements.items():
+            template = template.replace("{{ %s }}" % replacement, str(value))\
+                .replace("{{%s}}" % replacement, str(value))
+    return template
+
+
+def _get_template(template_name):
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        'templates/security/emails/%s' % template_name)
 
 
 def send_reset_link(user):
@@ -43,14 +57,20 @@ def _build_footer_content(extra_vars):
     if (custom_path and os.path.exists(custom_path)):
         log.warning('Overriding brute force lockout email footer with %s',
                     custom_path)
-        with open(custom_path, 'r') as footer_file:
-            footer_content = footer_file.read()
-        env = flask.current_app.jinja_env
-        template = env.from_string(footer_content)
-        return '\n\n' + template.render(**extra_vars)
+        if check_ckan_version(min_version='2.10'):
+            with open(custom_path, 'r') as footer_file:
+                footer_content = footer_file.read()
+            env = flask.current_app.jinja_env
+            template = env.from_string(footer_content)
+            return '\n\n' + template.render(**extra_vars)
+        else:
+            return '\n\n' + _build_template(custom_path, extra_vars)
     else:
-        footer_path = 'security/emails/lockout_footer.txt'
-        return '\n\n' + render(footer_path, extra_vars)
+        if check_ckan_version(min_version='2.10'):
+            footer_path = 'security/emails/lockout_footer.txt'
+            return '\n\n' + render(footer_path, extra_vars)
+        else:
+            return '\n\n' + _build_template(_get_template('lockout_footer.txt'), extra_vars)
 
 
 def notify_lockout(user, lockout_timeout):
@@ -60,15 +80,20 @@ def notify_lockout(user, lockout_timeout):
         'user_name': user.name,
         'password_reset_url':
             config.get('ckan.site_url').rstrip('/') + '/user/login',
-        'lockout_mins': lockout_timeout // 60,
+        'lockout_mins': lockout_timeout / 60,  # lockout is defined in seconds
     }
 
-    subject = render(
-        'security/emails/lockout_subject.txt', extra_vars)
+    if check_ckan_version(min_version='2.10'):
+        subject = render('security/emails/lockout_subject.txt', extra_vars)
+        body = render('security/emails/lockout_mail.txt', extra_vars)
+    else:
+        # FIXME: CKAN<=2.9 uses the repoze lib for the authentication stack.
+        #        With this, at this point, there is no request or app context.
+        #        So for CKAN<=2.9, we cannot support the Jinja2 app context.
+        subject = _build_template(_get_template('lockout_subject.txt'), extra_vars)
+        body = _build_template(_get_template('lockout_mail.txt'), extra_vars)
 
     subject = subject.split('\n')[0]  # Make sure we only use the first line
-
-    body = render('security/emails/lockout_mail.txt', extra_vars)\
-        + _build_footer_content(extra_vars)
+    body += _build_footer_content(extra_vars)
 
     mail_user(user, subject, body)
