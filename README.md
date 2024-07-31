@@ -162,7 +162,7 @@ ckanext.security.disable_password_reset_override = true
 
 # Two factor authentication is enabled for all users by default
 # optional configuration to disable 2fa
-ckanext.security.enable_totp = true         # set to false to disable 2fa 
+ckanext.security.enable_totp = true         # set to false to disable 2fa
 
 # Provide a help page to allow 2fa users to contact support or get more information
 # Shows up as 'Need help?' on the 2fa entry form beside the submit button. Does not display a link if none provided
@@ -187,3 +187,4 @@ Finally, add `security` to `ckan.plugins` in your config file.
 ## Possible problems
 
 - If you see a `ValueError: No Beaker session (beaker.session) in environment` then you have not installed the patch to CKAN correctly.
+- If you have CKAN<=2.9 installed and have `ckanext.security.enable_totp = false` defined in your config file, overriding or extending the templates is not supported. CKAN<=2.9 uses a different library for authentication which does not support rendering templates. This works in CKAN>=2.10 however, or when using `ckanext.security.enable_totp = true`

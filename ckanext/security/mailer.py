@@ -5,7 +5,7 @@ import logging
 import six
 import flask
 
-from ckan.plugins.toolkit import config, render, check_ckan_version
+from ckan.plugins.toolkit import config, render, check_ckan_version, h
 from ckan.lib.mailer import get_reset_link_body, mail_user
 from ckan import model
 
@@ -57,7 +57,7 @@ def _build_footer_content(extra_vars):
     if (custom_path and os.path.exists(custom_path)):
         log.warning('Overriding brute force lockout email footer with %s',
                     custom_path)
-        if check_ckan_version(min_version='2.10'):
+        if check_ckan_version(min_version='2.10') or h.security_enable_totp():
             with open(custom_path, 'r') as footer_file:
                 footer_content = footer_file.read()
             env = flask.current_app.jinja_env
@@ -66,7 +66,7 @@ def _build_footer_content(extra_vars):
         else:
             return '\n\n' + _build_template(custom_path, extra_vars)
     else:
-        if check_ckan_version(min_version='2.10'):
+        if check_ckan_version(min_version='2.10') or h.security_enable_totp():
             footer_path = 'security/emails/lockout_footer.txt'
             return '\n\n' + render(footer_path, extra_vars)
         else:
@@ -83,13 +83,13 @@ def notify_lockout(user, lockout_timeout):
         'lockout_mins': lockout_timeout / 60,  # lockout is defined in seconds
     }
 
-    if check_ckan_version(min_version='2.10'):
+    if check_ckan_version(min_version='2.10') or h.security_enable_totp():
         subject = render('security/emails/lockout_subject.txt', extra_vars)
         body = render('security/emails/lockout_mail.txt', extra_vars)
     else:
-        # FIXME: CKAN<=2.9 uses the repoze lib for the authentication stack.
-        #        With this, at this point, there is no request or app context.
-        #        So for CKAN<=2.9, we cannot support the Jinja2 app context.
+        # NOTE: CKAN<=2.9 uses the repoze lib for the authentication stack.
+        #       With this, at this point, there is no request or app context.
+        #       So for CKAN<=2.9, we cannot support the Jinja2 app context.
         subject = _build_template(_get_template('lockout_subject.txt'), extra_vars)
         body = _build_template(_get_template('lockout_mail.txt'), extra_vars)
 
