@@ -77,22 +77,26 @@ def authenticate(identity):
     try:
         user_name = identity['login']
     except KeyError:
+        log.debug('Login failed - missing login credentials')
         return None
 
     login_throttle_key = get_login_throttle_key(
         request, user_name)
     if login_throttle_key is None:
+        log.debug('Login failed - no login throttle key found for user %r', identity['login'])
         return None
 
     throttle = LoginThrottle(User.by_name(user_name), login_throttle_key)
     # Check if there is a lock on the requested user, and abort if
     # we have a lock.
     if throttle.is_locked():
+        log.debug('Login failed - account locked for user %r', identity['login'])
         return None
 
     if ckan_auth_result is None:
         # Increment the throttle counter if the login failed.
         throttle.increment()
+        log.debug('Login failed - throttle incremented for user %r', identity['login'])
         return None
 
     # totp authentication is enabled by default for all users
@@ -103,6 +107,8 @@ def authenticate(identity):
         # TODO: upstream contrib??
         if ckan_auth_result:
             throttle.reset()
+
+        log.info('Login successful - session opened for user %r', identity['login'])
         return ckan_auth_result
 
     # if the CKAN authenticator has successfully authenticated
@@ -112,6 +118,7 @@ def authenticate(identity):
     # if TOTP was successful -- reset the log in throttle
     if totp_success:
         throttle.reset()
+        log.info('Login successful - session opened for user %r', identity['login'])
         return ckan_auth_result
     else:
         # This means that the login form has been submitted
@@ -120,6 +127,8 @@ def authenticate(identity):
         # The username and password were fine, but the 2fa
         # code was missing or invalid
         throttle.increment()
+
+        log.debug('Login failed - 2fa missing or invalid for user %r', identity['login'])
         return None
 
 
