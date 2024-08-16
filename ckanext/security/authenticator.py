@@ -83,7 +83,7 @@ def authenticate(identity):
     login_throttle_key = get_login_throttle_key(
         request, user_name)
     if login_throttle_key is None:
-        log.debug('Login failed - no login throttle key found for user %r', identity['login'])
+        log.debug('Login failed - X-Forwarded-For header/REMOTE_ADDR missing from request for user %r', identity['login'])
         return None
 
     throttle = LoginThrottle(User.by_name(user_name), login_throttle_key)
