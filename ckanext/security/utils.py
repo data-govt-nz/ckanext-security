@@ -137,6 +137,8 @@ def login():
                 '[%s] attempted login while brute force lockout in place',
                 user_name
             )
+            breakpoint()
+            helpers.flash_error(_('You have been locked out due to too many failed login attempts. Please try again later.'))
 
         # Flask-login changed is_active from function to attribute on user
         user_is_active = user is not None and (

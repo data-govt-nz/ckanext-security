@@ -7,7 +7,7 @@ from ckan.lib.authenticator import default_authenticate
 from ckan.model import User
 import ckan.plugins as p
 from ckan.plugins.toolkit import \
-    request, config, current_user, base, login_user, h, _, asbool
+    request, config, current_user, base, login_user, h, _, asbool, url_for
 from ckan.views.user import next_page_or_default, rotate_token
 
 from ckanext.security.cache.login import LoginThrottle
@@ -101,7 +101,7 @@ def authenticate(identity):
     # we have a lock.
     if throttle.is_locked():
         log.debug('Login failed - account locked for user %r', identity['login'])
-        return None
+        return 'locked'
 
     if ckan_auth_result is None:
         # Increment the throttle counter if the login failed.
@@ -198,6 +198,9 @@ def login() -> Union[Response, str]:
         }
 
         user_obj = authenticate(identity)
+        if user_obj == 'locked':
+            return base.render("user/locked.html", extra_vars)
+
         if user_obj:
             # (canada fork only): enforce strong passwords at login
             # TODO: upstream contrib??
