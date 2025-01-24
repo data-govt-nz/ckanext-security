@@ -2,7 +2,6 @@ import logging
 import ckan.plugins as p
 
 from ckan.plugins import toolkit as tk
-from ckanext.security.model import define_security_tables
 from ckanext.security.resource_upload_validator import (
     validate_upload
 )
@@ -26,7 +25,6 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     # BEGIN Hooks for IConfigurer
 
     def update_config(self, config):
-        define_security_tables()  # map security models to db schema
 
         # (canada fork only): remove monkey patching
         # TODO: upstream contrib??

@@ -1,2 +1,3 @@
 recursive-include ckanext/security/templates *
+recursive-include ckanext/*/migration *
 
