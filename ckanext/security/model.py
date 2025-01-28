@@ -23,7 +23,7 @@ class ReplayAttackException(Exception):
 
 class SecurityTOTP(DomainObject, tk.BaseModel):
     __tablename__ = "user_security_totp"
-    id = Column(sa.UnicodeText, primary_key=True)
+    id = Column(sa.Integer, primary_key=True, autoincrement=True)
     user_id = Column(sa.UnicodeText, default="")
     secret = Column(sa.UnicodeText, default="")
     last_successful_challenge = Column(sa.DateTime)
