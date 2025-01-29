@@ -42,11 +42,16 @@ def new(id=None):
     return helpers.redirect_to('mfa_user.configure_mfa', id=id)
 
 
+def locked():
+    return tk.render('user/locked.html')
+
+
 mfa_user.add_url_rule('/api/mfa_login', view_func=login, methods=['POST'])
 mfa_user.add_url_rule('/configure_mfa/<id>',
                       view_func=configure_mfa, methods=['GET', 'POST'])
 mfa_user.add_url_rule('/configure_mfa/<id>/new',
                       view_func=new, methods=['GET', 'POST'])
+mfa_user.add_url_rule('/user_locked', view_func=locked)
 
 
 def get_blueprints():

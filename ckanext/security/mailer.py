@@ -8,6 +8,7 @@ import flask
 from ckan.common import config
 from ckan.lib.base import render
 from ckan.lib.mailer import get_reset_link_body, mail_user
+import ckan.lib.mailer as mailer  # (canada fork only): GC Notify support
 from ckan import model
 
 
@@ -54,21 +55,26 @@ def _build_footer_content(extra_vars):
 
 
 def notify_lockout(user, lockout_timeout):
-    extra_vars = {
-        'site_title': config.get('ckan.site_title'),
-        'site_url': config.get('ckan.site_url'),
-        'user_name': user.name,
-        'password_reset_url':
-            config.get('ckan.site_url').rstrip('/') + '/user/login',
-        'lockout_mins': lockout_timeout // 60,
-    }
+    # (canada fork only): GC Notify support
+    try:
+        # see: ckanext.gcnotify.mailer.notify_lockout
+        mailer.notify_lockout(user, lockout_timeout)
+    except (mailer.MailerException, AttributeError, TypeError):
+        extra_vars = {
+            'site_title': config.get('ckan.site_title'),
+            'site_url': config.get('ckan.site_url'),
+            'user_name': user.name,
+            'password_reset_url':
+                config.get('ckan.site_url').rstrip('/') + '/user/login',
+            'lockout_mins': int(lockout_timeout / 60),
+        }
 
-    subject = render(
-        'security/emails/lockout_subject.txt', extra_vars)
+        subject = render(
+            'security/emails/lockout_subject.txt', extra_vars)
 
-    subject = subject.split('\n')[0]  # Make sure we only use the first line
+        subject = subject.split('\n')[0]  # Make sure we only use the first line
 
-    body = render('security/emails/lockout_mail.txt', extra_vars)\
-        + _build_footer_content(extra_vars)
+        body = render('security/emails/lockout_mail.txt', extra_vars)\
+            + _build_footer_content(extra_vars)
 
-    mail_user(user, subject, body)
+        mail_user(user, subject, body)

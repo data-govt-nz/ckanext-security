@@ -1,5 +1,20 @@
 # CKANEXT-SECURITY
 
+## additional settings for SDDI
+
+```
+ckanext.security.redis.host = 127.0.0.1
+ckanext.security.redis.port = 6379
+ckanext.security.redis.db = 1
+
+ckanext.security.lock_timeout = 900
+ckanext.security.login_max_count = 3
+ckanext.security.brute_force_key = user_name
+ckanext.security.disable_password_reset_override = true
+
+ckanext.security.enable_totp = false
+```
+
 ## What am I?
 A CKAN extension to hold various security improvements for CKAN, including:
 

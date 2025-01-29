@@ -11,6 +11,9 @@ from ckan.logic.validators import (
 from ckanext.security.validators import (
     user_password_validator, old_username_validator, ensure_str
 )
+# (canada fork only): reset throttle after successful authentication
+# TODO: upstream contrib??
+from ckan.logic.schema import validator_args
 
 # The main purpose of this file is to modify CKAN's user-related schemas, and
 # to replace the default password validators everywhere. We are also replacing
@@ -75,3 +78,14 @@ def default_update_user_schema():
                           ignore_missing, ensure_str]
 
     return schema
+
+
+# (canada fork only): reset throttle after successful authentication
+# TODO: upstream contrib??
+@validator_args
+def force_strong_password_at_login_schema(not_empty, name_validator,
+        user_name_validator, unicode_safe,
+        user_password_validator, old_username_validator):
+    return {'name': [not_empty, name_validator, user_name_validator,
+                     unicode_safe, old_username_validator],
+            'password': [not_empty, unicode_safe, user_password_validator],}

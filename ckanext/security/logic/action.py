@@ -1,7 +1,8 @@
 from ckan.plugins.toolkit import (
     get_action,
     chained_action,
-    check_access, get_or_bust)
+    check_access, get_or_bust,
+    get_validator)
 from ckanext.security.authenticator import (
     get_user_throttle,
     get_address_throttle,
@@ -9,6 +10,9 @@ from ckanext.security.authenticator import (
     reset_address_throttle,
     reset_totp
 )
+# (canada fork only): update the user update form schema for username field
+# TODO: upstream contrib??
+from ckan.logic.schema import default_update_user_schema
 
 
 def security_throttle_user_reset(context, data_dict):
@@ -67,6 +71,12 @@ def user_update(up_func, context, data_dict):
     ckanext-security: reset throttling information for updated users
     to allow new login attempts after password reset
     """
+    # (canada fork only): update the user update form schema for username field
+    # TODO: upstream contrib??
+    old_username_validator = get_validator('old_username_validator')
+    if 'schema' not in context:
+        context['schema'] = default_update_user_schema()
+    context['schema']['name'].append(old_username_validator)
     rval = up_func(context, data_dict)
     get_action('security_throttle_user_reset')(
         dict(context, ignore_auth=True), {'user': rval['name']})

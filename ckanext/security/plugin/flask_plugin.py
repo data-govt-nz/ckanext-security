@@ -25,6 +25,11 @@ class MixinPlugin(p.SingletonPlugin):
     def login(self):
         return authenticator.login()
 
+    # (canada fork only): 2.10 support
+    # TODO: upstream contrib??
+    def authenticate(self, identity):
+        return authenticator.authenticate(identity)
+
     # Delete session cookie information
     def logout(self):
-        session.invalidate()
+        session.clear()
