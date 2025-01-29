@@ -24,7 +24,7 @@ def upgrade():
     if "user_security_totp" not in tables:
         op.create_table(
             "user_security_totp",
-            sa.Column("id", sa.UnicodeText, primary_key=True),
+            sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
             sa.Column("user_id", sa.UnicodeText, default=""),
             sa.Column("secret", sa.UnicodeText, default=""),
             sa.Column("last_successful_challenge", sa.DateTime),
