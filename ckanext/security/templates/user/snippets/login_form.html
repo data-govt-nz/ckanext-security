@@ -30,7 +30,6 @@ overrides rendering of the login form
       {{ form.input('password', label=_("Password"), id='field-password', type="password", value="", error=password_error, classes=["control-medium"]) }}
     </div>
 
-    {{ form.checkbox('remember', label=_("Remember me"), id='field-remember', checked=true, value="63072000") }}
 
     <div class="form-actions">
       {% block login_button %}
