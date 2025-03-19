@@ -125,6 +125,8 @@ def login():
 
         user_name = identity['login']
         user = model.User.by_name(user_name)
+        if not user:
+            user = model.User.by_email(user_name)
 
         login_throttle_key = get_login_throttle_key(request, user_name)
         if login_throttle_key is None:
