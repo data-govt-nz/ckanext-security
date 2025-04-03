@@ -26,6 +26,7 @@ groups:
       - key: ckanext.security.lock_timeout
       - key: ckanext.security.login_max_count
       - key: ckanext.security.brute_force_key
+      - key: ckanext.security.min_password_length
       - key: ckanext.security.disable_password_reset_override
       - key: ckanext.security.enable_totp
       - key: ckanext.security.mfa_help_link

@@ -173,6 +173,9 @@ ckanext.security.enable_totp = true
 # Provide a help page to allow 2fa users to contact support or get more information
 # Shows up as 'Need help?' on the 2fa entry form beside the submit button. Does not display a link if none provided
 ckanext.security.mfa_help_link = https://data.govt.nz/catalogue-guide/releasing-data-on-data-govt-nz/how-do-i-set-up-two-factor-authentication/
+
+# Set the minimal password length (optional, default: 10)
+ckanext.security.min_password_length = 10
 ```
 
 ## How to install?

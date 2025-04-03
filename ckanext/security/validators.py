@@ -1,17 +1,17 @@
 # encoding: utf-8
-import six
 import string
 
+import six
 from ckan import authz
-from ckan.common import _
+from ckan.common import _, config
 from ckan.lib.navl.dictization_functions import Missing, Invalid
 
-MIN_PASSWORD_LENGTH = 10
-MIN_LEN_ERROR = (
-    'Your password must be {} characters or longer, and consist of at least '
-    'three of the following character sets: uppercase characters, lowercase '
-    'characters, digits, punctuation & special characters.'
-)
+DEFAULT_MIN_PASSWORD_LENGTH = 10
+
+
+def _min_password_length():
+    return int(config.get('ckanext.security.min_password_length',
+                          DEFAULT_MIN_PASSWORD_LENGTH))
 
 
 def user_password_validator(key, data, errors, context):
@@ -31,8 +31,10 @@ def user_password_validator(key, data, errors, context):
             any(x.isdigit() for x in value),
             any(x in string.punctuation for x in value)
         ]
-        if len(value) < MIN_PASSWORD_LENGTH or sum(rules) < 3:
-            raise Invalid(_(MIN_LEN_ERROR.format(MIN_PASSWORD_LENGTH)))
+        if len(value) < _min_password_length() or sum(rules) < 3:
+            raise Invalid(_("Your password must be {} characters or longer, and consist of at least three"
+                            " of the following four character sets: uppercase characters, lowercase characters,"
+                            " digits, punctuation & special characters.").format(_min_password_length()))
 
 
 def old_username_validator(key, data, errors, context):
