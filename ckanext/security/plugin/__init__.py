@@ -4,6 +4,7 @@ import ckan.plugins as p
 from ckanext.security import schema as ext_schema
 from ckan.plugins import toolkit as tk
 from ckan.logic import schema as core_schema
+from ckan.lib.plugins import DefaultTranslation
 from ckanext.security.model import define_security_tables
 from ckanext.security.resource_upload_validator import (
     validate_upload
@@ -16,12 +17,13 @@ from ckanext.security.plugin.flask_plugin import MixinPlugin
 log = logging.getLogger(__name__)
 
 
-class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
+class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin, DefaultTranslation):
     p.implements(p.IConfigurer)
     p.implements(p.IResourceController, inherit=True)
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)
     p.implements(p.ITemplateHelpers)
+    p.implements(p.ITranslation)
 
     # BEGIN Hooks for IConfigurer
 
