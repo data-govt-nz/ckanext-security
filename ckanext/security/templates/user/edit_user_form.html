@@ -16,3 +16,23 @@
 {% endif %}
 
 {% endblock %}
+
+{% block change_password %} {# Override this block to add the password_rules_hint() helper method #}
+    <fieldset>
+        <legend>{{ _('Change password') }}</legend>
+        {{ form.input('old_password',
+                      type='password',
+                      label=_('Old Password'),
+                      id='field-password-old',
+                      value=data.oldpassword,
+                      error=errors.oldpassword,
+                      classes=['control-medium'],
+                      attrs={'autocomplete': 'off', 'class': 'form-control'}
+                      ) }}
+
+        <p>{{ h.password_rules_hint() }}</p>
+        {{ form.input('password1', type='password', label=_('Password'), id='field-password', value=data.password1, error=errors.password1, classes=['control-medium'], attrs={'autocomplete': 'off', 'class': 'form-control'} ) }}
+
+        {{ form.input('password2', type='password', label=_('Confirm Password'), id='field-password-confirm', value=data.password2, error=errors.password2, classes=['control-medium'], attrs={'autocomplete': 'off', 'class': 'form-control'}) }}
+    </fieldset>
+{% endblock %}

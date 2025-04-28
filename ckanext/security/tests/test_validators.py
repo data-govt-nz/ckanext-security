@@ -1,7 +1,12 @@
+import ckan.model as model
+import ckan.tests.factories as factories
 import pytest
 from ckan.lib.navl.dictization_functions import Invalid
+from ckan.plugins import toolkit as tk
+from passlib.handlers.pbkdf2 import pbkdf2_sha512
 
 import ckanext.security.validators as validators
+from ckanext.security.constants import PLUGIN_EXTRAS_TABULIST_KEY
 
 
 class TestValidators(object):
@@ -72,3 +77,36 @@ class TestValidators(object):
         # WHEN + THEN
         with pytest.raises(Invalid):
             validators.user_password_validator("pw", {"pw": "aa_abcdefghij"}, None, None)
+
+    @pytest.mark.usefixtures("with_plugins")
+    @pytest.mark.ckan_config("ckan.plugins", "security")
+    @pytest.mark.ckan_config(u'ckanext.security.tabulist_item_count', u'10')
+    def test_password_on_tabu_list_should_fail(self):
+        """ If password is on tabu list, validator should throw an exception. """
+        # GIVEN
+        PASSWORD = "ckan4Password"
+        user = factories.Sysadmin(password=PASSWORD)
+        user_obj = model.User.get(user["name"])
+        print(user)
+        context = {"user": user["name"], 'model': model, 'user_obj': user_obj}
+
+        # WHEN + THEN
+        with pytest.raises(Invalid):
+            validators.user_password_validator("pw", {"pw": PASSWORD}, None, context)
+
+    def test_password_not_on_tabu_list_should_succeed(self):
+        """ If password is not on tabu list, validator should not throw an exception. """
+
+        # GIVEN
+        PASSWORD = "ckan4Password"
+        hashed_password = str(pbkdf2_sha512.encrypt(PASSWORD))
+        user = factories.User(password=PASSWORD,
+                              plugin_extras={PLUGIN_EXTRAS_TABULIST_KEY: [hashed_password]})
+        user_obj = model.User.get(user["name"])
+        context = {"user": user["name"], 'model': model, 'user_obj': user_obj}
+
+        # WHEN + THEN
+        try:
+            validators.user_password_validator("pw", {"pw": "ckan4Password2"}, None, context)
+        except Invalid:
+            pytest.fail("Validator threw an exception, but it should not have.")

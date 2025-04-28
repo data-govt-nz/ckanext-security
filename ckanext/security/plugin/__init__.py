@@ -11,6 +11,7 @@ from ckanext.security.resource_upload_validator import (
 )
 from ckanext.security.logic import auth, action
 from ckanext.security.helpers import security_enable_totp
+from ckanext.security.helpers import password_rules_hint
 
 from ckanext.security.plugin.flask_plugin import MixinPlugin
 
@@ -82,6 +83,8 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin, DefaultTranslation):
                 action.security_reset_totp,
             'user_update':
                 action.user_update,
+            'user_create':
+                action.user_create,
         }
     # END Hooks for IActions
 
@@ -108,4 +111,5 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin, DefaultTranslation):
         return {
             'check_ckan_version': tk.check_ckan_version,
             'security_enable_totp': security_enable_totp,
+            'password_rules_hint': password_rules_hint,
         }
