@@ -27,4 +27,5 @@ class MixinPlugin(p.SingletonPlugin):
 
     # Delete session cookie information
     def logout(self):
-        session.invalidate()
+        if hasattr(session, "invalidate"):
+            session.invalidate()
