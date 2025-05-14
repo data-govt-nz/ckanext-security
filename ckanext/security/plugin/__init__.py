@@ -12,6 +12,7 @@ from ckanext.security.resource_upload_validator import (
 from ckanext.security.logic import auth, action
 from ckanext.security.helpers import security_enable_totp
 from ckanext.security.helpers import password_rules_hint
+from ckanext.security.helpers import generate_password
 
 from ckanext.security.plugin.flask_plugin import MixinPlugin
 
@@ -43,6 +44,13 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin, DefaultTranslation):
             ext_schema.user_edit_form_schema
         core_schema.default_update_user_schema = \
             ext_schema.default_update_user_schema
+
+        # overwrite password generation on saml2auth helper, if plugin is present
+        try:
+            import ckanext.saml2auth.helpers
+            ckanext.saml2auth.helpers.generate_password = generate_password
+        except ImportError:
+            pass
 
         tk.add_template_directory(config, '../templates')
         tk.add_resource('../fanstatic', 'security')

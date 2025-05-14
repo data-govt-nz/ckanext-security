@@ -1,5 +1,6 @@
 from ckan.plugins.toolkit import _
 from ckan.plugins.toolkit import asbool, config
+import string, secrets
 
 from ckanext.security.validators import _min_password_length, PASSWORD_ERROR
 
@@ -8,6 +9,7 @@ TABU_LIST_HINT = "Your password must not be the same as any of your last {} pass
 
 def security_enable_totp():
     return asbool(config.get('ckanext.security.enable_totp', True))
+
 
 def password_rules_hint():
     """ Return a description of the password rules """
@@ -20,3 +22,19 @@ def password_rules_hint():
         return password_hint + " " + _(TABU_LIST_HINT).format(tabulist_item_count)
 
     return password_hint
+
+
+def generate_password():
+    """ Generate a random password that complies with the password rules """
+
+    # draft a new password of the minimum length
+    min_password_length = _min_password_length()
+    alphabet = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(secrets.choice(alphabet) for i in range(min_password_length))
+
+    # enhance password to absolutely comply with password rules
+    return password + \
+        secrets.choice(string.ascii_lowercase) + \
+        secrets.choice(string.ascii_uppercase) + \
+        secrets.choice(string.digits) + \
+        secrets.choice(string.punctuation)
