@@ -11,7 +11,7 @@ from ckan.plugins.toolkit import \
 from ckan.views.user import next_page_or_default, rotate_token
 
 from ckanext.security.cache.login import LoginThrottle
-from ckanext.security.helpers import security_enable_totp, security_get_user
+from ckanext.security.helpers import security_enable_totp, security_get_user_by_name_or_email
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
 
 log = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ def get_login_throttle_key(request, user_name):
 def get_user_throttle(user_name):
     if config.get('ckanext.security.brute_force_key') != 'user_name':
         return {}
-    user = security_get_user(user_name)
+    user = security_get_user_by_name_or_email(user_name)
     return LoginThrottle(user, user_name).get()
 
 
@@ -52,7 +52,7 @@ def get_address_throttle(address):
 def reset_user_throttle(user_name):
     if config.get('ckanext.security.brute_force_key') != 'user_name':
         return
-    user = security_get_user(user_name)
+    user = security_get_user_by_name_or_email(user_name)
     LoginThrottle(user, user_name).reset()
 
 
