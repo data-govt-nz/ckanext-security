@@ -11,7 +11,7 @@ from ckan.plugins.toolkit import \
 from ckan.views.user import next_page_or_default, rotate_token
 
 from ckanext.security.cache.login import LoginThrottle
-from ckanext.security.helpers import security_enable_totp
+from ckanext.security.helpers import security_enable_totp, security_get_user_by_name_or_email
 from ckanext.security.model import SecurityTOTP, ReplayAttackException
 
 log = logging.getLogger(__name__)
@@ -39,7 +39,8 @@ def get_login_throttle_key(request, user_name):
 def get_user_throttle(user_name):
     if config.get('ckanext.security.brute_force_key') != 'user_name':
         return {}
-    return LoginThrottle(User.by_name(user_name), user_name).get()
+    user = security_get_user_by_name_or_email(user_name)
+    return LoginThrottle(user, user_name).get()
 
 
 def get_address_throttle(address):
@@ -51,7 +52,8 @@ def get_address_throttle(address):
 def reset_user_throttle(user_name):
     if config.get('ckanext.security.brute_force_key') != 'user_name':
         return
-    LoginThrottle(User.by_name(user_name), user_name).reset()
+    user = security_get_user_by_name_or_email(user_name)
+    LoginThrottle(user, user_name).reset()
 
 
 def reset_address_throttle(address):
@@ -83,7 +85,10 @@ def authenticate(identity):
     if login_throttle_key is None:
         return None
 
-    throttle = LoginThrottle(User.by_name(user_name), login_throttle_key)
+    user = User.by_name(user_name)
+    if not user:
+        user = User.by_email(user_name)
+    throttle = LoginThrottle(user, login_throttle_key)
     # Check if there is a lock on the requested user, and abort if
     # we have a lock.
     if throttle.is_locked():
@@ -104,7 +109,7 @@ def authenticate(identity):
     # if the CKAN authenticator has successfully authenticated
     # the request and the user wasn't locked out above,
     # then check the TOTP parameter to see if it is valid
-    totp_success = authenticate_totp(user_name)
+    totp_success = authenticate_totp(user.name)
     # if TOTP was successful -- reset the log in throttle
     if totp_success:
         throttle.reset()

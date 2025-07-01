@@ -14,6 +14,7 @@ from ckanext.security.authenticator import get_login_throttle_key
 from ckanext.security import mailer as secure_mailer
 from ckanext.security.model import SecurityTOTP
 from ckanext.security.cache.login import LoginThrottle
+from ckanext.security.helpers import security_get_user_by_name_or_email
 
 log = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ def login():
         on_mfa_form = identity.get('mfa-form-active') == 'true'
 
         user_name = identity['login']
-        user = model.User.by_name(user_name)
+        user = security_get_user_by_name_or_email(user_name)
 
         login_throttle_key = get_login_throttle_key(request, user_name)
         if login_throttle_key is None:
