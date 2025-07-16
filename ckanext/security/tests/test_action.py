@@ -3,13 +3,13 @@ import ckan.tests.factories as factories
 import ckanext.security.logic.action as action
 import pytest
 from ckan.plugins import toolkit as tk
-from ckanext.security.constants import PLUGIN_EXTRAS_TABULIST_KEY
+from ckanext.security.constants import PLUGIN_EXTRAS_BLACKLIST_KEY
 from passlib.hash import pbkdf2_sha512
 
 
 class TestAction(object):
 
-    @pytest.mark.ckan_config(u'ckanext.security.tabulist_item_count', u'2')
+    @pytest.mark.ckan_config(u'ckanext.security.blacklist_item_count', u'2')
     def test_append_password(self):
         """
         Check if the password is appended to the list of forbidden passwords
@@ -23,25 +23,25 @@ class TestAction(object):
 
         # WHEN
         user_obj.password = "new_password1"
-        action._append_password(context, user_obj) # 1st entry in tabu list
+        action._append_password(context, user_obj) # 1st entry in blacklist
 
         user_obj.password = "new_password2"
-        action._append_password(context, user_obj) # 2nd entry in tabu list
+        action._append_password(context, user_obj) # 2nd entry in blacklist
 
         user_obj.password = "new_password3"
-        action._append_password(context, user_obj) # will replace the last entry in tabu list
+        action._append_password(context, user_obj) # will replace the last entry in blacklist
 
         # THEN
         actual_user = tk.get_action('user_show')(context, {'id': user['name'], 'include_plugin_extras': True})
         assert 'plugin_extras' in actual_user
-        assert PLUGIN_EXTRAS_TABULIST_KEY in actual_user['plugin_extras']
-        assert len(actual_user['plugin_extras'][PLUGIN_EXTRAS_TABULIST_KEY]) == 2
-        assert pbkdf2_sha512.verify("new_password3", actual_user['plugin_extras'][PLUGIN_EXTRAS_TABULIST_KEY][0])
-        assert pbkdf2_sha512.verify("new_password2", actual_user['plugin_extras'][PLUGIN_EXTRAS_TABULIST_KEY][1])
+        assert PLUGIN_EXTRAS_BLACKLIST_KEY in actual_user['plugin_extras']
+        assert len(actual_user['plugin_extras'][PLUGIN_EXTRAS_BLACKLIST_KEY]) == 2
+        assert pbkdf2_sha512.verify("new_password3", actual_user['plugin_extras'][PLUGIN_EXTRAS_BLACKLIST_KEY][0])
+        assert pbkdf2_sha512.verify("new_password2", actual_user['plugin_extras'][PLUGIN_EXTRAS_BLACKLIST_KEY][1])
 
     @pytest.mark.usefixtures("with_plugins")
     @pytest.mark.ckan_config("ckan.plugins", "security")
-    @pytest.mark.ckan_config(u'ckanext.security.tabulist_item_count', u'10')
+    @pytest.mark.ckan_config(u'ckanext.security.blacklist_item_count', u'10')
     def test_user_update_password_append_is_called(self):
         """Check if when updating the password, the append function is called."""
 
@@ -57,6 +57,6 @@ class TestAction(object):
 
         assert 'plugin_extras' in actual_user
         assert actual_user['plugin_extras'] is not None
-        assert PLUGIN_EXTRAS_TABULIST_KEY in actual_user['plugin_extras']
+        assert PLUGIN_EXTRAS_BLACKLIST_KEY in actual_user['plugin_extras']
         # make sure there are 2 entries: 1st: user_create, 2nd: user_update
-        assert len(actual_user['plugin_extras'][PLUGIN_EXTRAS_TABULIST_KEY]) == 2
+        assert len(actual_user['plugin_extras'][PLUGIN_EXTRAS_BLACKLIST_KEY]) == 2

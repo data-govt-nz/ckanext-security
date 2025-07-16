@@ -6,7 +6,7 @@ from ckan import authz
 from ckan.common import _, config
 from ckan.lib.navl.dictization_functions import Missing, Invalid
 from ckan.plugins import toolkit as tk
-from ckanext.security.constants import PLUGIN_EXTRAS_TABULIST_KEY
+from ckanext.security.constants import PLUGIN_EXTRAS_BLACKLIST_KEY
 from passlib.hash import pbkdf2_sha512
 
 DEFAULT_MIN_PASSWORD_LENGTH = 10
@@ -49,23 +49,23 @@ def user_password_validator(key, data, errors, context):
         if len(value) < _min_password_length() or sum(rules) < 3:
             raise Invalid(_(PASSWORD_ERROR).format(_min_password_length(), string.punctuation))
 
-        # Check that the new password is not on the tabu list
-        tabulist_item_count = tk.asint(config.get('ckanext.security.tabulist_item_count', 0))
+        # Check that the new password is not on the blacklist
+        blacklist_item_count = tk.asint(config.get('ckanext.security.blacklist_item_count', 0))
 
         # feature enabled? Check needed, because feature could be disabled later
-        if tabulist_item_count > 0 and _user_is_editing_self(context):
-            if _password_in_tabulist(context, value):
+        if blacklist_item_count > 0 and _user_is_editing_self(context):
+            if _password_in_blacklist(context, value):
                 raise Invalid(_("Your password is not allowed. Please choose a different one."))
 
 
-def _password_in_tabulist(context, new_password_plain):
-    """Return True, if the new password can verify any hash from the tabu list -> then it must be used before."""
+def _password_in_blacklist(context, new_password_plain):
+    """Return True, if the new password can verify any hash from the blacklist -> then it must be used before."""
     model = context['model']
     user_obj = model.User.get(context['user'])
 
-    if user_obj.plugin_extras and PLUGIN_EXTRAS_TABULIST_KEY in user_obj.plugin_extras:
-        password_tabulist = user_obj.plugin_extras[PLUGIN_EXTRAS_TABULIST_KEY]
-        for entry in password_tabulist:
+    if user_obj.plugin_extras and PLUGIN_EXTRAS_BLACKLIST_KEY in user_obj.plugin_extras:
+        password_blacklist = user_obj.plugin_extras[PLUGIN_EXTRAS_BLACKLIST_KEY]
+        for entry in password_blacklist:
             if entry and pbkdf2_sha512.verify(new_password_plain, entry):
                 return True
 

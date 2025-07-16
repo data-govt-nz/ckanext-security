@@ -1,1 +1,1 @@
-PLUGIN_EXTRAS_TABULIST_KEY = 'password_tabu_list'
+PLUGIN_EXTRAS_BLACKLIST_KEY = 'password_blacklist'

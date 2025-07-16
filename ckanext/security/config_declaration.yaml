@@ -30,4 +30,4 @@ groups:
       - key: ckanext.security.disable_password_reset_override
       - key: ckanext.security.enable_totp
       - key: ckanext.security.mfa_help_link
-      - key: ckanext.security.tabulist_item_count
+      - key: ckanext.security.blacklist_item_count

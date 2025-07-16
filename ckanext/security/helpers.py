@@ -4,7 +4,7 @@ import string, secrets
 
 from ckanext.security.validators import _min_password_length, PASSWORD_ERROR
 
-TABU_LIST_HINT = "Your password must not be the same as any of your last {} passwords."
+BLACKLIST_HINT = "Your password must not be the same as any of your last {} passwords."
 
 
 def security_enable_totp():
@@ -16,10 +16,10 @@ def password_rules_hint():
     min_password_length = _min_password_length()
     password_hint = _(PASSWORD_ERROR).format(min_password_length, string.punctuation)
 
-    # if enabled, add a hint about tabu list passwords
-    tabulist_item_count = config.get('ckanext.security.tabulist_item_count')
-    if tabulist_item_count and int(tabulist_item_count) > 0:
-        return password_hint + " " + _(TABU_LIST_HINT).format(tabulist_item_count)
+    # if enabled, add a hint about blacklist passwords
+    blacklist_item_count = config.get('ckanext.security.blacklist_item_count')
+    if blacklist_item_count and int(blacklist_item_count) > 0:
+        return password_hint + " " + _(BLACKLIST_HINT).format(blacklist_item_count)
 
     return password_hint
 

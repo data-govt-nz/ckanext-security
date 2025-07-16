@@ -6,7 +6,7 @@ from ckan.plugins import toolkit as tk
 from passlib.handlers.pbkdf2 import pbkdf2_sha512
 
 import ckanext.security.validators as validators
-from ckanext.security.constants import PLUGIN_EXTRAS_TABULIST_KEY
+from ckanext.security.constants import PLUGIN_EXTRAS_BLACKLIST_KEY
 
 
 class TestValidators(object):
@@ -80,9 +80,9 @@ class TestValidators(object):
 
     @pytest.mark.usefixtures("with_plugins")
     @pytest.mark.ckan_config("ckan.plugins", "security")
-    @pytest.mark.ckan_config(u'ckanext.security.tabulist_item_count', u'10')
-    def test_password_on_tabu_list_should_fail(self):
-        """ If password is on tabu list, validator should throw an exception. """
+    @pytest.mark.ckan_config(u'ckanext.security.blacklist_item_count', u'10')
+    def test_password_on_blacklist_should_fail(self):
+        """ If password is on blacklist, validator should throw an exception. """
         # GIVEN
         PASSWORD = "ckan4Password"
         user = factories.Sysadmin(password=PASSWORD)
@@ -94,14 +94,14 @@ class TestValidators(object):
         with pytest.raises(Invalid):
             validators.user_password_validator("pw", {"pw": PASSWORD}, None, context)
 
-    def test_password_not_on_tabu_list_should_succeed(self):
-        """ If password is not on tabu list, validator should not throw an exception. """
+    def test_password_not_on_blacklist_should_succeed(self):
+        """ If password is not on blacklist, validator should not throw an exception. """
 
         # GIVEN
         PASSWORD = "ckan4Password"
         hashed_password = str(pbkdf2_sha512.encrypt(PASSWORD))
         user = factories.User(password=PASSWORD,
-                              plugin_extras={PLUGIN_EXTRAS_TABULIST_KEY: [hashed_password]})
+                              plugin_extras={PLUGIN_EXTRAS_BLACKLIST_KEY: [hashed_password]})
         user_obj = model.User.get(user["name"])
         context = {"user": user["name"], 'model': model, 'user_obj': user_obj}
 

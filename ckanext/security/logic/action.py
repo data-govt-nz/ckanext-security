@@ -14,7 +14,7 @@ from ckanext.security.authenticator import (
     reset_address_throttle,
     reset_totp
 )
-from ckanext.security.constants import PLUGIN_EXTRAS_TABULIST_KEY
+from ckanext.security.constants import PLUGIN_EXTRAS_BLACKLIST_KEY
 
 
 def security_throttle_user_reset(context, data_dict):
@@ -85,7 +85,7 @@ def user_update(up_func, context, data_dict):
     # Reset the security throttle for the user
     get_action('security_throttle_user_reset')(dict(context, ignore_auth=True), {'user': rval['name']})
 
-    # If the password was changed, record it in the tabu list
+    # If the password was changed, record it in the blacklist
     updated_stored_user = model.User.get(user_id)
     if current_password_hash != updated_stored_user.password:
         _append_password(context, updated_stored_user)
@@ -96,13 +96,13 @@ def user_update(up_func, context, data_dict):
 @chained_action
 def user_create(up_func, context, data_dict):
     """
-    Store the password hash in the tabu list on user creation.
+    Store the password hash in the blacklist on user creation.
     """
 
     # Call the original user_update function
     rval = up_func(context, data_dict)
 
-    # Store the password hash in the tabu list
+    # Store the password hash in the blacklist
     model = context['model']
     user_id = get_or_bust(rval, 'id')
     updated_stored_user = model.User.get(user_id)
@@ -116,8 +116,8 @@ def _append_password(context, user_obj):
     Append the new password hash to the list of forbidden passwords
     """
 
-    tabulist_item_count = asint(config.get('ckanext.security.tabulist_item_count', 0))
-    if tabulist_item_count == 0:
+    blacklist_item_count = asint(config.get('ckanext.security.blacklist_item_count', 0))
+    if blacklist_item_count == 0:
         return  # feature is disabled
 
     if not user_obj.password:
@@ -125,12 +125,12 @@ def _append_password(context, user_obj):
 
     if user_obj.plugin_extras is None:
         user_obj.plugin_extras = {}
-    if PLUGIN_EXTRAS_TABULIST_KEY not in user_obj.plugin_extras:
-        user_obj.plugin_extras[PLUGIN_EXTRAS_TABULIST_KEY] = []
+    if PLUGIN_EXTRAS_BLACKLIST_KEY not in user_obj.plugin_extras:
+        user_obj.plugin_extras[PLUGIN_EXTRAS_BLACKLIST_KEY] = []
 
-    max_appended_elements = int(tabulist_item_count) - 1
-    new_list = [user_obj.password] + user_obj.plugin_extras[PLUGIN_EXTRAS_TABULIST_KEY][:max_appended_elements]
-    user_obj.plugin_extras[PLUGIN_EXTRAS_TABULIST_KEY] = new_list
+    max_appended_elements = int(blacklist_item_count) - 1
+    new_list = [user_obj.password] + user_obj.plugin_extras[PLUGIN_EXTRAS_BLACKLIST_KEY][:max_appended_elements]
+    user_obj.plugin_extras[PLUGIN_EXTRAS_BLACKLIST_KEY] = new_list
 
     # user_patch; Own implementation because we need to set the "keep_email" in context for a valid request.
     # CKANs user_update needs an email address to update the user.
