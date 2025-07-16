@@ -176,6 +176,9 @@ ckanext.security.mfa_help_link = https://data.govt.nz/catalogue-guide/releasing-
 
 # Set the minimal password length (optional, default: 10)
 ckanext.security.min_password_length = 10
+
+# Set the number of items on the blacklist, set to 0 to disable the blacklist
+ckanext.security.blacklist_item_count = 10
 ```
 
 ## How to install?
