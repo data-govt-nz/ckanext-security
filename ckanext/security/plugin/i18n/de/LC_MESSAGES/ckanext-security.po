@@ -37,7 +37,7 @@ msgstr "Das Authentication-Secret wurde erfolgreich aktualisiert. Stelle sicher,
 
 #: ckanext/security/validators.py:34
 msgid "Your password must be {} characters or longer, and consist of at least three of the following four character sets: uppercase characters, lowercase characters, digits, punctuation & special characters ({})."
-msgstr "Das Password muss {} Zeichen oder länger sein und mindestens drei der folgenden vier Zeichentypen enthalten: Großbuchstaben, Kleinbuchstaben, Ziffern, Satzzeichen / Sonderzeichen ({})."
+msgstr "Das Passwort muss {} Zeichen oder länger sein und mindestens drei der folgenden vier Zeichentypen enthalten: Großbuchstaben, Kleinbuchstaben, Ziffern, Satzzeichen / Sonderzeichen ({})."
 
 #: ckanext/security/validators.py:47
 msgid "Your password is not allowed. Please choose a different one."
