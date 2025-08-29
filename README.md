@@ -141,18 +141,24 @@ beaker.session.cookie_domain = 192.168.232.65
 
 ### ckanext-security configuration options
 ```ini
-## Security
-ckanext.security.domain = 192.168.232.65          # Cookie domain
+## Security ############################################################
+# Cookie domain
+ckanext.security.domain = 192.168.232.65
 
 ckanext.security.redis.host = 127.0.0.1
 ckanext.security.redis.port = 6379
-ckanext.security.redis.db = 1                     # ckan uses db 0
-ckanext.security.redis.password = StrongPassword  # optional password for Redis
+# ckan uses db 0
+ckanext.security.redis.db = 1
+# optional password for Redis
+ckanext.security.redis.password = StrongPassword
 
 # 15 minute timeout with 10 attempts
-ckanext.security.lock_timeout = 900               # Login throttling lock period
-ckanext.security.login_max_count = 10             # Login throttling attempt limit
-ckanext.security.brute_force_key = user_name      # Detect brute force attempts by username rather than IP address
+# Login throttling lock period
+ckanext.security.lock_timeout = 900
+# Login throttling attempt limit
+ckanext.security.login_max_count = 10
+# Detect brute force attempts by username rather than IP address
+ckanext.security.brute_force_key = user_name
 
 # If using 2.7.7 or recent patches of 2.8, the password reset behaviour has been fixed in CKAN core
 # (no longer discloses info about non-existent accounts) and the way this plugin overrides the password
@@ -161,12 +167,18 @@ ckanext.security.brute_force_key = user_name      # Detect brute force attempts 
 ckanext.security.disable_password_reset_override = true
 
 # Two factor authentication is enabled for all users by default
-# optional configuration to disable 2fa
-ckanext.security.enable_totp = true         # set to false to disable 2fa 
+# optional configuration to disable 2fa; set to false to disable 2fa 
+ckanext.security.enable_totp = true
 
 # Provide a help page to allow 2fa users to contact support or get more information
 # Shows up as 'Need help?' on the 2fa entry form beside the submit button. Does not display a link if none provided
 ckanext.security.mfa_help_link = https://data.govt.nz/catalogue-guide/releasing-data-on-data-govt-nz/how-do-i-set-up-two-factor-authentication/
+
+# Set the minimal password length (optional, default: 10)
+ckanext.security.min_password_length = 10
+
+# Set the number of items on the blacklist, set to 0 to disable the blacklist
+ckanext.security.blacklist_item_count = 10
 ```
 
 ## How to install?

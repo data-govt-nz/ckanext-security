@@ -1,0 +1,56 @@
+# Translations template for ckanext-security.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the ckanext-security
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ckanext-security 3.0.4\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-04-11 09:58+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.15.0\n"
+
+#: ckanext/security/authenticator.py:181
+msgid "Login failed. Bad username or password."
+msgstr ""
+
+#: ckanext/security/helpers.py:6
+msgid "Your password must not be the same as any of your last {} passwords."
+msgstr ""
+
+#: ckanext/security/utils.py:31
+msgid "No user specified"
+msgstr ""
+
+#: ckanext/security/utils.py:51
+msgid "Not authorized to see this page"
+msgstr ""
+
+#: ckanext/security/utils.py:207
+msgid "That's a valid code. Your authenticator app is correctly configured for future use."
+msgstr ""
+
+#: ckanext/security/utils.py:210
+msgid "That's an incorrect code. Try scanning the QR code again with your authenticator app."
+msgstr ""
+
+#: ckanext/security/utils.py:230
+msgid "Successfully updated two factor authentication secret. Make sure you add the new secret to your authenticator app."
+msgstr ""
+
+#: ckanext/security/validators.py:14
+msgid "Your password must be {} characters or longer, and consist of at least three of the following four character sets: uppercase characters, lowercase characters, digits, punctuation & special characters."
+msgstr ""
+
+#: ckanext/security/validators.py:47
+msgid "Your password is not allowed. Please choose a different one."
+msgstr ""
+

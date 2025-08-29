@@ -1,2 +1,5 @@
 recursive-include ckanext/security/templates *
-
+recursive-include ckanext/security/plugin/i18n *
+include README.md
+include LICENSE
+include requirements.txt

@@ -4,24 +4,28 @@ import ckan.plugins as p
 from ckanext.security import schema as ext_schema
 from ckan.plugins import toolkit as tk
 from ckan.logic import schema as core_schema
+from ckan.lib.plugins import DefaultTranslation
 from ckanext.security.model import define_security_tables
 from ckanext.security.resource_upload_validator import (
     validate_upload
 )
 from ckanext.security.logic import auth, action
 from ckanext.security.helpers import security_enable_totp
+from ckanext.security.helpers import password_rules_hint
+from ckanext.security.helpers import generate_password
 
 from ckanext.security.plugin.flask_plugin import MixinPlugin
 
 log = logging.getLogger(__name__)
 
 
-class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
+class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin, DefaultTranslation):
     p.implements(p.IConfigurer)
     p.implements(p.IResourceController, inherit=True)
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)
     p.implements(p.ITemplateHelpers)
+    p.implements(p.ITranslation)
 
     # BEGIN Hooks for IConfigurer
 
@@ -40,6 +44,13 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
             ext_schema.user_edit_form_schema
         core_schema.default_update_user_schema = \
             ext_schema.default_update_user_schema
+
+        # overwrite password generation on saml2auth helper, if plugin is present
+        try:
+            import ckanext.saml2auth.helpers
+            ckanext.saml2auth.helpers.generate_password = generate_password
+        except ImportError:
+            pass
 
         tk.add_template_directory(config, '../templates')
         tk.add_resource('../fanstatic', 'security')
@@ -80,6 +91,8 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
                 action.security_reset_totp,
             'user_update':
                 action.user_update,
+            'user_create':
+                action.user_create,
         }
     # END Hooks for IActions
 
@@ -106,4 +119,5 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
         return {
             'check_ckan_version': tk.check_ckan_version,
             'security_enable_totp': security_enable_totp,
+            'password_rules_hint': password_rules_hint,
         }
