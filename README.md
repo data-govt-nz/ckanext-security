@@ -19,6 +19,7 @@ disclose whether or not that email address exists in the DB
 * This extension has been used and tested against CKAN version 2.7.x on git tag 2.5.0 and earlier
 * CKAN 2.9.x and Python 3 support was added from git tag 3.0.0
 * This extension used to provide CSRF protection (in git tags 2.5.0 and earlier). This is no longer provided, please use [ckanext-csrf-filter](https://github.com/qld-gov-au/ckanext-csrf-filter) instead.
+* Support for CKAN versions earlier than 2.9.x is now dropped from git tag 4.0.0
 
 ### Reset tokens
 Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
@@ -152,22 +153,27 @@ beaker.session.cookie_domain = 192.168.232.65
 ### ckanext-security configuration options
 ```ini
 ## Security
-ckanext.security.domain = 192.168.232.65      # Cookie domain
+ckanext.security.domain = 192.168.232.65          # Cookie domain
 
 ckanext.security.redis.host = 127.0.0.1
 ckanext.security.redis.port = 6379
-ckanext.security.redis.db = 1                 # ckan uses db 0
+ckanext.security.redis.db = 1                     # ckan uses db 0
+ckanext.security.redis.password = StrongPassword  # optional password for Redis
 
 # 15 minute timeout with 10 attempts
-ckanext.security.lock_timeout = 900           # Login throttling lock period
-ckanext.security.login_max_count = 10         # Login throttling attempt limit
-ckanext.security.brute_force_key = user_name  # Detect brute force attempts by username rather than IP address
+ckanext.security.lock_timeout = 900               # Login throttling lock period
+ckanext.security.login_max_count = 10             # Login throttling attempt limit
+ckanext.security.brute_force_key = user_name      # Detect brute force attempts by username rather than IP address
 
 # If using 2.7.7 or recent patches of 2.8, the password reset behaviour has been fixed in CKAN core
 # (no longer discloses info about non-existent accounts) and the way this plugin overrides the password
 # reset may be broken due to permission restrictions on user lookups,
 # You can disable the fix in this plugin by:
 ckanext.security.disable_password_reset_override = true
+
+# Two factor authentication is enabled for all users by default
+# optional configuration to disable 2fa
+ckanext.security.enable_totp = true         # set to false to disable 2fa 
 
 # Provide a help page to allow 2fa users to contact support or get more information
 # Shows up as 'Need help?' on the 2fa entry form beside the submit button. Does not display a link if none provided

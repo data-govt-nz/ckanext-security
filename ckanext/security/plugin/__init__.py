@@ -8,14 +8,12 @@ from ckan.plugins import toolkit as tk
 from ckan.logic import schema as core_schema
 from ckanext.security.model import define_security_tables
 from ckanext.security.resource_upload_validator import (
-    validate_upload_type, validate_upload_presence
+    validate_upload
 )
 from ckanext.security.logic import auth, action
+from ckanext.security.helpers import security_enable_totp
 
-if tk.check_ckan_version("2.9"):
-    from ckanext.security.plugin.flask_plugin import MixinPlugin
-else:
-    from ckanext.security.plugin.pylons_plugin import MixinPlugin
+from ckanext.security.plugin.flask_plugin import MixinPlugin
 
 log = logging.getLogger(__name__)
 
@@ -52,15 +50,19 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
 
     # BEGIN Hooks for IResourceController
 
+    # CKAN < 2.10
     def before_create(self, context, resource):
-        validate_upload_presence(resource)
-        validate_upload_type(resource)
-        pass
+        validate_upload(resource)
 
     def before_update(self, context, current, resource):
-        validate_upload_presence(resource)
-        validate_upload_type(resource)
-        pass
+        validate_upload(resource)
+
+    # CKAN >= 2.10
+    def before_resource_create(self, context, resource):
+        validate_upload(resource)
+
+    def before_resource_update(self, context, current, resource):
+        validate_upload(resource)
 
     # END Hooks for IResourceController
 
@@ -86,7 +88,7 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     # BEGIN Hooks for IAuthFunctions
 
     def get_auth_functions(self):
-        auth_functions = {
+        return {
             'security_throttle_user_reset':
                 auth.security_throttle_user_reset,
             'security_throttle_address_reset':
@@ -101,7 +103,6 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
             'user_show': auth.user_show,
             'group_show': auth.group_show,
         }
-        return auth_functions
     # END Hooks for IAuthFunctions
 
     # ITemplateHelpers
@@ -109,4 +110,5 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
     def get_helpers(self):
         return {
             'check_ckan_version': tk.check_ckan_version,
+            'security_enable_totp': security_enable_totp,
         }
