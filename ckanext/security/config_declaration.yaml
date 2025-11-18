@@ -1,0 +1,33 @@
+# schema version of the config declaration. At the moment, the only valid value is `1`
+version: 1
+
+# an array of configuration blocks. Each block has an "annotation", that
+# describes the block, and the list of options. These groups help to separate
+# config options visually, but they have no extra meaning.
+groups:
+
+  # short text that describes the group. It can be shown in the config file
+  # as following:
+  #   ## MyExt settings ##################
+  #   some.option = some.value
+  #   another.option = another.value
+  - annotation: Security
+
+    # an array of actual declarations
+    options:
+
+      # The only required item in the declaration is `key`. `key` defines the
+      # name of the config option
+      - key: ckanext.security.domain
+      - key: ckanext.security.redis.host
+      - key: ckanext.security.redis.port
+      - key: ckanext.security.redis.db
+      - key: ckanext.security.redis.password
+      - key: ckanext.security.lock_timeout
+      - key: ckanext.security.login_max_count
+      - key: ckanext.security.brute_force_key
+      - key: ckanext.security.min_password_length
+      - key: ckanext.security.disable_password_reset_override
+      - key: ckanext.security.enable_totp
+      - key: ckanext.security.mfa_help_link
+      - key: ckanext.security.blacklist_item_count
