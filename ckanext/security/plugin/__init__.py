@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import logging
 import ckan.plugins as p
 
@@ -97,6 +99,9 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
                 auth.security_throttle_address_show,
             'security_reset_totp':
                 auth.security_reset_totp,
+            'user_list': auth.user_list,
+            'user_show': auth.user_show,
+            'group_show': auth.group_show,
         }
     # END Hooks for IAuthFunctions
 

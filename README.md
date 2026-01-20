@@ -13,6 +13,7 @@ A CKAN extension to hold various security improvements for CKAN, including:
 disclose whether or not that email address exists in the DB
 * Two Factor Authentication is enforced for all users
 * Preventing upload/linking of certain file types for resources
+* Stricter access rules to view user profiles
 
 **Please note**:
 * This extension has been used and tested against CKAN version 2.7.x on git tag 2.5.0 and earlier
@@ -88,6 +89,16 @@ You can also achieve this by adding the detected mime type to your blacklist dir
 **Limitations**:
 
 Links are only checked based on the extension in the url, we do not request the file at the linked url to infer the mime type.
+
+### Stricter access rules to view user profiles
+
+If `ckan.auth.public_user_details` is set to False, then access to user profiles will be restricted beyond the CKAN default of 'any authenticated user'.
+
+* 'user_list' permission (affecting the 'user_list' and 'user_autocomplete' APIs) will be restricted to admins (sysadmins, org admins, and group admins). This is necessary in order for admins to add users to their group/org.
+* 'user_show' permission will be restricted to admins, plus the owner of the requested user profile.
+* 'group_show' permission (affecting the 'group_show' and 'organization_show' APIs) will be restricted to admins of the specific requested group, if the call requests user details with the 'include_users' parameter. If user details are not requested, calls are unrestricted.
+
+If `ckan.auth.public_user_details` is absent or True, no restrictions are imposed.
 
 ## Requirements
 * The server-side session storage requires the session middleware in CKAN core to be moved near the end of the middleware stack. An example changeset (relevant to CKAN 2.9.3) for this is provided in [ckanext-security.patch](ckanext-security.patch). The installed CKAN core codebase will need to have this patch applied (or similar changes made if not using 2.9.3).
