@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import ckan.plugins as p
+from ckan.plugins import toolkit as tk
 from ckanext.security import views, cli, authenticator
 from ckan.common import session
 
@@ -27,4 +28,8 @@ class MixinPlugin(p.SingletonPlugin):
 
     # Delete session cookie information
     def logout(self):
-        session.invalidate()
+        # CKAN 2.11+ uses Flask-Session which has clear() instead of invalidate()
+        if tk.check_ckan_version(min_version='2.11'):
+            session.clear()
+        else:
+            session.invalidate()
