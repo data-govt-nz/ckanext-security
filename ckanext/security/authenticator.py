@@ -1,11 +1,9 @@
-from builtins import object
 import logging
 from typing import Any, Union
 
 from ckan.types import Response
 from ckan.lib.authenticator import default_authenticate
 from ckan.model import User
-import ckan.plugins as p
 from ckan.plugins.toolkit import \
     request, config, current_user, base, login_user, h, _
 from ckan.views.user import next_page_or_default, rotate_token
@@ -183,21 +181,3 @@ def login() -> Union[Response, str]:
             return base.render("user/login.html", extra_vars)
 
     return base.render("user/login.html", extra_vars)
-
-
-class CKANLoginThrottle():
-    p.implements(p.IAuthenticator)
-
-    def authenticate(self, environ, identity):
-        return authenticate(identity)
-
-
-class BeakerRedisAuth(object):
-    p.implements(p.IAuthenticator)
-
-    def authenticate(self, environ, identity):
-        # At this stage, the identity has already been validated from
-        # the cookie and redis (use_beaker middleware). We simply return
-        # the user id from the identity object if it's there, or None if
-        # the user's identity is not verified.
-        return identity.get('repoze.who.userid', None)
