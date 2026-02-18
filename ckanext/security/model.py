@@ -30,7 +30,7 @@ def db_setup():
         return
 
     if not inspector.has_table('user_security_totp'):
-        user_security_totp.create(bind=db_engine)
+        user_security_totp.create(db_engine)
         print("Created security TOTP table")
     else:
         print("Security TOTP table already exists -- skipping")
