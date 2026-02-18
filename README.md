@@ -14,11 +14,18 @@ disclose whether or not that email address exists in the DB
 * Two Factor Authentication is enforced for all users
 * Preventing upload/linking of certain file types for resources
 
+**Compatibility**:
+
+| CKAN version | ckanext-security version | Notes |
+|---|---|---|
+| 2.7.x | ≤ 2.5.0 | Legacy, no longer supported |
+| 2.9.x | 3.0.0+ | Python 3 support added. Requires `who.ini` changes and session middleware patch (see below) |
+| 2.10.x | 4.0.0+ | Tested against 2.10.4. `who.ini` configuration is **not required** (CKAN 2.10 replaced `repoze.who` with Flask-Login) |
+| 2.11.x | Latest | Session management updated for Flask-Session compatibility (see [#92](https://github.com/data-govt-nz/ckanext-security/pull/92)) |
+
 **Please note**:
-* This extension has been used and tested against CKAN version 2.7.x on git tag 2.5.0 and earlier
-* CKAN 2.9.x and Python 3 support was added from git tag 3.0.0
-* This extension used to provide CSRF protection (in git tags 2.5.0 and earlier). This is no longer provided, please use [ckanext-csrf-filter](https://github.com/qld-gov-au/ckanext-csrf-filter) instead.
 * Support for CKAN versions earlier than 2.9.x is now dropped from git tag 4.0.0
+* This extension used to provide CSRF protection (in git tags 2.5.0 and earlier). This is no longer provided, please use [ckanext-csrf-filter](https://github.com/qld-gov-au/ckanext-csrf-filter) instead.
 
 ### Reset tokens
 Reset tokens are generated using `os.urandom(16)` instead of CKAN's default
@@ -93,7 +100,9 @@ Links are only checked based on the extension in the url, we do not request the 
 * The server-side session storage requires the session middleware in CKAN core to be moved near the end of the middleware stack. An example changeset (relevant to CKAN 2.9.3) for this is provided in [ckanext-security.patch](ckanext-security.patch). The installed CKAN core codebase will need to have this patch applied (or similar changes made if not using 2.9.3).
 * A running Redis instance to store brute force protection tokens configured with a maxmemory and maxmemory-policy=lru so it overwrites the least recently used item rather than running out of space. This instance should be a different instance from the one used for Harvest items to avoid data loss. [Redis LRU-Cache documentation](https://redis.io/topics/lru-cache).
 
-### Changes to `who.ini`
+### Changes to `who.ini` (CKAN 2.9.x only)
+> **Note:** These `who.ini` changes are only required for CKAN 2.9.x. CKAN 2.10+ replaced `repoze.who` with Flask-Login, so `who.ini` configuration is no longer needed.
+
 You will need at least the following setting in your `who.ini`
 
 ```ini
@@ -174,7 +183,7 @@ You can use `pip` to install this plugin into your virtual environment:
 
 ```shell
 pip install -e git+https://github.com/data-govt-nz/ckanext-security.git#egg=ckanext-security
-pip install -r ckanext-security/requirements.txt # or requirements-py2.txt if running Python 2.7 still
+pip install -r ckanext-security/requirements.txt
 ```
 
 You need to migrate the database in order to enable the Two Factor Auth. This command is idempotent, it will not modify the database if run again once the table exists.
