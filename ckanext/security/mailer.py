@@ -2,7 +2,6 @@
 import os
 import codecs
 import logging
-import six
 import flask
 
 from ckan.plugins.toolkit import config, render, check_ckan_version, h
@@ -18,7 +17,7 @@ def make_key():
 
 
 def create_reset_key(user):
-    user.reset_key = six.ensure_text(make_key())
+    user.reset_key = make_key().decode('ascii')
     model.repo.commit_and_remove()
 
 
