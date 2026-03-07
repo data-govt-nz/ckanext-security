@@ -2,10 +2,9 @@
 
 import logging
 
-from ckan.views import user
 from ckanext.security import utils
 from ckan.lib import helpers
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response
 from functools import wraps
 from ckan.plugins import toolkit as tk
 
