@@ -1,9 +1,7 @@
 import logging
 import ckan.plugins as p
 
-from ckanext.security import schema as ext_schema
 from ckan.plugins import toolkit as tk
-from ckan.logic import schema as core_schema
 from ckanext.security.model import define_security_tables
 from ckanext.security.resource_upload_validator import (
     validate_upload
