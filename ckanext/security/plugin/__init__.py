@@ -1,9 +1,8 @@
 import logging
 import ckan.plugins as p
 
-from ckanext.security import schema as ext_schema
 from ckan.plugins import toolkit as tk
-from ckan.logic import schema as core_schema
+from ckanext.security.cache.clients import RedisClient
 from ckanext.security.model import define_security_tables
 from ckanext.security.resource_upload_validator import (
     validate_upload
@@ -32,6 +31,17 @@ class CkanSecurityPlugin(MixinPlugin, p.SingletonPlugin):
 
         tk.add_template_directory(config, '../templates')
         tk.add_resource('../fanstatic', 'security')
+
+        if tk.check_ckan_version(min_version='2.11'):
+            # CKAN 2.11's Flask-Session backend (CKANRedisSessionInterface)
+            # always builds its own client from ckan.redis.url (the job-queue
+            # Redis), ignoring any session-specific config. Point it at the
+            # same Redis instance this plugin already requires for
+            # brute-force/TOTP data instead, restoring the separately
+            # provisioned, server-side session storage this plugin provided
+            # under Beaker (see Requirements in README) without requiring
+            # sites to write their own plugin to wire it up.
+            config['SESSION_REDIS'] = RedisClient().client
 
     # END Hooks for IConfigurer
 
