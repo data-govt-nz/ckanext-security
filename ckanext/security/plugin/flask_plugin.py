@@ -30,4 +30,8 @@ class MixinPlugin(p.SingletonPlugin):
 
     # Delete session cookie information
     def logout(self):
-        session.invalidate()
+        # Beaker session (CKAN < 2.11) uses invalidate(); Flask-Session uses clear()
+        if hasattr(session, 'invalidate'):
+            session.invalidate()
+        else:
+            session.clear()
