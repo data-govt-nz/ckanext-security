@@ -6,7 +6,6 @@ import flask
 from cgi import FieldStorage
 
 from ckan.logic import ValidationError
-from ckan.common import config
 import ckan.plugins.toolkit as tk
 
 
@@ -21,7 +20,7 @@ def _add_mimetypes():
         mimetypes.init()
 
     # Add mimetypes from config
-    config_mimetypes = eval(config.get(
+    config_mimetypes = eval(tk.config.get(
         'ckanext.security.extended_upload_mimetypes', '{}'))
     extended_mimetypes = DEFAULT_EXTENDED_UPLOAD_MIMETYPES.copy()
     extended_mimetypes.update(config_mimetypes)  # merges defaults and config
@@ -109,7 +108,7 @@ def validate_upload_type(resource):
     extensions_and_mimetypes = _build_mimetypes_and_extensions(
         filename, uploaded_file)
 
-    config_blacklist = eval(config.get(
+    config_blacklist = eval(tk.config.get(
         'ckanext.security.upload_blacklist', '[]').lower())
     blacklist = list(DEFAULT_UPLOAD_BLACKLIST)
     blacklist.extend(config_blacklist)
