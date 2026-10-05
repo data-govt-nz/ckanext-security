@@ -2,10 +2,10 @@ import mimetypes
 import magic
 import logging
 import os
+import flask
 from cgi import FieldStorage
 
 from ckan.logic import ValidationError
-from ckan.common import config, is_flask_request
 import ckan.plugins.toolkit as tk
 
 
@@ -20,7 +20,7 @@ def _add_mimetypes():
         mimetypes.init()
 
     # Add mimetypes from config
-    config_mimetypes = eval(config.get(
+    config_mimetypes = eval(tk.config.get(
         'ckanext.security.extended_upload_mimetypes', '{}'))
     extended_mimetypes = DEFAULT_EXTENDED_UPLOAD_MIMETYPES.copy()
     extended_mimetypes.update(config_mimetypes)  # merges defaults and config
@@ -75,7 +75,7 @@ def _build_mimetypes_and_extensions(filename, file_content):
 
 
 def _has_upload(resource):
-    if is_flask_request():
+    if flask.has_request_context():
         if 'upload' in tk.request.files:
             return tk.request.files['upload'].filename != ''
         else:
@@ -98,9 +98,9 @@ def validate_upload_type(resource):
     filename = resource.get('url')
     if _has_upload(resource):
         field_storage = resource.get('upload')
-        if not field_storage and is_flask_request():
+        if not field_storage and flask.has_request_context():
             field_storage = tk.request.files['upload']
-        uploaded_file = field_storage.stream if is_flask_request() else \
+        uploaded_file = field_storage.stream if flask.has_request_context() else \
             field_storage.file
         filename = field_storage.filename
 
@@ -108,7 +108,7 @@ def validate_upload_type(resource):
     extensions_and_mimetypes = _build_mimetypes_and_extensions(
         filename, uploaded_file)
 
-    config_blacklist = eval(config.get(
+    config_blacklist = eval(tk.config.get(
         'ckanext.security.upload_blacklist', '[]').lower())
     blacklist = list(DEFAULT_UPLOAD_BLACKLIST)
     blacklist.extend(config_blacklist)
