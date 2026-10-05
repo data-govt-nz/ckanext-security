@@ -1,7 +1,5 @@
 # encoding: utf-8
 
-import six
-
 from ckan.lib.navl.validators import ignore_missing, not_empty, ignore
 from ckan.logic.validators import (
     name_validator, user_name_validator, user_password_not_empty,

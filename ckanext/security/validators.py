@@ -1,5 +1,4 @@
 # encoding: utf-8
-import six
 import string
 
 from ckan import authz
@@ -19,7 +18,7 @@ def user_password_validator(key, data, errors, context):
 
     if isinstance(value, Missing):
         pass  # Already handled in core
-    elif not isinstance(value, six.string_types):
+    elif not isinstance(value, str):
         raise Invalid(_('Passwords must be strings.'))
     elif value == '':
         pass  # Already handled in core
@@ -59,4 +58,4 @@ def old_username_validator(key, data, errors, context):
 
 
 def ensure_str(value):
-    return six.text_type(value)
+    return str(value)
