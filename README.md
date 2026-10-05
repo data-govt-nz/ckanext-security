@@ -21,7 +21,7 @@ disclose whether or not that email address exists in the DB
 | 2.7.x | ≤ 2.5.0 | Legacy, no longer supported |
 | 2.9.x | 3.0.0+ | Python 3 support added. Requires `who.ini` changes and session middleware patch (see below) |
 | 2.10.x | 4.0.0+ | Tested against 2.10.4. `who.ini` configuration is **not required** (CKAN 2.10 replaced `repoze.who` with Flask-Login) |
-| 2.11.x | Latest | Session management updated for Flask-Session compatibility (see [#92](https://github.com/data-govt-nz/ckanext-security/pull/92)) |
+| 2.11.x | `ckan_2_11_support` branch (tag TBD) | Uses CKAN's Flask-Session backend, backed by this plugin's Redis instance. **No core patch, `who.ini` or Beaker config required** (see [#92](https://github.com/data-govt-nz/ckanext-security/pull/92)) |
 
 **Please note**:
 * Support for CKAN versions earlier than 2.9.x is now dropped from git tag 4.0.0
@@ -97,7 +97,8 @@ You can also achieve this by adding the detected mime type to your blacklist dir
 Links are only checked based on the extension in the url, we do not request the file at the linked url to infer the mime type.
 
 ## Requirements
-* The server-side session storage requires the session middleware in CKAN core to be moved near the end of the middleware stack. An example changeset (relevant to CKAN 2.9.3) for this is provided in [ckanext-security.patch](ckanext-security.patch). The installed CKAN core codebase will need to have this patch applied (or similar changes made if not using 2.9.3).
+* **CKAN 2.11+**: no CKAN core patch is needed. Server-side sessions use CKAN's Flask-Session backend, and this plugin points it at the Redis instance configured by `ckanext.security.redis.*` (see [Flask-Session settings](#flask-session-settings-ckan-211)).
+* **CKAN 2.9/2.10**: the server-side session storage requires the session middleware in CKAN core to be moved near the end of the middleware stack. An example changeset (relevant to CKAN 2.9.3) for this is provided in [ckanext-security.patch](ckanext-security.patch). The installed CKAN core codebase will need to have this patch applied (or similar changes made if not using 2.9.3).
 * A running Redis instance to store brute force protection tokens configured with a maxmemory and maxmemory-policy=lru so it overwrites the least recently used item rather than running out of space. This instance should be a different instance from the one used for Harvest items to avoid data loss. [Redis LRU-Cache documentation](https://redis.io/topics/lru-cache).
 
 ### Changes to `who.ini` (CKAN 2.9.x only)
@@ -126,7 +127,26 @@ plugins =
     ckanext.security.authenticator:BeakerRedisAuth
 ```
 
-### Changes to CKAN config
+### Flask-Session settings (CKAN 2.11+)
+CKAN 2.11 replaced Beaker with Flask-Session, so the `beaker.session.*` options below no longer apply. Harden the session instead with, for example:
+
+```ini
+[app:main]
+SECRET_KEY = a-long-random-secret
+SESSION_TYPE = redis
+SESSION_COOKIE_NAME = ckan
+SESSION_COOKIE_DOMAIN = your.domain
+SESSION_COOKIE_HTTPONLY = true
+SESSION_COOKIE_SECURE = true
+SESSION_COOKIE_SAMESITE = Lax
+SESSION_PERMANENT = true
+PERMANENT_SESSION_LIFETIME = 3600
+SESSION_REFRESH_EACH_REQUEST = true
+```
+
+On CKAN 2.11 this plugin sets `SESSION_REDIS` itself from `ckanext.security.redis.*`, so sessions are stored alongside the brute force data (an LRU instance, separate from the job queue), not in `ckan.redis.url`.
+
+### Changes to CKAN config (CKAN 2.9/2.10 only)
 For better security, make sure you harden your session configuration (in your
   ckan config file). See for example the settings below.
 
@@ -169,6 +189,10 @@ ckanext.security.brute_force_key = user_name      # Detect brute force attempts 
 # You can disable the fix in this plugin by:
 ckanext.security.disable_password_reset_override = true
 
+# Password validation
+ckanext.security.min_password_length = 10         # Minimum password length (default 8)
+ckanext.security.nzism_compliant_passwords = true # Require 3 of 4 character classes (default true)
+
 # Two factor authentication is enabled for all users by default
 # optional configuration to disable 2fa
 ckanext.security.enable_totp = true         # set to false to disable 2fa
@@ -195,5 +219,5 @@ Finally, add `security` to `ckan.plugins` in your config file.
 
 ## Possible problems
 
-- If you see a `ValueError: No Beaker session (beaker.session) in environment` then you have not installed the patch to CKAN correctly.
+- (CKAN 2.9/2.10) If you see a `ValueError: No Beaker session (beaker.session) in environment` then you have not installed the patch to CKAN correctly.
 - If you have CKAN<=2.9 installed and have `ckanext.security.enable_totp = false` defined in your config file, overriding or extending the templates is not supported. CKAN<=2.9 uses a different library for authentication which does not support rendering templates. This works in CKAN>=2.10 however, or when using `ckanext.security.enable_totp = true`
