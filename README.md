@@ -20,8 +20,12 @@ disclose whether or not that email address exists in the DB
 |---|---|---|
 | 2.7.x | ≤ 2.5.0 | Legacy, no longer supported |
 | 2.9.x | 3.0.0+ | Python 3 support added. Requires `who.ini` changes and session middleware patch (see below) |
-| 2.10.x | 4.0.0+ | Tested against 2.10.4. `who.ini` configuration is **not required** (CKAN 2.10 replaced `repoze.who` with Flask-Login) |
-| 2.11.x | `ckan_2_11_support` branch (tag TBD) | Uses CKAN's Flask-Session backend, backed by this plugin's Redis instance. **No core patch, `who.ini` or Beaker config required** (see [#92](https://github.com/data-govt-nz/ckanext-security/pull/92)) |
+| 2.10.x | 4.0.0 – 4.1.1 | **4.2.0 is untested on 2.10.** Tested against 2.10.4 (4.0.0+). `who.ini` configuration is **not required** (CKAN 2.10 replaced `repoze.who` with Flask-Login) |
+| 2.11.x | 4.2.0+ | Uses CKAN's Flask-Session backend, backed by this plugin's Redis instance. **No core patch, `who.ini` or Beaker config required** (see [#92](https://github.com/data-govt-nz/ckanext-security/pull/92)) |
+
+> **4.2.0 and CKAN 2.10**: 4.2.0 adds CKAN 2.11 support. The CKAN 2.9/2.10 code paths are retained but are **currently untested** in this release. If you run 2.10 (or 2.9) and hit problems after upgrading, please downgrade to [4.1.1](https://github.com/data-govt-nz/ckanext-security/releases/tag/4.1.1) and open an issue.
+>
+> 4.2.0 also changes password validation: the minimum length now defaults to 8 (set `ckanext.security.min_password_length` to keep a longer minimum) and validator error messages have changed.
 
 **Please note**:
 * Support for CKAN versions earlier than 2.9.x is now dropped from git tag 4.0.0
