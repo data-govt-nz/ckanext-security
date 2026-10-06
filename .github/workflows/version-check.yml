@@ -1,0 +1,26 @@
+name: Version check
+
+on: pull_request
+
+jobs:
+  version_update_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-tags: true
+      - name: Check that version is updated since latest tag
+        run: |
+          VERSION_REGEX="^\s*version\s*=\s*[\"']\([^'\"]\+\)['\"].*"
+          if [ -e pyproject.toml ]; then
+            CURRENT_VERSION=$(sed -n "s|$VERSION_REGEX|\1|p; /$VERSION_REGEX/q" pyproject.toml)
+          elif [ -e setup.py ]; then
+            CURRENT_VERSION=$(sed -n "s|$VERSION_REGEX|\1|p; /$VERSION_REGEX/q" setup.py)
+          fi
+          if [ "$CURRENT_VERSION" = "" ]; then
+            echo "Unable to find current version in project config"
+            exit 1
+          elif (git tag -l |grep -E "^v?$CURRENT_VERSION$"); then
+            echo "Version $CURRENT_VERSION has been tagged, update version when making changes"
+            exit 1
+          fi
