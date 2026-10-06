@@ -2,7 +2,9 @@
 
 import six
 
-from ckan.lib.navl.validators import ignore_missing, not_empty, ignore
+from ckan.lib.navl.validators import (
+    ignore_missing, not_empty, ignore, unicode_safe
+)
 from ckan.logic.validators import (
     name_validator, user_name_validator, user_password_not_empty,
     user_passwords_match, ignore_not_sysadmin, user_about_validator,
@@ -38,6 +40,8 @@ def default_user_schema():
         'reset_key': [ignore],
         'activity_streams_email_notifications': [ignore_missing],
         'state': [ignore_missing],
+        'image_url': [ignore_missing, unicode_safe],
+        'image_display_url': [ignore_missing, unicode_safe],
     }
     return schema
 
